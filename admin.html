@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>幻想智慧星・GM 管理後台</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#f4ecfb;--card:#fff;--ink:#3b2853;--mute:#7d6a94;--line:#e5d8f2;--rose:#e2508f;--ok:#1f9d55}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1726;--card:#2a2235;--ink:#eee;--mute:#b9a9cc;--line:#45395a}}
+:root[data-theme="dark"]{--bg:#1d1726;--card:#2a2235;--ink:#eee;--mute:#b9a9cc;--line:#45395a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,sans-serif;padding:16px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px}
+h1{margin:0;font-size:1.4rem}h2{margin:0 0 8px;font-size:1.1rem}small,.m{color:var(--mute)}
+button{font:inherit;border:0;border-radius:10px;padding:8px 14px;background:var(--rose);color:#fff;cursor:pointer;font-weight:700}
+button.g{background:transparent;color:var(--ink);border:2px solid var(--line)}button:disabled{opacity:.5}
+input,select,textarea{font:inherit;border:2px solid var(--line);border-radius:10px;padding:7px 10px;background:var(--card);color:var(--ink);width:100%}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:120px}
+table{width:100%;border-collapse:collapse;font-size:.88rem}td,th{padding:6px;border-bottom:1px solid var(--line);text-align:left}tr.c{cursor:pointer}tr.c:hover{background:#e2508f14}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stats div{background:var(--bg);border-radius:12px;padding:8px;text-align:center}.stats b{display:block;font-size:1.4rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow:auto}.chips label{border:1.5px solid var(--line);border-radius:99px;padding:2px 10px;font-size:.82rem;display:flex;gap:4px;align-items:center}
+.chips label.own{opacity:.45}.chips input{width:auto}
+.msg{padding:8px 12px;border-radius:10px;background:#1f9d5520}.err{background:#c2185b22}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style></head><body><div class="wrap">
+<div class="card row" style="justify-content:space-between"><div><h1>🛠 幻想智慧星・GM 管理後台</h1><small id="who">尚未登入</small></div><div style="flex:0"><button id="login">用 Google 登入</button><button class="g" id="logout" hidden>登出</button></div></div>
+<div id="main" hidden>
+<div class="card"><h2>📊 玩家概況（最近存檔的 300 位）</h2><div class="stats"><div><b id="s1">-</b><small>玩家數</small></div><div><b id="s2">-</b><small>24 小時內上線</small></div><div><b id="s3">-</b><small>7 天內上線</small></div><div><b id="s4">-</b><small>平均等級</small></div></div></div>
+<div class="card"><h2>🔍 找玩家</h2><div class="row"><input id="q" placeholder="輸入玩家代碼（STAR-XXXX-XXXX）或暱稱"><button id="find" style="flex:0">搜尋</button><button class="g" id="reload" style="flex:0">重新整理</button></div>
+<table><thead><tr><th>暱稱</th><th>玩家代碼</th><th>等級</th><th>星星糖</th><th>最後存檔</th></tr></thead><tbody id="list"></tbody></table></div>
+<div class="card" id="ed" hidden></div>
+</div>
+<div id="out"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const D={"looks": [["M01", "m", "都會休閒青年"], ["M02", "m", "日系高中制服"], ["M03", "m", "韓系偶像舞台服"], ["M04", "m", "美式嘻哈街頭風"], ["M05", "m", "極限運動滑板少年"], ["M06", "m", "英倫維多利亞紳士"], ["M07", "m", "1920年代爵士男爵"], ["M08", "m", "1980年代復古搖滾"], ["M09", "m", "蒸氣龐克發明家"], ["M10", "m", "青竹江湖俠客"], ["M11", "m", "日本浪人武士"], ["M12", "m", "中式江湖劍客"], ["M13", "m", "古埃及法老王"], ["M14", "m", "北歐維京戰士"], ["M15", "m", "阿拉伯沙漠旅人"], ["M16", "m", "希臘奧林帕斯神使"], ["M17", "m", "東方龍族皇子"], ["M18", "m", "暗夜吸血鬼伯爵"], ["M19", "m", "聖光天界守護者"], ["M20", "m", "深淵惡魔領主"], ["M21", "m", "賽博龐克駭客"], ["M22", "m", "星際機甲駕駛員"], ["M23", "m", "末日廢土拾荒者"], ["M24", "m", "神秘魔法學院教授"], ["M25", "m", "深海探險潛水員"], ["M26", "m", "企鵝玩偶裝"], ["M27", "m", "暴龍充氣裝"], ["M28", "m", "柴犬布偶裝"], ["M29", "m", "香蕉超人"], ["M30", "m", "浴袍拖鞋大叔"], ["F01", "f", "韓系時尚少女"], ["F02", "f", "日系水手制服"], ["F03", "f", "甜酷街頭女孩"], ["F04", "f", "都會職場菁英"], ["F05", "f", "偶像舞台歌姬"], ["F06", "f", "維多利亞宮廷淑女"], ["F07", "f", "洛可可華麗公主"], ["F08", "f", "1920年代爵士舞孃"], ["F09", "f", "1980年代復古迪斯可"], ["F10", "f", "翠綠花仙少女"], ["F11", "f", "中式漢服仙子"], ["F12", "f", "日本櫻花巫女"], ["F13", "f", "印度宮廷舞者"], ["F14", "f", "埃及尼羅河祭司"], ["F15", "f", "西班牙佛朗明哥舞者"], ["F16", "f", "月光女神"], ["F17", "f", "九尾狐妖姬"], ["F18", "f", "暗夜吸血鬼公主"], ["F19", "f", "暗黑魔女"], ["F20", "f", "冰雪女皇"], ["F21", "f", "未來科技特務"], ["F22", "f", "星際機械少女"], ["F23", "f", "蒸氣龐克女工程師"], ["F24", "f", "魔法學院見習生"], ["F25", "f", "海盜女船長"], ["F26", "f", "粉紅兔兔裝"], ["F27", "f", "熊貓布偶裝"], ["F28", "f", "貓咪女僕裝"], ["F29", "f", "草莓蛋糕人"], ["F30", "f", "睡衣拖鞋宅女"], ["MSP01", "m", "萬聖南瓜魔術師"], ["FSP01", "f", "萬聖小幽靈甜心"], ["MSP02", "m", "聖誕禮物紳士"], ["FSP02", "f", "聖誕雪人甜心"]], "homes": [["R00", "小木屋"], ["R01", "現代溫馨小屋"], ["R02", "日式和風小屋"], ["R03", "韓式清新小屋"], ["R04", "中式古風小屋"], ["R05", "歐式鄉村小屋"], ["R06", "北歐森林小屋"], ["R07", "地中海海景小屋"], ["R08", "美式復古小屋"], ["R09", "粉色夢幻小屋"], ["R10", "熱帶度假小屋"], ["SP01", "萬聖節派對小屋"], ["SP02", "聖誕節溫馨小屋"]], "pets": [["bunny", "小兔"], ["dog", "柴犬"], ["uni", "獨角獸"], ["tanuki", "狸貓"], ["koi", "鯉魚王"], ["dragon", "幻影龍"]]};
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const lvCost=k=>Math.min(100*k,600),levelOf=e=>{let L=1,t=0;while(t+lvCost(L)<=e){t+=lvCost(L);L++}return L};
+const show=c=>c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8),ago=t=>{if(!t)return '-';const m=(Date.now()-t)/6e4;return m<60?Math.round(m)+' 分鐘前':m<1440?Math.round(m/60)+' 小時前':Math.round(m/1440)+' 天前'};
+function out(t,bad){$('#out').innerHTML=`<div class="msg ${bad?'err':''}">${t}</div>`;setTimeout(()=>$('#out').innerHTML='',6000)}
+firebase.initializeApp({apiKey:"AIzaSyCdIKLj_pLIMpLIFicH82REBqffA99l8oQ",authDomain:"fantasystar-game.firebaseapp.com",projectId:"fantasystar-game",storageBucket:"fantasystar-game.firebasestorage.app",messagingSenderId:"951490146041",appId:"1:951490146041:web:85d7745d295eba4ec87c28"});
+const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue;let ROWS=[];
+$('#login').onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>out('登入失敗：'+(e.code||e.message),1));
+$('#logout').onclick=()=>auth.signOut();
+auth.onAuthStateChanged(u=>{const real=u&&!u.isAnonymous;$('#who').textContent=real?'已登入：'+u.email:'尚未登入';$('#login').hidden=real;$('#logout').hidden=!real;$('#main').hidden=!real;if(real)load()});
+function parse(d){const x=d.data();let s={};try{s=JSON.parse(x.data||'{}')}catch(e){}return {code:d.id,n:x.n||'玩家',t:x.t?x.t.toMillis():0,s,gift:x.gift}}
+async function load(){try{const q=await db.collection('saves').orderBy('t','desc').limit(300).get();ROWS=q.docs.map(parse);stats();draw(ROWS.slice(0,30))}catch(e){out('讀取失敗：'+(e.code||e.message)+'（如果是 permission-denied，代表安全規則還沒加上你的管理員信箱）',1)}}
+function stats(){const now=Date.now();$('#s1').textContent=ROWS.length;$('#s2').textContent=ROWS.filter(r=>now-r.t<864e5).length;$('#s3').textContent=ROWS.filter(r=>now-r.t<7*864e5).length;$('#s4').textContent=ROWS.length?(ROWS.reduce((a,r)=>a+levelOf(r.s.exp||0),0)/ROWS.length).toFixed(1):'-'}
+function draw(rs){$('#list').innerHTML=rs.map(r=>`<tr class="c" data-c="${r.code}"><td>${esc(r.n)}</td><td>${show(r.code)}</td><td>Lv.${levelOf(r.s.exp||0)}</td><td>${r.s.candy||0}</td><td>${ago(r.t)}</td></tr>`).join('')||'<tr><td colspan="5" class="m">沒有符合的玩家</td></tr>';document.querySelectorAll('[data-c]').forEach(tr=>tr.onclick=()=>open(tr.dataset.c))}
+$('#reload').onclick=load;
+$('#find').onclick=async()=>{const v=$('#q').value.trim(),c=v.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(c.startsWith('STAR')&&c.length===12){const r=ROWS.find(x=>x.code===c);if(r)return open(c);try{const d=await db.collection('saves').doc(c).get();if(!d.exists)return out('找不到這個玩家代碼',1);ROWS.unshift(parse(d));open(c)}catch(e){out('讀取失敗：'+(e.code||e.message),1)}return}
+  draw(ROWS.filter(r=>r.n.includes(v)))};
+$('#q').onkeydown=e=>{if(e.key==='Enter')$('#find').click()};
+function open(code){const r=ROWS.find(x=>x.code===code);if(!r)return;const s=r.s,own=new Set(s.items||[]),homes=new Set(s.homes||[]),pets=new Set((s.pets||[]).map(p=>p.k));
+  const ch=(arr,set,name,lab)=>arr.map(a=>`<label class="${set.has(a[2])?'own':''}"><input type="checkbox" name="${name}" value="${a[2]}" ${set.has(a[2])?'disabled':''}>${esc(lab(a))}</label>`).join('');
+  $('#ed').hidden=false;$('#ed').innerHTML=`<h2>👤 ${esc(r.n)}　<small>${show(code)}</small></h2>
+  <p class="m">Lv.${levelOf(s.exp||0)}・經驗 ${s.exp||0}・星星糖 ${s.candy||0}・闖關到第 ${s.maxLv||0} 關・造型 ${(s.items||[]).filter(i=>i.startsWith('L-')).length} 套・小屋 ${(s.homes||[]).length} 間・寵物 ${(s.pets||[]).length} 隻・最後存檔 ${ago(r.t)}</p>
+  ${r.gift?'<p class="msg err">⚠ 還有一份禮物玩家尚未領取，送出新禮物會取代它。</p>':''}
+  <h2>🎁 補發禮物</h2><p class="m">玩家下次開遊戲或自動存檔時會收到（會跳出「管理員送你禮物」）。已擁有的項目會反灰。</p>
+  <div class="row"><label>星星糖<input id="gc" type="number" value="0" min="0"></label><label>經驗<input id="ge" type="number" value="0" min="0"></label><label>解鎖到第幾關<input id="gl" type="number" value="0" min="0" max="108"></label></div>
+  <p><b>造型</b></p><div class="chips">${ch(D.looks.map(l=>[l[0],l[2],'L-'+l[0],l[1]]),own,'gi',a=>a[0]+' '+a[1])}</div>
+  <p><b>小屋</b></p><div class="chips">${ch(D.homes.map(h=>[h[0],h[1],h[0]]),homes,'gh',a=>a[0]+' '+a[1])}</div>
+  <p><b>寵物</b></p><div class="chips">${ch(D.pets.map(p=>[p[0],p[1],p[0]]),pets,'gp',a=>a[1])}</div>
+  <p><b>留言給玩家</b></p><input id="gm" placeholder="例如：系統補償，謝謝你的回報！" maxlength="60">
+  <div class="row" style="margin-top:10px"><button id="gsend">送出禮物</button><button class="g" id="gclose" style="flex:0">關閉</button></div>`;
+  $('#ed').scrollIntoView({behavior:'smooth'});$('#gclose').onclick=()=>$('#ed').hidden=true;
+  $('#gsend').onclick=async()=>{const pick=n=>[...document.querySelectorAll(`[name="${n}"]:checked`)].map(i=>i.value);
+    const g={id:'g'+Date.now(),candy:Math.max(0,+$('#gc').value||0),exp:Math.max(0,+$('#ge').value||0),maxLv:Math.min(108,Math.max(0,+$('#gl').value||0)),items:pick('gi'),homes:pick('gh'),pets:pick('gp'),msg:$('#gm').value.trim()||'這是管理員送你的禮物！'};
+    if(!g.candy&&!g.exp&&!g.maxLv&&!g.items.length&&!g.homes.length&&!g.pets.length)return out('請至少選一項禮物',1);
+    if(!confirm(`確定送給「${r.n}」這份禮物？`))return;
+    try{await db.collection('saves').doc(code).update({gift:g});await db.collection('adminlog').add({code,n:r.n,g,by:auth.currentUser.email,t:FV.serverTimestamp()});r.gift=g;out('✅ 禮物已送出，玩家下次上線就會收到');open(code)}catch(e){out('送出失敗：'+(e.code||e.message),1)}};
+}
+</script></body></html>

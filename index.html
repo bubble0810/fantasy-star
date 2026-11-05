@@ -3125,14 +3125,24 @@ if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造�
   const norm=s=>{const t=String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');return t.startsWith('STAR')&&t.length===12?t:null};
   const me=()=>PL.list.find(x=>x.id===PL.cur);
   const ref=c=>db.collection('saves').doc(c);
+  function applyGift(g){if(!g||!g.id||(S.gifts0||[]).includes(g.id))return false;const out=[];
+    if(g.candy){S.candy+=g.candy;out.push(g.candy+' 星星糖')}if(g.exp){S.exp+=g.exp;out.push(g.exp+' 經驗')}
+    (g.items||[]).forEach(id=>{if(!S.items.includes(id)){S.items.push(id);out.push('造型')}});
+    (g.homes||[]).forEach(id=>{S.homes=S.homes||['R00'];if(!S.homes.includes(id)){S.homes.push(id);out.push('小屋')}});
+    (g.pets||[]).forEach(k=>{if(!S.pets.some(p=>p.k===k)){S.pets.push({k,h:80,hT:Date.now(),aff:0,gT:Date.now(),gifts:0,pT:0});out.push('寵物')}});
+    if(g.maxLv&&g.maxLv>(S.maxLv||0))S.maxLv=g.maxLv;
+    S.gifts0=[...(S.gifts0||[]),g.id].slice(-30);_save();stage(true);render();
+    openSheet(head('🎁 管理員送你禮物')+`<div class="result"><div class="score" style="font-size:2rem">🎁</div><b>${g.msg||'這是給你的禮物！'}</b><p class="hint">${[...new Set(out)].join('、')||'已收到'}</p><button class="big" id="close" style="width:100%">謝謝！</button></div>`);$('#close').onclick=closeQuiz;return true}
   async function push(){
     CS.timer=0;if(!CS.uid)return;const p=me();if(!p)return;
     const wait=25000-(Date.now()-CS.last);if(wait>0){CS.timer=setTimeout(push,wait);return}
-    CS.last=Date.now();const data=JSON.stringify(S);
+    CS.last=Date.now();
+    if(p.cloud&&!p.cloudNew){try{const d=await ref(p.cloud).get();if(d.exists&&d.data().gift)applyGift(d.data().gift)}catch(e){}}
+    const data=JSON.stringify(S);
     try{
       if(!p.cloud){p.cloud=newCode();p.cloudNew=1;savePL()}
       if(p.cloudNew){await ref(p.cloud).set({uids:[CS.uid],t:FV.serverTimestamp(),v:1,n:curName(),data});delete p.cloudNew;savePL()}
-      else await ref(p.cloud).update({uids:FV.arrayUnion(CS.uid),t:FV.serverTimestamp(),n:curName(),data});
+      else await ref(p.cloud).update({uids:FV.arrayUnion(CS.uid),t:FV.serverTimestamp(),n:curName(),data,gift:FV.delete()});
       S.lastBackup=Date.now();S.backupSig=progSig();_save();CS.err='';hud();
     }catch(e){CS.err=e.code||e.message;if(!CS.timer)CS.timer=setTimeout(push,30000)}
   }
@@ -3141,7 +3151,7 @@ if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造�
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&CS.uid){clearTimeout(CS.timer);CS.timer=0;push()}});
   async function pull(){
     const p=me();if(!p||!p.cloud||p.cloudNew)return;
-    try{const d=await ref(p.cloud).get();if(!d.exists)return;const c=JSON.parse(d.data().data);
+    try{const d=await ref(p.cloud).get();if(!d.exists)return;const c=JSON.parse(d.data().data);if(d.data().gift)setTimeout(()=>{applyGift(d.data().gift);window.cloudPush()},500);
       if((c.savedAt||0)>(S.savedAt||0)+5000){localStorage.setItem(skey(PL.cur),d.data().data);loadS(PL.cur);stage(true);render();toast('已從雲端讀回最新進度')}}catch(e){}
   }
   auth.onAuthStateChanged(async u=>{if(!u)return;CS.uid=u.uid;CS.ok=true;await pull();window.cloudPush()});
