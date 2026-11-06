@@ -65,7 +65,7 @@ window.festMenu=function(k){
       ${x.own?'<button class="act" disabled>已擁有</button>':`<button class="act buy" data-fx="${x.id}" ${f.c<x.c?'disabled':''}>${g.ic} ${x.c}</button>`}</div>`).join('')}</div>`);
   document.getElementById('fgGo').onclick=()=>launch(k);
   document.querySelectorAll('[data-fx]').forEach(b=>b.onclick=()=>{const x=shop.find(s=>s.id===b.dataset.fx),f=FS(k);if(!x||f.c<x.c||x.own)return;
-    f.c-=x.c;
+    f.c-=x.c;window.FSTAT&&FSTAT('fx:'+k+':'+x.id);
     if(x.id==='look'){if(!S.items.includes(lookId(k)))S.items.push(lookId(k))}
     else if(x.id==='room'){if(!S.homes.includes(g.home))S.homes.push(g.home)}
     else if(x.id==='stars')S.candy+=300;
@@ -76,7 +76,7 @@ window.festMenu=function(k){
 /* 開啟節慶遊戲 */
 let cur=null;
 function launch(k){
-  const f=FS(k);if(f.left<=0)return;f.left--;save();
+  const f=FS(k);if(f.left<=0)return;f.left--;window.FSTAT&&FSTAT('f:'+k);save();
   closeQuiz();try{SND.pause()}catch(e){}
   const box=document.createElement('div');box.id='fgFrame';
   box.innerHTML=`<iframe src="${GAMEF[k].url}?embed=1&char=${S.char||'f'}" title="${GAMEF[k].title}" allow="autoplay"></iframe>`;
@@ -84,7 +84,7 @@ function launch(k){
 }
 addEventListener('message',e=>{
   if(!cur||e.source!==cur.frame.contentWindow)return;const d=e.data||{};
-  if(d.fsGame&&!cur.got){cur.got=true;const n=Math.max(0,Math.min(500,d.earned|0)),f=FS(cur.k);f.c+=n;save();}
+  if(d.fsGame&&!cur.got){cur.got=true;const n=Math.max(0,Math.min(500,d.earned|0)),f=FS(cur.k);f.c+=n;window.FSTAT&&FSTAT('fc:'+cur.k,n);save();}
   if(d.fsClose){const k=cur.k,n=cur.got;document.getElementById('fgFrame')?.remove();cur=null;try{SND.resume()}catch(e){}
     render();stage();festMenu(k)}
 });

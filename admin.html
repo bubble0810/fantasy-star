@@ -60,6 +60,17 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#faf6ff}tbody tr.sel{backgroun
 .stage{display:flex;gap:10px;align-items:flex-end}
 .stage img{height:150px;width:auto}
 details summary{cursor:pointer;font-weight:700}
+.sub{display:flex;gap:4px;flex-wrap:wrap}.sub button{min-height:34px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:0 14px;font:inherit;cursor:pointer}
+.sub button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:10px 12px}.kpi small{color:var(--muted);display:block}.kpi b{font-size:24px}
+.bar{height:12px;border-radius:6px;background:#e2508f;min-width:2px}.bar.b2{background:#8a7dff}
+td.barc{width:40%;min-width:120px}
+.days{display:flex;align-items:flex-end;gap:3px;height:160px;border-bottom:1px solid var(--line);padding-top:10px}
+.days>div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;height:100%;font-size:10px;color:var(--muted)}
+.days i{display:block;width:100%;background:#e2508f;border-radius:4px 4px 0 0;min-height:1px}.days i.n{background:#8a7dff}
+.thumb{height:36px;width:auto;vertical-align:middle;border-radius:4px}
+.note{color:var(--muted);font-size:12px;margin:0}
 </style>
 </head>
 <body>
@@ -72,6 +83,7 @@ function toast(t){const d=document.createElement('div');d.className='toast';d.te
 if(!window.CLOUD_GATE){app.innerHTML=`<div class="login card"><h2>還沒設定 Firebase</h2><p>請先把 Firebase 設定碼填進 <b>firebase-config.js</b>，再重新整理這一頁。</p></div>`;return}
 firebase.initializeApp(window.FIREBASE_CONFIG);
 const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue;
+let PETS=[],CATS=[],GAMEF=[],stSub='games',stRange=7;
 let ME=null,PLAYERS=[],SEL=null,SELS=null,LOOKS=[],HOMES=[],tab='players',sortK='lastLogin',sortD=-1,q='';
 
 /* 從遊戲檔讀出造型和小屋清單 */
@@ -80,6 +92,11 @@ async function loadCatalog(){
     const m=t.match(/const LOOKS=(\[.*?\]\]);/s);if(m)LOOKS=JSON.parse(m[1]).filter(r=>!/B$/.test(r[0]));
     const hb=t.slice(t.indexOf('const HOMES=['),t.indexOf('];',t.indexOf('const HOMES=['))+2);
     HOMES=[...hb.matchAll(/\{id:'(\w+)',n:'([^']+)'[^}]*?img:'([^']+)'[^}]*\}/g)].map(x=>({id:x[1],n:x[2],img:x[3],fest:(x[0].match(/fest:'(\w+)'/)||[])[1]||''}));
+    const pb=t.slice(t.indexOf('const PETS=['),t.indexOf('];',t.indexOf('const PETS=['))+2);
+    PETS=[...pb.matchAll(/\{k:'(\w+)',n:'([^']+)',lv:(\d+),cost:(\d+)[^}]*?(hide:1)?[^}]*\}/g)].filter(x=>!/hide:1/.test(x[0])).map(x=>({k:x[1],n:x[2],cost:+x[4],img:(x[0].match(/img:'([^']+)'/)||[])[1]||''}));
+    const cm=t.match(/const CATS=\[([\s\S]*?)\];/);if(cm)CATS=[...cm[1].matchAll(/k:'(\w+)',n:'([^']+)'/g)].map(x=>({k:x[1],n:x[2]}));
+    try{const g=await (await fetch('festgames.js',{cache:'no-store'})).text();
+      GAMEF=[...g.matchAll(/(\w+):\s*\{n:'([^']+)',title:'([^']+)',cur:'([^']+)',ic:'([^']+)'.*?home:'(\w+)',lk:'(\w+)'/g)].map(x=>({k:x[1],n:x[2],title:x[3],cur:x[4],ic:x[5],home:x[6],lk:x[7]}))}catch(e){}
   }catch(e){toast('讀不到遊戲的造型清單（請確認 admin.html 和 index.html 放在同一個資料夾）')}
 }
 const fmt=ts=>ts&&ts.toDate?ts.toDate().toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
@@ -104,13 +121,13 @@ auth.onAuthStateChanged(async u=>{
 /* ---------- 外框 ---------- */
 function shell(){
   app.innerHTML=`<header><h1>幻想智慧星・管理後台</h1><nav>
-  <button data-t="players">玩家</button><button data-t="bc">寄信給全部玩家</button><button data-t="log">操作紀錄</button></nav>
+  <button data-t="players">玩家</button><button data-t="stat">📊 統計</button><button data-t="bc">寄信給全部玩家</button><button data-t="log">操作紀錄</button></nav>
   <div class="who">${esc(ME.email)}<button class="btn" id="lo">登出</button></div></header><main id="main"></main>`;
   app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;view()});
   $('#lo').onclick=()=>auth.signOut();view();
 }
 function view(){app.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===tab));
-  if(tab==='players')playersView();else if(tab==='bc')bcView();else logView()}
+  if(tab==='players')playersView();else if(tab==='stat')statView();else if(tab==='bc')bcView();else logView()}
 
 /* ---------- 玩家列表 ---------- */
 async function loadPlayers(){
@@ -120,9 +137,9 @@ function playersView(){
   const m=$('#main');
   const rows=PLAYERS.filter(p=>!q||(p.name||'').includes(q)||(p.code||'').includes(q.toLowerCase()))
     .sort((a,b)=>{const va=a[sortK],vb=b[sortK];const x=va&&va.toMillis?va.toMillis():va??'',y=vb&&vb.toMillis?vb.toMillis():vb??'';return (x>y?1:x<y?-1:0)*sortD});
-  const H=[['name','顯示名稱'],['code','代號'],['exp','等級'],['candy','星星糖'],['looks','造型'],['homes','小屋'],['lastLogin','最後登入'],['disabled','狀態']];
+  const H=[['name','暱稱'],['code','帳號'],['exp','等級'],['candy','星星糖'],['looks','造型'],['homes','小屋'],['lastLogin','最後登入'],['disabled','狀態']];
   m.innerHTML=`<div class="grid"><div class="card"><div class="row"><h2>玩家（${PLAYERS.length} 人）</h2><button class="btn" id="rf">重新整理</button></div>
-    <input id="qs" placeholder="搜尋顯示名稱或代號" value="${esc(q)}">
+    <input id="qs" placeholder="搜尋暱稱或帳號" value="${esc(q)}">
     <div class="tablewrap"><table><thead><tr>${H.map(([k,t])=>`<th data-k="${k}">${t}${sortK===k?(sortD>0?' ▲':' ▼'):''}</th>`).join('')}</tr></thead><tbody>
     ${rows.map(p=>`<tr data-u="${p.uid}" class="${SEL&&SEL.uid===p.uid?'sel':''}"><td>${esc(p.name)}</td><td>${esc(p.code)}</td><td>Lv.${lvOf(p.exp||0)}</td><td>${p.candy||0}</td><td>${p.looks||0}</td><td>${p.homes||0}</td><td>${fmt(p.lastLogin)}</td><td>${p.disabled?'<span class="tag off">停用</span>':'<span class="tag on">正常</span>'}</td></tr>`).join('')||`<tr><td colspan="8" class="empty">還沒有玩家</td></tr>`}
     </tbody></table></div></div><div id="detail">${SEL?'':'<div class="card empty">點左邊的玩家，查看他的全部資料</div>'}</div></div>`;
@@ -149,8 +166,8 @@ function detailView(){
   el.innerHTML=`<div class="card">
   <div class="row"><h2>${esc(p.name)}</h2>${p.disabled?'<span class="tag off">停用中</span>':'<span class="tag on">正常</span>'}</div>
   <div class="stage">${cur?`<img src="outfits/${esc(cur)}.webp" alt="目前穿著">`:''}<div class="kv">
-    <span>代號</span><b>${esc(p.code)}</b>
-    <span>圖案密碼</span><b class="pw" title="${esc(p.pw.pwName||'')}">${esc(p.pw.pw||'（沒有紀錄）')}</b>
+    <span>帳號</span><b>${esc(p.code)}</b>
+    <span>密碼</span><b class="pw" title="${esc(p.pw.pwName||'')}">${esc(p.pw.pw||'（沒有紀錄）')}</b>
     <span></span><small>${esc(p.pw.pwName||'')}</small>
     <span>角色</span><b>${S.char==='m'?'男生':S.char==='f'?'女生':'還沒選'}</b>
     <span>等級</span><b>Lv.${lvOf(S.exp||0)}（經驗值 ${S.exp||0}）</b>
@@ -159,7 +176,7 @@ function detailView(){
 
   <h3>基本資料與數值</h3>
   <div class="nums">
-    <label>顯示名稱<input id="eName" value="${esc(p.name)}" maxlength="8"></label>
+    <label>暱稱<input id="eName" value="${esc(p.name)}" maxlength="8"></label>
     <label>星星糖<input id="eCandy" type="number" min="0" value="${S.candy||0}"></label>
     <label>經驗值<input id="eExp" type="number" min="0" value="${S.exp||0}"></label>
     <label>已過關到第幾關（maxLv）<input id="eMax" type="number" min="0" max="108" value="${S.maxLv||0}"></label>
@@ -182,7 +199,7 @@ function detailView(){
   <h3>信件紀錄</h3>${p.mail.length?p.mail.map(x=>`<div class="mail"><div><b>${x.kind==='gift'?'🎁':x.kind==='system'?'🔔':'📢'} ${esc(x.title)}</b>${x.bc?' <small>（全體信）</small>':''}<br><small>${fmt(x.createdAt)}・${x.claimed?'已領取 '+fmt(x.claimedAt):x.read?'已讀':'還沒看'}</small></div>${x.claimed?'':`<button class="btn danger" data-recall="${x.id}">收回</button>`}</div>`).join(''):'<p class="empty">還沒有信</p>'}</div>
 
   <div class="card"><h2>搬移進度</h2><p style="margin:0;color:var(--muted)">小朋友忘記密碼、改用新帳號時，把這個帳號的進度整份複製到新帳號。新帳號原本的進度會被蓋掉。</p>
-  <div class="row"><input id="mvTo" placeholder="新帳號的代號"><button class="btn" id="mvGo">搬過去</button></div></div>`;
+  <div class="row"><input id="mvTo" placeholder="新帳號"><button class="btn" id="mvGo">搬過去</button></div></div>`;
 
   el.querySelectorAll('.looks input,.homes input').forEach(c=>c.onchange=()=>c.parentElement.classList.toggle('own',c.checked));
   $('#eSave').onclick=saveEdit;$('#eDis').onclick=toggleDis;$('#mSend').onclick=()=>sendMail(p.uid);$('#mvGo').onclick=moveProgress;
@@ -230,13 +247,82 @@ async function recall(id){if(!confirmBox('確定收回這封信？'))return;
   try{await db.doc(`players/${SEL.uid}/inbox/${id}`).delete();await log('收回信件',SEL.code,id);toast('已收回');openPlayer(SEL.uid)}catch(e){toast('失敗：'+(e.code||e.message))}}
 async function moveProgress(){
   const code=$('#mvTo').value.trim().toLowerCase();const to=PLAYERS.find(p=>p.code===code);
-  if(!to)return toast('找不到這個代號');if(to.uid===SEL.uid)return toast('不能搬給自己');
+  if(!to)return toast('找不到這個帳號');if(to.uid===SEL.uid)return toast('不能搬給自己');
   if(!confirmBox(`把「${SEL.name}」的進度複製到「${to.name}（${to.code}）」？${to.name} 原本的進度會被蓋掉。`))return;
   try{await db.doc('players/'+to.uid).update({sj:SEL.sj||'',exp:SEL.exp||0,candy:SEL.candy||0,char:SEL.char||null,maxLv:SEL.maxLv||0,looks:SEL.looks||0,homes:SEL.homes||1,updatedAt:FV.serverTimestamp(),adminRev:FV.increment(1)});
     await log('搬移進度',SEL.code+' → '+to.code);toast('已搬移');loadPlayers()}catch(e){toast('失敗：'+(e.code||e.message))}
 }
 
 /* ---------- 寄信給全部玩家 ---------- */
+/* ---------- 統計 ---------- */
+const dkey=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function lastDays(n){const o=[];const d=new Date();for(let i=n-1;i>=0;i--){const x=new Date(d);x.setDate(d.getDate()-i);o.push(dkey(x))}return o}
+function pdata(p){if(p._S!==undefined)return p._S;try{p._S=p.sj?JSON.parse(p.sj):{}}catch(e){p._S={}}return p._S}
+function pcount(p,key){const st=(pdata(p).st)||{};if(!stRange)return (st.t||{})[key]||0;let n=0;for(const k of lastDays(stRange))n+=((st.d||{})[k]||{})[key]||0;return n}
+function agg(keys){return keys.map(([key,label,extra])=>{let tot=0,ppl=0;for(const p of PLAYERS){const n=pcount(p,key);tot+=n;if(n)ppl++}return {key,label,extra,tot,ppl}})}
+function barTable(rows,cols){const mx=Math.max(1,...rows.map(r=>r.tot));
+  return `<div class="tablewrap"><table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}<th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.label}</td>${r.cells.map(c=>`<td>${c}</td>`).join('')}<td class="barc"><div class="bar" style="width:${r.tot/mx*100}%"></div></td></tr>`).join('')||'<tr><td colspan="9" class="empty">還沒有資料</td></tr>'}</tbody></table></div>`}
+const rangeName=()=>stRange?`最近 ${stRange} 天`:'全部時間';
+function statView(){
+  const m=$('#main');
+  m.innerHTML=`<div class="card"><div class="row"><h2>📊 統計</h2><div class="sub" id="ss">${[['games','遊戲統計'],['sales','銷售狀態'],['active','活躍玩家'],['fest','節慶活動']].map(([k,n])=>`<button data-s="${k}" aria-pressed="${stSub===k}">${n}</button>`).join('')}</div>
+    <span style="margin-left:auto"></span><select id="sr">${[[1,'今天'],[7,'最近 7 天'],[30,'最近 30 天'],[0,'全部時間']].map(([v,n])=>`<option value="${v}" ${stRange===v?'selected':''}>${n}</option>`).join('')}</select><button class="btn" id="srf">重新整理</button></div>
+    <p class="note">統計從 v3 更新後開始記錄，之前玩過的次數沒有紀錄。「擁有人數」是從每位玩家的存檔算出來的，包含更新前買的東西。</p>
+    <div id="sbody"></div></div>`;
+  m.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{stSub=b.dataset.s;statView()});
+  $('#sr').onchange=e=>{stRange=+e.target.value;statView()};
+  $('#srf').onclick=async()=>{await loadPlayers();PLAYERS.forEach(p=>delete p._S);tab='stat';view()};
+  const B=$('#sbody');
+  if(stSub==='games')B.innerHTML=gamesStat();else if(stSub==='sales')B.innerHTML=salesStat();else if(stSub==='active')B.innerHTML=activeStat();else B.innerHTML=festStat();
+  B.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{salesCat=b.dataset.cat;statView()});
+}
+function gamesStat(){
+  const keys=[['g:maze','⚡ 電流急急棒'],['g:memory','🃏 記憶翻牌'],['g:stroop','🎨 顏色陷阱'],['g:dice','🎲 家園擲骰子'],['q:all','📝 答題・綜合大冒險'],
+    ...CATS.map(c=>['q:'+c.k,'📝 答題・'+c.n]),...GAMEF.map(g=>['f:'+g.k,`${g.ic} 節慶・${g.title}`])];
+  const rows=agg(keys).sort((a,b)=>b.tot-a.tot||b.ppl-a.ppl);
+  const sum=rows.reduce((a,r)=>a+r.tot,0);
+  return `<div class="kpis"><div class="kpi"><small>${rangeName()}總遊玩次數</small><b>${sum}</b></div><div class="kpi"><small>最受歡迎</small><b style="font-size:16px">${rows[0]&&rows[0].tot?rows[0].label:'—'}</b></div></div>
+  <h3>依遊玩次數排序（${rangeName()}）</h3>`+barTable(rows.map(r=>({...r,cells:[r.tot,r.ppl,r.ppl?(r.tot/r.ppl).toFixed(1):'—']})),['遊戲','遊玩次數','玩過的人數','平均每人']);
+}
+let salesCat='looks';
+function salesStat(){
+  const own={},sold={};
+  for(const p of PLAYERS){const S=pdata(p);(S.items||[]).forEach(x=>{own[x]=(own[x]||0)+1});(S.homes||[]).forEach(x=>{own[x]=(own[x]||0)+1});(S.pets||[]).forEach(x=>{if(x&&x.k)own['pet-'+x.k]=(own['pet-'+x.k]||0)+1})}
+  const sc=id=>{let n=0;for(const p of PLAYERS)n+=pcount(p,'b:'+id);return n};
+  let list=[];
+  if(salesCat==='looks')list=LOOKS.map(r=>({id:'L-'+r[0],label:`<img class="thumb" src="outfits/${esc(r[0])}.webp" alt=""> ${esc(r[0].replace(/^[MF]SP/,'SP'))} ${esc(r[2])} <small>${r[1]==='m'?'男':'女'}</small>`}));
+  else if(salesCat==='homes')list=HOMES.filter(h=>h.id!=='R00').map(h=>({id:h.id,label:`<img class="thumb" src="${esc(h.img)}" alt=""> ${esc(h.id.replace(/^SP/,'RSP'))} ${esc(h.n)}`}));
+  else list=PETS.filter(x=>x.cost>0).map(x=>({id:'pet-'+x.k,label:`${x.img?`<img class="thumb" src="${esc(x.img)}" alt="">`:''} ${esc(x.n)}`}));
+  const rows=list.map(x=>({label:x.label,tot:sc(x.id),own:own[x.id]||0})).sort((a,b)=>b.tot-a.tot||b.own-a.own);
+  rows.forEach(r=>r.cells=[r.tot,r.own,PLAYERS.length?Math.round(r.own/PLAYERS.length*100)+'%':'—']);
+  const total=rows.reduce((a,r)=>a+r.tot,0),never=rows.filter(r=>!r.own).length;
+  return `<div class="sub" style="margin:8px 0">${[['looks','👗 造型'],['homes','🏠 小屋'],['pets','🐰 寵物']].map(([k,n])=>`<button data-cat="${k}" aria-pressed="${salesCat===k}">${n}</button>`).join('')}</div>
+  <div class="kpis"><div class="kpi"><small>${rangeName()}賣出</small><b>${total}</b></div><div class="kpi"><small>還沒有人擁有</small><b>${never}</b><small>共 ${rows.length} 項</small></div></div>
+  <h3>依${rangeName()}賣出數量排序</h3>`+barTable(rows,['商品',`${rangeName()}賣出`,'目前擁有人數','擁有比例']).replace(/class="bar"/g,'class="bar b2"');
+}
+function activeStat(){
+  const N=stRange&&stRange>1?stRange:30,days=lastDays(N);
+  const act=days.map(k=>PLAYERS.filter(p=>{const d=((pdata(p).st||{}).d||{})[k];return d&&Object.keys(d).length}).length);
+  const reg=days.map(k=>PLAYERS.filter(p=>p.createdAt&&p.createdAt.toDate&&dkey(p.createdAt.toDate())===k).length);
+  const uniq=n=>{const ks=lastDays(n);return PLAYERS.filter(p=>{const D=(pdata(p).st||{}).d||{};return ks.some(k=>D[k]&&Object.keys(D[k]).length)}).length};
+  const mx=Math.max(1,...act,...reg);
+  return `<div class="kpis"><div class="kpi"><small>全部玩家</small><b>${PLAYERS.length}</b></div><div class="kpi"><small>今天上線</small><b>${act[act.length-1]}</b></div>
+  <div class="kpi"><small>最近 7 天上線</small><b>${uniq(7)}</b></div><div class="kpi"><small>最近 30 天上線</small><b>${uniq(30)}</b></div><div class="kpi"><small>最近 ${N} 天新註冊</small><b>${reg.reduce((a,b)=>a+b,0)}</b></div></div>
+  <h3>每天人數（最近 ${N} 天）<span style="font-weight:400"> ・ <span style="color:#e2508f">■</span> 上線人數 <span style="color:#8a7dff">■</span> 新註冊</span></h3>
+  <div class="days">${days.map((k,i)=>`<div title="${k}：上線 ${act[i]} 人、新註冊 ${reg[i]} 人"><span>${act[i]||''}</span><div style="display:flex;gap:1px;width:100%;align-items:flex-end;flex:1"><i style="height:${act[i]/mx*100}%"></i><i class="n" style="height:${reg[i]/mx*100}%"></i></div><span>${N<=31&&(i%Math.ceil(N/10)===0||i===N-1)?k.slice(5):''}</span></div>`).join('')}</div>`;
+}
+function festStat(){
+  if(!GAMEF.length)return '<p class="empty">讀不到節慶活動設定（festgames.js）</p>';
+  const own=id=>PLAYERS.filter(p=>{const S=pdata(p);return (S.items||[]).includes(id)||(S.homes||[]).includes(id)}).length;
+  const sum=key=>PLAYERS.reduce((a,p)=>a+pcount(p,key),0),ppl=key=>PLAYERS.filter(p=>pcount(p,key)>0).length;
+  return GAMEF.map(g=>{const n=ppl('f:'+g.k),runs=sum('f:'+g.k),cur=sum('fc:'+g.k);
+    const ex=[['look','節慶服裝'],['room','節慶小屋'],['stars','換星星糖 300'],['dice','骰子加碼券']].map(([k,t])=>[t,sum('fx:'+g.k+':'+k)]);
+    const ol=own('L-M'+g.lk)+own('L-F'+g.lk),or=own(g.home);
+    return `<div class="card" style="margin-top:10px"><h2>${g.ic} ${esc(g.n)}・${esc(g.title)}</h2>
+    <div class="kpis"><div class="kpi"><small>參加人數</small><b>${n}</b><small>佔全部玩家 ${PLAYERS.length?Math.round(n/PLAYERS.length*100):0}%</small></div><div class="kpi"><small>遊玩次數</small><b>${runs}</b><small>平均每人 ${n?(runs/n).toFixed(1):'—'} 次</small></div>
+    <div class="kpi"><small>獲得${esc(g.cur)}</small><b>${cur}</b></div><div class="kpi"><small>擁有節慶服裝</small><b>${ol}</b><small>${esc(g.lk.replace(/^SP/,'SP'))}</small></div><div class="kpi"><small>擁有節慶小屋</small><b>${or}</b><small>${esc(g.home.replace(/^SP/,'RSP'))}</small></div></div>
+    <h3>兌換紀錄（${rangeName()}）</h3><div class="row">${ex.map(([t,v])=>`<span class="tag">${t}：<b>${v}</b></span>`).join('')}</div></div>`}).join('');
+}
 async function bcView(){
   const m=$('#main');m.innerHTML=`<div class="grid"><div class="card"><h2>寄信給全部玩家</h2><p style="margin:0;color:var(--muted)">每位玩家下次登入時都會收到，之後才註冊的新玩家也會收到（期限內）。</p>${mailForm('b')}<button class="btn primary" id="bSend">寄給全部玩家</button></div><div class="card"><h2>已寄出的全體信</h2><div id="bList">讀取中…</div></div></div>`;
   $('#bSend').onclick=async()=>{const x=readMail('b');if(!x)return;delete x.read;delete x.claimed;

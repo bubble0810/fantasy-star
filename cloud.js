@@ -6,11 +6,9 @@ const fb=firebase.initializeApp(window.FIREBASE_CONFIG);
 const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue;
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);   // 同一台裝置記住登入
 
-/* ---------- 圖案密碼 ---------- */
-const ICONS=['🍓','⭐','🐰','🌙','🎀','🍰','🐱','🌸','🍀','🎈','🐟','☁️'];
-const ICON_N=['草莓','星星','兔子','月亮','蝴蝶結','蛋糕','貓咪','櫻花','幸運草','氣球','小魚','雲朵'];
-const pwStr=a=>'fsp-'+a.map(i=>i.toString(16)).join('')+'-star';  // 交給 Firebase 的密碼（使用者看不到）
-const emailOf=code=>code+'@fantasystar.game';                     // 假信箱，不會寄信
+/* ---------- 帳號密碼 ---------- */
+const pwStr=pin=>'fsp-'+pin+'-star';                 // 交給 Firebase 的密碼（Firebase 至少要 6 碼，玩家只要記 4 個數字）
+const emailOf=code=>code+'@fantasystar.game';       // 假信箱，不會寄信
 const BAD=['笨蛋','白痴','智障','去死','幹','靠北','屁'];
 
 /* ---------- 樣式 ---------- */
@@ -56,57 +54,77 @@ const css=document.createElement('style');css.textContent=`
 const mask=document.createElement('div');mask.className='cl-mask';mask.innerHTML=`<div class="cl-card" id="clCard"><div class="cl-brand">幻想智慧星<small>正在連線中…</small></div></div>`;
 document.body.appendChild(mask);
 const card=()=>document.getElementById('clCard');
-let pw=[],mode='login';
+const $c=id=>document.getElementById(id);
+let lastCode='',justMade=null,newChar=null,pinMem=null;
 function loginView(){
-  pw=[];
   card().innerHTML=`<div class="cl-brand">幻想智慧星<small>答題闖關 · 收集造型 · 布置小屋</small></div>
-  <div class="cl-tabs" role="tablist"><button role="tab" data-m="login" aria-selected="${mode==='login'}">我有帳號</button><button role="tab" data-m="new" aria-selected="${mode==='new'}">我是新玩家</button></div>
-  <form id="clForm" style="display:flex;flex-direction:column;gap:12px">
-    <label>代號<small>英文字母或數字，4～12 個字${mode==='new'?'。不要用真實姓名或學號喔！':''}</small><input id="clCode" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="12" inputmode="latin"></label>
-    ${mode==='new'?`<label>顯示名稱<small>遊戲裡看到的名字，可以用中文，最多 8 個字</small><input id="clName" maxlength="8"></label>`:''}
-    <div><b style="font-size:14px">${mode==='new'?'選 4 個圖案當密碼（要記住順序喔！）':'依序點你的 4 個圖案'}</b></div>
-    <div class="cl-pw" id="clPw">${'<i></i>'.repeat(4)}</div>
-    <div class="cl-pad">${ICONS.map((c,i)=>`<button type="button" data-i="${i}" aria-label="${ICON_N[i]}">${c}</button>`).join('')}</div>
-    <div class="cl-row"><button type="button" class="cl-sub" id="clBack">退一格</button><button type="button" class="cl-sub" id="clClr">全部清除</button></div>
+  <form id="clForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="on">
+    <label>帳號<small>英文字母或數字，4～12 個字</small><input id="clCode" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="12" value="${lastCode}"></label>
+    <label>密碼<small>4 個數字</small><input id="clPin" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" maxlength="4"></label>
     <p class="cl-err" id="clErr" role="alert"></p>
-    <button class="cl-go" id="clGo">${mode==='new'?'建立帳號，開始玩！':'登入'}</button>
+    <button class="cl-go" id="clGo">進入遊戲</button>
   </form>
-  ${mode==='login'?'<p class="cl-note">忘記圖案密碼了嗎？請找老師或管理員幫忙。</p>':'<p class="cl-note">遊戲進度會存在雲端，換電腦或手機也能接著玩。</p>'}`;
-  card().querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;loginView()});
-  card().querySelectorAll('.cl-pad button').forEach(b=>b.onclick=()=>{if(pw.length<4){pw.push(+b.dataset.i);paintPw()}});
-  document.getElementById('clBack').onclick=()=>{pw.pop();paintPw()};
-  document.getElementById('clClr').onclick=()=>{pw=[];paintPw()};
-  document.getElementById('clCode').addEventListener('input',e=>{e.target.value=e.target.value.toLowerCase().replace(/[^a-z0-9]/g,'')});
-  document.getElementById('clForm').onsubmit=e=>{e.preventDefault();mode==='new'?doRegister():doLogin()};
+  <p class="cl-note">第一次玩？直接輸入你想用的帳號和密碼就可以建立新帳號。<br>帳號不要用真實姓名或學號喔！忘記密碼請找老師或管理員。</p>`;
+  $c('clCode').addEventListener('input',e=>{e.target.value=e.target.value.toLowerCase().replace(/[^a-z0-9]/g,'')});
+  $c('clPin').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)});
+  $c('clForm').onsubmit=e=>{e.preventDefault();doLogin()};
+  setTimeout(()=>{const f=$c(lastCode?'clPin':'clCode');if(f)f.focus()},50);
 }
-function paintPw(){document.querySelectorAll('#clPw i').forEach((el,i)=>{el.className=i<pw.length?'on':'';el.textContent=i<pw.length?'●':''})}
-const err=t=>{const e=document.getElementById('clErr');if(e)e.textContent=t};
-function busy(b){const g=document.getElementById('clGo');if(g){g.disabled=b;g.textContent=b?'請稍候…':(mode==='new'?'建立帳號，開始玩！':'登入')}}
-function check(){
-  const code=document.getElementById('clCode').value.trim();
-  if(!/^[a-z0-9]{4,12}$/.test(code))return err('代號要用 4～12 個英文字母或數字'),null;
-  if(pw.length<4)return err('請點滿 4 個圖案'),null;
-  return code;
-}
+const err=t=>{const e=$c('clErr');if(e)e.textContent=t};
+function busy(b,t){const g=$c('clGo');if(g){g.disabled=b;if(b)g.textContent='請稍候…';else if(t)g.textContent=t}}
+const netErr=e=>e.code==='auth/network-request-failed'?'網路好像斷了，請檢查網路':e.code==='auth/too-many-requests'?'錯太多次了，請休息一下再試':null;
 async function doLogin(){
-  const code=check();if(!code)return;busy(true);err('');
-  try{await auth.signInWithEmailAndPassword(emailOf(code),pwStr(pw))}
-  catch(e){busy(false);pw=[];paintPw();
-    err(e.code==='auth/too-many-requests'?'錯太多次了，請休息一下再試':e.code==='auth/network-request-failed'?'網路好像斷了，請檢查網路':'代號或圖案密碼不對喔，再試一次！')}
+  const code=$c('clCode').value.trim(),pin=$c('clPin').value.trim();
+  if(!/^[a-z0-9]{4,12}$/.test(code))return err('帳號要用 4～12 個英文字母或數字');
+  if(!/^\d{4}$/.test(pin))return err('密碼要輸入 4 個數字');
+  lastCode=code;pinMem={code,pin};busy(true);err('');
+  try{await auth.signInWithEmailAndPassword(emailOf(code),pwStr(pin));return}
+  catch(e){const n=netErr(e);if(n){busy(false,'進入遊戲');$c('clPin').value='';return err(n)}}
+  // 登入失敗：可能是新帳號，也可能是密碼打錯 → 試著建立；帳號已存在就是密碼錯
+  try{justMade={code,pin};await auth.createUserWithEmailAndPassword(emailOf(code),pwStr(pin))}
+  catch(e){justMade=null;busy(false,'進入遊戲');$c('clPin').value='';
+    err(e.code==='auth/email-already-in-use'?'密碼不對喔，再試一次！':netErr(e)||'登入失敗，請再試一次（'+(e.code||e.message)+'）')}
 }
-async function doRegister(){
-  const code=check();if(!code)return;
-  const name=(document.getElementById('clName').value||'').trim();
-  if(!name)return err('請取一個顯示名稱');
-  if(BAD.some(w=>name.includes(w)))return err('這個名稱不太適合，換一個吧');
-  busy(true);err('');
-  try{
-    const cr=await auth.createUserWithEmailAndPassword(emailOf(code),pwStr(pw));
-    const uid=cr.user.uid,now=FV.serverTimestamp();
-    await db.doc('players/'+uid).set({code,name,createdAt:now,lastLogin:now,updatedAt:now,adminRev:0,disabled:false,sj:'',exp:0,candy:0,char:null,maxLv:0,looks:0,homes:1});
-    await db.doc('private/'+uid).set({pw:pw.map(i=>ICONS[i]).join(''),pwName:pw.map(i=>ICON_N[i]).join('、'),at:now});
-  }catch(e){busy(false);
-    err(e.code==='auth/email-already-in-use'?'這個代號有人用了，換一個吧':e.code==='auth/network-request-failed'?'網路好像斷了，請檢查網路':'建立帳號失敗，請再試一次（'+(e.code||e.message)+'）')}
+/* 新玩家：確認 → 選角色 → 取暱稱 */
+function confirmNew(user){
+  const code=justMade?justMade.code:(user.email||'').split('@')[0];
+  card().innerHTML=`<div class="cl-brand">歡迎新玩家！</div>
+  <p style="text-align:center;margin:0;font-size:16px">帳號 <b style="color:#c23258">${esc(code)}</b> 還沒有人用過，<br>要用這個帳號開始玩嗎？</p>
+  <p class="cl-note">請記住你的帳號和 4 位數密碼，換電腦或手機時要用。</p>
+  <button class="cl-go" id="clYes">好，建立新帳號</button><button class="cl-sub" id="clNo">我打錯了，重新輸入</button>`;
+  $c('clYes').onclick=()=>charView(user);
+  $c('clNo').onclick=async()=>{justMade=null;try{await user.delete()}catch(e){await auth.signOut()}};
+}
+function dollSvg(k){try{return `<svg viewBox="${vb3(k,'all')}" style="width:100%;height:150px">${ONLY_SETS?plainDoll(k):doll3(k,defEq(k),'cl'+k)}</svg>`}catch(e){return `<div style="font-size:70px">${k==='f'?'👧':'👦'}</div>`}}
+function charName(k){try{return BASES[k].n}catch(e){return k==='f'?'女孩':'男孩'}}
+function charView(user){
+  card().innerHTML=`<div class="cl-brand">選一位角色<small>之後也可以在衣櫥切換</small></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${['f','m'].map(k=>`<button class="cl-sub" data-ck="${k}" style="border-radius:18px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:200px">${dollSvg(k)}<b>${charName(k)}</b></button>`).join('')}</div>`;
+  card().querySelectorAll('[data-ck]').forEach(b=>b.onclick=()=>{newChar=b.dataset.ck;nameView(user)});
+}
+function nameView(user){
+  card().innerHTML=`<div class="cl-brand">取一個暱稱<small>遊戲裡大家看到的名字</small></div>
+  <form id="clNF" style="display:flex;flex-direction:column;gap:12px">
+    <label>暱稱<small>可以用中文，最多 8 個字</small><input id="clName" maxlength="8"></label>
+    <p class="cl-err" id="clErr" role="alert"></p>
+    <button class="cl-go" id="clGo">開始玩！</button>
+    <button type="button" class="cl-sub" id="clBackC">重新選角色</button>
+  </form>`;
+  $c('clBackC').onclick=()=>charView(user);
+  setTimeout(()=>$c('clName').focus(),50);
+  $c('clNF').onsubmit=async e=>{e.preventDefault();
+    const name=$c('clName').value.trim();
+    if(!name)return err('請取一個暱稱');
+    if(BAD.some(w=>name.includes(w)))return err('這個暱稱不太適合，換一個吧');
+    busy(true);err('');
+    try{
+      const uid=user.uid,now=FV.serverTimestamp(),code=(user.email||'').split('@')[0];
+      const d={code,name,createdAt:now,lastLogin:now,updatedAt:now,adminRev:0,disabled:false,sj:'',exp:0,candy:0,char:newChar,maxLv:0,looks:0,homes:1};
+      await db.doc('players/'+uid).set(d);
+      if(pinMem&&pinMem.code===code)await db.doc('private/'+uid).set({pw:pinMem.pin,at:now}).catch(()=>{});
+      justMade=null;enter(user,d,true);
+    }catch(e){busy(false,'開始玩！');err('建立失敗，請再試一次（'+(e.code||e.message)+'）')}
+  };
 }
 
 /* ---------- 雲端存檔 ---------- */
@@ -118,7 +136,7 @@ function applyState(sj,name){
   loadS(id);if(sj&&!STORAGE_OK){try{Object.assign(S,JSON.parse(sj))}catch(e){}}
   try{chap=Math.min(8,Math.floor((S.maxLv||0)/12))}catch(e){}
   try{closeQuiz()}catch(e){}
-  stage(true);render();
+  ownBase=null;stage(true);render();
 }
 function snapshot(){
   return {sj:JSON.stringify(S),exp:S.exp|0,candy:S.candy|0,char:S.char||null,maxLv:S.maxLv|0,
@@ -132,37 +150,59 @@ async function push(){
 function queue(){if(!ME||!ready)return;clearTimeout(timer);timer=setTimeout(push,2500)}
 function foot(t){const f=document.getElementById('savefoot');if(f)f.textContent=`☁ ${t}（${new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）`}
 const _save=window.save;
-window.save=function(){_save.apply(this,arguments);queue()};
+window.save=function(){try{ownCheck()}catch(e){}_save.apply(this,arguments);queue()};
 addEventListener('pagehide',()=>{if(timer)push()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&timer)push()});
+
+/* ---------- 統計（給管理後台看：玩了什麼、買了什麼、哪天有上線） ---------- */
+const dk=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function stS(){if(!S.st||typeof S.st!=='object')S.st={t:{},d:{}};S.st.t=S.st.t||{};S.st.d=S.st.d||{};return S.st}
+function stAdd(key,n=1){const s=stS(),k=dk();s.t[key]=(s.t[key]||0)+n;const d=s.d[k]=s.d[k]||{};d[key]=(d[key]||0)+n;
+  const ks=Object.keys(s.d).sort();while(ks.length>62)delete s.d[ks.shift()]}
+window.FSTAT=function(key,n=1){if(!ME||!ready||!S)return;try{stAdd(key,n);_save();queue()}catch(e){}};
+function markDay(){if(!ME||!ready)return;const s=stS(),d=s.d[dk()];if(!d||!d.login){stAdd('login');try{_save()}catch(e){}queue()}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')markDay()});
+/* 包住遊戲的開始函式：每開一局記一次 */
+[['startQuiz',a=>'q:'+a[0]],['mazePlay',()=>'g:maze'],['memStart',()=>'g:memory'],['stroopStart',()=>'g:stroop'],['rollDice',()=>'g:dice']].forEach(([fn,key])=>{
+  const f=window[fn];if(typeof f!=='function')return;
+  window[fn]=function(){try{if(ME&&ready)stAdd(key(arguments))}catch(e){}return f.apply(this,arguments)};
+});
+/* 買到的東西：比對存檔前後多了哪些造型、小屋、寵物 */
+let ownBase=null;
+function ownSet(){const o=new Set();(S.items||[]).forEach(x=>{if(String(x).startsWith('L-'))o.add('b:'+x)});(S.homes||[]).forEach(x=>o.add('b:'+x));(S.pets||[]).forEach(x=>x&&x.k&&o.add('b:pet-'+x.k));return o}
+function ownCheck(){if(!ME||!ready||!S)return;const now=ownSet();if(ownBase){for(const k of now)if(!ownBase.has(k))stAdd(k)}ownBase=now}
 
 /* ---------- 登入後 ---------- */
 auth.onAuthStateChanged(async user=>{
   unsubs.forEach(f=>f());unsubs=[];ready=false;ME=user;
   if(!user){mask.hidden=false;loginView();fab(false);return}
+  mask.hidden=false;
   card().innerHTML=`<div class="cl-brand">幻想智慧星<small>正在讀取你的進度…</small></div>`;
   try{
-    const ref=db.doc('players/'+user.uid);
-    let snap=await ref.get();
-    for(let i=0;i<5&&!snap.exists;i++){await new Promise(r=>setTimeout(r,600));snap=await ref.get()}  // 剛註冊時等資料寫好
-    const d=snap.data()||{};
-    if(d.disabled){card().innerHTML=`<div class="cl-brand">幻想智慧星</div><p class="cl-err">這個帳號暫停使用中，請找老師或管理員。</p><button class="cl-sub" id="clOut">換一個帳號</button>`;
-      document.getElementById('clOut').onclick=()=>auth.signOut();mask.hidden=false;return}
-    adminRev=d.adminRev||0;ME.name=d.name||'玩家';ME.code=d.code||'';
-    applyState(d.sj||'',ME.name);
-    ready=true;mask.hidden=true;fab(true);
-    ref.update({lastLogin:FV.serverTimestamp()}).catch(()=>{});
-    if(!S.char)pickChar(true);else toast(`歡迎回來，${ME.name}！`);
-    if(!d.sj)push();
-    // 管理員修改了資料 → 自動重新讀取
-    unsubs.push(ref.onSnapshot(s=>{const x=s.data();if(!x)return;
-      if(x.disabled){auth.signOut();return}
-      if((x.adminRev||0)>adminRev){adminRev=x.adminRev;ME.name=x.name||ME.name;applyState(x.sj||'',ME.name);toast('管理員更新了你的資料');fab(true)}}));
-    // 信箱
-    unsubs.push(ref.collection('inbox').orderBy('createdAt','desc').limit(50).onSnapshot(s=>{MAIL=s.docs.map(x=>({id:x.id,...x.data()}));fab(true);popGift()}));
-    syncBroadcasts();
+    const snap=await db.doc('players/'+user.uid).get();
+    if(!snap.exists){justMade?confirmNew(user):charView(user);return}   // 新玩家（或上次沒建完）
+    enter(user,snap.data()||{},false);
   }catch(e){card().innerHTML=`<div class="cl-brand">幻想智慧星</div><p class="cl-err">讀取進度失敗：${e.code||e.message}</p><button class="cl-go" onclick="location.reload()">重新整理</button>`;mask.hidden=false}
 });
+function enter(user,d,isNew){
+  const ref=db.doc('players/'+user.uid);
+  if(d.disabled){card().innerHTML=`<div class="cl-brand">幻想智慧星</div><p class="cl-err">這個帳號暫停使用中，請找老師或管理員。</p><button class="cl-sub" id="clOut">換一個帳號</button>`;
+    $c('clOut').onclick=()=>auth.signOut();mask.hidden=false;return}
+  adminRev=d.adminRev||0;ME.name=d.name||'玩家';ME.code=d.code||'';
+  applyState(d.sj||'',ME.name);
+  if(isNew&&d.char){S.char=d.char;try{_save()}catch(e){}stage(true);render()}
+  ready=true;ownBase=ownSet();markDay();mask.hidden=true;fab(true);
+  if(!isNew)ref.update({lastLogin:FV.serverTimestamp()}).catch(()=>{});
+  if(!S.char)pickChar(true);else toast(isNew?`歡迎來到幻想智慧星，${ME.name}！`:`歡迎回來，${ME.name}！`);
+  if(!d.sj)push();
+  // 管理員修改了資料 → 自動重新讀取
+  unsubs.push(ref.onSnapshot(s=>{const x=s.data();if(!x)return;
+    if(x.disabled){auth.signOut();return}
+    if((x.adminRev||0)>adminRev){adminRev=x.adminRev;ME.name=x.name||ME.name;applyState(x.sj||'',ME.name);ownBase=ownSet();toast('管理員更新了你的資料');fab(true)}}));
+  // 信箱
+  unsubs.push(ref.collection('inbox').orderBy('createdAt','desc').limit(50).onSnapshot(s=>{MAIL=s.docs.map(x=>({id:x.id,...x.data()}));fab(true);popGift()}));
+  syncBroadcasts();
+}
 
 /* ---------- 右上角：信箱、帳號 ---------- */
 let MAIL=[],popped=false;
@@ -198,7 +238,7 @@ async function claim(id){
     if(a.candy)S.candy+=a.candy;if(a.exp)S.exp+=a.exp;
     (a.looks||[]).forEach(x=>{const k='L-'+x;if(!S.items.includes(k))S.items.push(k)});
     (a.homes||[]).forEach(x=>{if(!S.homes.includes(x))S.homes.push(x)});
-    save();push();stage(true);render();toast('收下了：'+attText(a));mailbox();
+    ownBase=ownSet();save();push();stage(true);render();toast('收下了：'+attText(a));mailbox();
   }catch(e){toast('領取失敗，請稍後再試')}
 }
 function popGift(){
@@ -215,9 +255,9 @@ async function syncBroadcasts(){
   catch(e){}
 }
 function meSheet(){
-  openSheet(head('👤 我的帳號')+`<p>顯示名稱：<b>${esc(ME.name)}</b></p><p>代號：<b>${esc(ME.code)}</b></p>
+  openSheet(head('👤 我的帳號')+`<p>暱稱：<b>${esc(ME.name)}</b></p><p>帳號：<b>${esc(ME.code)}</b></p>
   <p class="hint">進度會自動存到雲端。在學校或別人的電腦玩完，記得按登出。</p>
   <button class="big" id="clLogout" style="width:100%">登出</button>`);
-  document.getElementById('clLogout').onclick=async()=>{await push();try{localStorage.removeItem(skey(PL.cur))}catch(e){}closeQuiz();await auth.signOut();mode='login'};
+  document.getElementById('clLogout').onclick=async()=>{await push();try{localStorage.removeItem(skey(PL.cur))}catch(e){}closeQuiz();await auth.signOut()};
 }
 })();
