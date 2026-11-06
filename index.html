@@ -1,7 +1,5 @@
-<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}.stagewrap .hud .codechip{font-family:ui-monospace,Menlo,monospace;font-size:.72rem;padding:3px 9px;color:var(--ink);cursor:pointer}
-.nickbox{display:flex;flex-direction:column;gap:4px;width:100%;font-weight:700;text-align:left}.nickbox input{font:inherit;font-weight:400;border:2px solid var(--line);border-radius:12px;padding:8px 12px}
-.saveicon.gear{margin-left:auto;color:var(--muted);border-color:var(--line)}.saveicon.gear+.saveicon{margin-left:6px}
-</style></head><body><title>幻想智慧星</title>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>[hidden]{display:none!important}body{margin:0}</style></head><body><title>幻想智慧星</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
@@ -566,15 +564,11 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 .mknews li span{flex:1}
 .mkhot{position:absolute;margin:-30px 0 0 18px;background:#ff8c1a;color:#fff;font-size:.62rem;font-weight:700;border-radius:99px;padding:1px 6px;animation:sdp 1.4s infinite}
 .mkh{position:relative}
-.cloudbox{border:2px solid #9cc7f0;background:#f5faff;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;color:#1f3a5f}
-.cloudbox>b{font-family:var(--display);font-weight:400;font-size:1.1rem}.cloudbox span{font-size:.84rem}.cloudbox .no{color:#8c2140}
-.ccode{font-family:ui-monospace,Menlo,monospace;font-size:1.35rem;letter-spacing:.08em;text-align:center;background:#fff;border:2px dashed #9cc7f0;border-radius:10px;padding:8px;user-select:all;-webkit-user-select:all}
-.cloudbox input{flex:1;min-width:0;border:2px solid var(--line);border-radius:10px;padding:6px 10px;font:inherit;text-transform:uppercase}
 </style>
 
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
   <header class="top">
-    <div class="brand">幻想智慧星<small>答題闖關 · 收集造型 · 布置小屋</small></div><button class="saveicon gear" id="gearicon" aria-label="設定"><svg viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm9 3.5-2.1-.6a7 7 0 0 0-.7-1.7l1-1.9-1.8-1.8-1.9 1a7 7 0 0 0-1.7-.7L13 3h-2l-.6 2.1a7 7 0 0 0-1.7.7l-1.9-1-1.8 1.8 1 1.9a7 7 0 0 0-.7 1.7L3 11v2l2.1.6c.2.6.4 1.2.7 1.7l-1 1.9 1.8 1.8 1.9-1c.5.3 1.1.5 1.7.7L11 21h2l.6-2.1c.6-.2 1.2-.4 1.7-.7l1.9 1 1.8-1.8-1-1.9c.3-.5.5-1.1.7-1.7L21 13z" fill="currentColor"/></svg><span>設定</span></button><button class="saveicon need" id="saveicon" aria-label="存檔"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="currentColor"/><rect x="7" y="4" width="8" height="5" rx="1" fill="#fff"/><rect x="6.5" y="13" width="11" height="6" rx="1" fill="#fff"/></svg><span>存檔</span><i class="sdot"></i></button>
+    <div class="brand">幻想智慧星<small>答題闖關 · 收集造型 · 布置小屋</small></div><button class="saveicon need" id="saveicon" aria-label="存檔"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="currentColor"/><rect x="7" y="4" width="8" height="5" rx="1" fill="#fff"/><rect x="6.5" y="13" width="11" height="6" rx="1" fill="#fff"/></svg><span>存檔</span><i class="sdot"></i></button>
     <div class="saveboard need" id="saveboard">
       <div class="sbtxt"><b id="sbtitle">⚠ 記得存檔！</b><span id="sbline">關掉網頁前，一定要按「立即存檔」並複製備份碼，進度才不會不見！</span><small id="sbstat">還沒有備份過</small></div>
       <div class="sbacts"><button class="sbbtn" id="svbtn">💾 存檔</button><button class="sbload" id="ldbtn">讀檔</button></div>
@@ -981,14 +975,18 @@ for(const o of OUTFITS){
 // festivals (節日限定)
 const FESTS=[
  {k:'newyear',n:'春節',lunar:{2026:'02-17',2027:'02-06',2028:'01-26',2029:'02-13'},pre:14,post:14,c:'#d7192f'},
- {k:'valentine',n:'情人節',md:['02-07','02-21'],c:'#ff3d7f'},
+ {k:'valentine',n:'情人節',md:['02-07','02-21'],c:'#ff3d7f',off:true},
  {k:'children',n:'兒童節',md:['03-28','04-10'],c:'#ffb000'},
  {k:'duanwu',n:'端午節',lunar:{2026:'06-19',2027:'06-09',2028:'05-28',2029:'06-16'},pre:7,post:7,c:'#3b9a5a'},
  {k:'qixi',n:'七夕',lunar:{2026:'08-19',2027:'08-08',2028:'08-26',2029:'08-16'},pre:7,post:7,c:'#8a6ce0'},
  {k:'moon',n:'中秋節',lunar:{2026:'09-25',2027:'09-15',2028:'10-03',2029:'09-22'},pre:10,post:7,c:'#e0a800'},
+ {k:'national',n:'國慶日',md:['10-03','10-13'],c:'#1f5fbf'},
  {k:'halloween',n:'萬聖節',md:['10-15','11-10'],c:'#ff8c1a'},
  {k:'xmas',n:'聖誕節',md:['12-01','12-31'],c:'#1f9d55'}
 ];
+// 節慶：萬聖SP01 聖誕SP02 春節SP03 兒童節SP04 端午SP05 七夕SP06 中秋SP07 國慶SP08（小屋同順序 RSP01～RSP08）
+// 情人節已停用（off），定義保留給舊資料查名稱用
+const FEST_DEF=FESTS.slice();FESTS.splice(0,FESTS.length,...FEST_DEF.filter(f=>!f.off));FESTS.find=fn=>FEST_DEF.find(fn);
 [
  ['newyear','head','新春牡丹髮飾',{head:'peony',hc:'#e2335b'}],['newyear','top','新春旗袍上衣',{ts:'qipao',c1:'#d7192f',c2:GOLD,pat:'gold',pc:GOLD,sl:'none'}],
  ['newyear','bottom','新春旗袍長裙',{shape:'qipao',c1:'#d7192f',c2:GOLD,pat:'gold',pc:GOLD}],['newyear','hands','大紅包',{hx:'hongbao'}],
@@ -1093,9 +1091,9 @@ const SPIMG={vamp:['data:image/webp;base64,UklGRoYcAQBXRUJQVlA4WAoAAAAQAAAAawEAc
 [['sp-vamp','吸血鬼套裝','m','vamp',2,400,'在黑夜中綻放的優雅'],['sp-prince','王子馬術套裝','m','prince',6,1000,'馳騁於風，守護心中的榮耀'],['sp-prin','公主套裝','f','prin',2,400,'如晨曦般溫柔的光'],['sp-flower','公主花語套裝','f','flower',6,1000,'在花開的季節，遇見最溫柔的夢']]
  .forEach(([id,n,sx,img,lv,cost,quote])=>add({id,slot:'special',n,sx,img,lv,cost,quote,r:'稀有變身',cat:'稀有',hide:true}));
 // 首波造型（男女各 30 款）：有圖片的上架，其餘標示設計中
-const LOOKS=[["M01", "m", "都會休閒青年", "日常潮流", 1, 0, 258, 760], ["M02", "m", "日系高中制服", "日常潮流", 1, 0, 263, 760], ["M03", "m", "韓系偶像舞台服", "日常潮流", 1, 0, 264, 760], ["M04", "m", "美式嘻哈街頭風", "日常潮流", 1, 300, 259, 760], ["M05", "m", "極限運動滑板少年", "日常潮流", 1, 400, 267, 760], ["M04B", "m", "紅色滑板少年", "日常潮流", 1, 350, 268, 760], ["M06", "m", "英倫維多利亞紳士", "時代經典", 5, 600, 298, 760], ["M07", "m", "1920年代爵士男爵", "時代經典", 10, 750, 261, 760], ["M08", "m", "1980年代復古搖滾", "時代經典", 15, 900, 267, 760], ["M09", "m", "蒸氣龐克發明家", "時代經典", 20, 1100, 277, 760], ["M10", "m", "青竹江湖俠客", "時代經典", 25, 1300, 290, 760], ["M11", "m", "日本浪人武士", "異國風情", 28, 1400, 286, 760], ["M12", "m", "中式江湖劍客", "異國風情", 31, 1500, 300, 760], ["M13", "m", "古埃及法老王", "異國風情", 33, 1550, 295, 760], ["M14", "m", "北歐維京戰士", "異國風情", 36, 1650, 312, 760], ["M15", "m", "阿拉伯沙漠旅人", "異國風情", 39, 1750, 306, 760], ["M16", "m", "希臘奧林帕斯神使", "奇幻傳說", 43, 3000, 285, 760], ["M17", "m", "東方龍族皇子", "奇幻傳說", 46, 3300, 289, 760], ["M18", "m", "暗夜吸血鬼伯爵", "奇幻傳說", 48, 3600, 322, 760], ["M19", "m", "聖光天界守護者", "奇幻傳說", 51, 3900, 325, 760], ["M20", "m", "深淵惡魔領主", "奇幻傳說", 54, 4200, 287, 760], ["M21", "m", "賽博龐克駭客", "未來冒險", 58, 4600, 315, 760], ["M22", "m", "星際機甲駕駛員", "未來冒險", 60, 5000, 278, 760], ["M23", "m", "末日廢土拾荒者", "未來冒險", 63, 5400, 342, 760], ["M24", "m", "神秘魔法學院教授", "未來冒險", 68, 5900, 294, 760], ["M25", "m", "深海探險潛水員", "未來冒險", 71, 6500, 332, 760], ["M26", "m", "企鵝玩偶裝", "趣味玩偶", 3, 800, 332, 760], ["M27", "m", "暴龍充氣裝", "趣味玩偶", 8, 1100, 334, 760], ["M28", "m", "柴犬布偶裝", "趣味玩偶", 13, 1400, 291, 760], ["M29", "m", "香蕉超人", "趣味玩偶", 18, 1800, 276, 760], ["M30", "m", "浴袍拖鞋大叔", "趣味玩偶", 23, 2200, 287, 760], ["F01", "f", "韓系時尚少女", "日常潮流", 1, 0, 294, 760], ["F02", "f", "日系水手制服", "日常潮流", 1, 0, 287, 760], ["F03", "f", "甜酷街頭女孩", "日常潮流", 1, 0, 282, 760], ["F04", "f", "都會職場菁英", "日常潮流", 1, 300, 262, 760], ["F05", "f", "偶像舞台歌姬", "日常潮流", 1, 400, 276, 760], ["F04B", "f", "粉紅應援偶像", "日常潮流", 1, 350, 266, 760], ["F06", "f", "維多利亞宮廷淑女", "時代經典", 5, 600, 291, 760], ["F07", "f", "洛可可華麗公主", "時代經典", 10, 750, 291, 760], ["F08", "f", "1920年代爵士舞孃", "時代經典", 15, 900, 298, 760], ["F09", "f", "1980年代復古迪斯可", "時代經典", 20, 1100, 283, 760], ["F10", "f", "翠綠花仙少女", "時代經典", 25, 1300, 299, 760], ["F11", "f", "中式漢服仙子", "異國風情", 28, 1400, 296, 760], ["F12", "f", "日本櫻花巫女", "異國風情", 31, 1500, 298, 760], ["F13", "f", "印度宮廷舞者", "異國風情", 33, 1550, 292, 760], ["F14", "f", "埃及尼羅河祭司", "異國風情", 36, 1650, 278, 760], ["F15", "f", "西班牙佛朗明哥舞者", "異國風情", 39, 1750, 276, 760], ["F16", "f", "月光女神", "奇幻傳說", 43, 3000, 273, 760], ["F17", "f", "九尾狐妖姬", "奇幻傳說", 46, 3300, 320, 760], ["F18", "f", "暗夜吸血鬼公主", "奇幻傳說", 48, 3600, 285, 760], ["F19", "f", "暗黑魔女", "奇幻傳說", 51, 3900, 307, 760], ["F20", "f", "冰雪女皇", "奇幻傳說", 54, 4200, 279, 760], ["F21", "f", "未來科技特務", "未來冒險", 58, 4600, 285, 760], ["F22", "f", "星際機械少女", "未來冒險", 60, 5000, 307, 760], ["F23", "f", "蒸氣龐克女工程師", "未來冒險", 63, 5400, 298, 760], ["F24", "f", "魔法學院見習生", "未來冒險", 68, 5900, 308, 760], ["F25", "f", "海盜女船長", "未來冒險", 71, 6500, 274, 760], ["F26", "f", "粉紅兔兔裝", "趣味玩偶", 3, 800, 307, 760], ["F27", "f", "熊貓布偶裝", "趣味玩偶", 8, 1100, 293, 760], ["F28", "f", "貓咪女僕裝", "趣味玩偶", 13, 1400, 296, 760], ["F29", "f", "草莓蛋糕人", "趣味玩偶", 18, 1800, 300, 760], ["F30", "f", "睡衣拖鞋宅女", "趣味玩偶", 23, 2200, 282, 760], ["MSP01", "m", "萬聖南瓜魔術師", "節日限定", 5, 800, 286, 760], ["FSP01", "f", "萬聖小幽靈甜心", "節日限定", 5, 800, 279, 760], ["MSP02", "m", "聖誕禮物紳士", "節日限定", 5, 800, 321, 760], ["FSP02", "f", "聖誕雪人甜心", "節日限定", 5, 800, 294, 760]];
-const FEST_LOOK={MSP01:'halloween',FSP01:'halloween',MSP02:'xmas',FSP02:'xmas',M18:'halloween',F19:'halloween',M20:'halloween',M17:'newyear',F17:'newyear',F16:'moon',M19:'xmas',F20:'xmas',F29:'valentine',F07:'valentine',F11:'qixi',M12:'qixi'};
-const SRC_H={"M01": 1423, "F01": 1350, "M02": 1469, "F02": 1380, "M03": 1428, "F03": 1384, "M04": 1431, "F04": 1384, "M05": 1426, "F05": 1378, "M04B": 1431, "F04B": 1388, "M06": 1452, "F06": 1334, "M07": 1491, "F07": 1400, "M08": 1482, "F08": 1365, "M09": 1481, "F09": 1365, "M10": 1429, "F10": 1286, "M11": 1446, "F11": 1300, "M12": 1435, "F12": 1314, "M13": 1411, "F13": 1293, "M14": 1398, "F14": 1287, "M15": 1387, "F15": 1369, "MSP01": 1493, "FSP01": 1301, "M16": 1445, "F16": 1393, "M17": 1424, "F17": 1306, "M18": 1348, "F18": 1284, "M19": 1317, "F19": 1189, "M20": 1459, "F20": 1363, "MSP02": 1383, "FSP02": 1237, "M21": 1354, "F21": 1278, "M22": 1413, "F22": 1265, "M23": 1405, "F23": 1318, "M24": 1377, "F24": 1328, "M25": 1373, "F25": 1366, "M26": 1368, "F26": 1304, "M27": 1373, "F27": 1182, "M28": 1379, "F28": 1302, "M29": 1376, "F29": 1254, "M30": 1382, "F30": 1302},BASE_H={m:1408,f:1326};
+const LOOKS=[["M01", "m", "都會休閒青年", "日常潮流", 1, 0, 258, 760], ["M02", "m", "日系高中制服", "日常潮流", 1, 0, 263, 760], ["M03", "m", "韓系偶像舞台服", "日常潮流", 1, 0, 264, 760], ["M04", "m", "美式嘻哈街頭風", "日常潮流", 1, 300, 259, 760], ["M05", "m", "極限運動滑板少年", "日常潮流", 1, 400, 267, 760], ["M04B", "m", "紅色滑板少年", "日常潮流", 1, 350, 268, 760], ["M06", "m", "英倫維多利亞紳士", "時代經典", 5, 600, 298, 760], ["M07", "m", "1920年代爵士男爵", "時代經典", 10, 750, 261, 760], ["M08", "m", "1980年代復古搖滾", "時代經典", 15, 900, 267, 760], ["M09", "m", "蒸氣龐克發明家", "時代經典", 20, 1100, 277, 760], ["M10", "m", "青竹江湖俠客", "時代經典", 25, 1300, 290, 760], ["M11", "m", "日本浪人武士", "異國風情", 28, 1400, 286, 760], ["M12", "m", "中式江湖劍客", "異國風情", 31, 1500, 300, 760], ["M13", "m", "古埃及法老王", "異國風情", 33, 1550, 295, 760], ["M14", "m", "北歐維京戰士", "異國風情", 36, 1650, 312, 760], ["M15", "m", "阿拉伯沙漠旅人", "異國風情", 39, 1750, 306, 760], ["M16", "m", "希臘奧林帕斯神使", "奇幻傳說", 43, 3000, 285, 760], ["M17", "m", "東方龍族皇子", "奇幻傳說", 46, 3300, 289, 760], ["M18", "m", "暗夜吸血鬼伯爵", "奇幻傳說", 48, 3600, 322, 760], ["M19", "m", "聖光天界守護者", "奇幻傳說", 51, 3900, 325, 760], ["M20", "m", "深淵惡魔領主", "奇幻傳說", 54, 4200, 287, 760], ["M21", "m", "賽博龐克駭客", "未來冒險", 58, 4600, 315, 760], ["M22", "m", "星際機甲駕駛員", "未來冒險", 60, 5000, 278, 760], ["M23", "m", "末日廢土拾荒者", "未來冒險", 63, 5400, 342, 760], ["M24", "m", "神秘魔法學院教授", "未來冒險", 68, 5900, 294, 760], ["M25", "m", "深海探險潛水員", "未來冒險", 71, 6500, 332, 760], ["M26", "m", "企鵝玩偶裝", "趣味玩偶", 3, 800, 332, 760], ["M27", "m", "暴龍充氣裝", "趣味玩偶", 8, 1100, 334, 760], ["M28", "m", "柴犬布偶裝", "趣味玩偶", 13, 1400, 291, 760], ["M29", "m", "香蕉超人", "趣味玩偶", 18, 1800, 276, 760], ["M30", "m", "浴袍拖鞋大叔", "趣味玩偶", 23, 2200, 287, 760], ["F01", "f", "韓系時尚少女", "日常潮流", 1, 0, 294, 760], ["F02", "f", "日系水手制服", "日常潮流", 1, 0, 287, 760], ["F03", "f", "甜酷街頭女孩", "日常潮流", 1, 0, 282, 760], ["F04", "f", "都會職場菁英", "日常潮流", 1, 300, 262, 760], ["F05", "f", "偶像舞台歌姬", "日常潮流", 1, 400, 276, 760], ["F04B", "f", "粉紅應援偶像", "日常潮流", 1, 350, 266, 760], ["F06", "f", "維多利亞宮廷淑女", "時代經典", 5, 600, 291, 760], ["F07", "f", "洛可可華麗公主", "時代經典", 10, 750, 291, 760], ["F08", "f", "1920年代爵士舞孃", "時代經典", 15, 900, 298, 760], ["F09", "f", "1980年代復古迪斯可", "時代經典", 20, 1100, 283, 760], ["F10", "f", "翠綠花仙少女", "時代經典", 25, 1300, 299, 760], ["F11", "f", "中式漢服仙子", "異國風情", 28, 1400, 296, 760], ["F12", "f", "日本櫻花巫女", "異國風情", 31, 1500, 298, 760], ["F13", "f", "印度宮廷舞者", "異國風情", 33, 1550, 292, 760], ["F14", "f", "埃及尼羅河祭司", "異國風情", 36, 1650, 278, 760], ["F15", "f", "西班牙佛朗明哥舞者", "異國風情", 39, 1750, 276, 760], ["F16", "f", "月光女神", "奇幻傳說", 43, 3000, 273, 760], ["F17", "f", "九尾狐妖姬", "奇幻傳說", 46, 3300, 320, 760], ["F18", "f", "暗夜吸血鬼公主", "奇幻傳說", 48, 3600, 285, 760], ["F19", "f", "暗黑魔女", "奇幻傳說", 51, 3900, 307, 760], ["F20", "f", "冰雪女皇", "奇幻傳說", 54, 4200, 279, 760], ["F21", "f", "未來科技特務", "未來冒險", 58, 4600, 285, 760], ["F22", "f", "星際機械少女", "未來冒險", 60, 5000, 307, 760], ["F23", "f", "蒸氣龐克女工程師", "未來冒險", 63, 5400, 298, 760], ["F24", "f", "魔法學院見習生", "未來冒險", 68, 5900, 308, 760], ["F25", "f", "海盜女船長", "未來冒險", 71, 6500, 274, 760], ["F26", "f", "粉紅兔兔裝", "趣味玩偶", 3, 800, 307, 760], ["F27", "f", "熊貓布偶裝", "趣味玩偶", 8, 1100, 293, 760], ["F28", "f", "貓咪女僕裝", "趣味玩偶", 13, 1400, 296, 760], ["F29", "f", "草莓蛋糕人", "趣味玩偶", 18, 1800, 300, 760], ["F30", "f", "睡衣拖鞋宅女", "趣味玩偶", 23, 2200, 282, 760], ["MSP01", "m", "萬聖南瓜魔術師", "節日限定", 5, 800, 286, 760], ["FSP01", "f", "萬聖小幽靈甜心", "節日限定", 5, 800, 279, 760], ["MSP02", "m", "聖誕禮物紳士", "節日限定", 5, 800, 321, 760], ["FSP02", "f", "聖誕雪人甜心", "節日限定", 5, 800, 294, 760], ["MSP03", "m", "舞龍福運少爺", "節日限定", 5, 800, 300, 760], ["FSP03", "f", "醒獅賀歲甜心", "節日限定", 5, 800, 315, 760], ["MSP04", "m", "星際探險小隊長", "節日限定", 5, 800, 305, 760], ["FSP04", "f", "彩虹風車甜心", "節日限定", 5, 800, 318, 760], ["MSP05", "m", "龍舟競渡少俠", "節日限定", 5, 800, 317, 760], ["FSP05", "f", "粽香竹扇仙子", "節日限定", 5, 800, 303, 760], ["MSP06", "m", "鵲橋星燈公子", "節日限定", 5, 800, 311, 760], ["FSP06", "f", "七夕織女仙子", "節日限定", 5, 800, 315, 760], ["MSP07", "m", "玉兔燈籠公子", "節日限定", 5, 800, 333, 760], ["FSP07", "f", "月宮嫦娥甜心", "節日限定", 5, 800, 314, 760], ["MSP08", "m", "雙十禮服少校", "節日限定", 5, 800, 286, 760], ["FSP08", "f", "國慶旗手甜心", "節日限定", 5, 800, 319, 760]];
+const FEST_LOOK={MSP03:'newyear',FSP03:'newyear',MSP04:'children',FSP04:'children',MSP05:'duanwu',FSP05:'duanwu',MSP06:'qixi',FSP06:'qixi',MSP07:'moon',FSP07:'moon',MSP08:'national',FSP08:'national',MSP01:'halloween',FSP01:'halloween',MSP02:'xmas',FSP02:'xmas',M18:'halloween',F19:'halloween',M20:'halloween',M17:'newyear',F17:'newyear',F16:'moon',M19:'xmas',F20:'xmas',F11:'qixi',M12:'qixi'};
+const SRC_H={"M01": 1423, "F01": 1350, "M02": 1469, "F02": 1380, "M03": 1428, "F03": 1384, "M04": 1431, "F04": 1384, "M05": 1426, "F05": 1378, "M04B": 1431, "F04B": 1388, "M06": 1452, "F06": 1334, "M07": 1491, "F07": 1400, "M08": 1482, "F08": 1365, "M09": 1481, "F09": 1365, "M10": 1429, "F10": 1286, "M11": 1446, "F11": 1300, "M12": 1435, "F12": 1314, "M13": 1411, "F13": 1293, "M14": 1398, "F14": 1287, "M15": 1387, "F15": 1369, "MSP01": 1493, "FSP01": 1301, "M16": 1445, "F16": 1393, "M17": 1424, "F17": 1306, "M18": 1348, "F18": 1284, "M19": 1317, "F19": 1189, "M20": 1459, "F20": 1363, "MSP02": 1383, "FSP02": 1237, "MSP03": 1328, "FSP03": 1199, "MSP04": 1285, "FSP04": 1208, "MSP05": 1318, "FSP05": 1254, "MSP06": 1306, "FSP06": 1208, "MSP07": 1291, "FSP07": 1209, "MSP08": 1333, "FSP08": 1269, "M21": 1354, "F21": 1278, "M22": 1413, "F22": 1265, "M23": 1405, "F23": 1318, "M24": 1377, "F24": 1328, "M25": 1373, "F25": 1366, "M26": 1368, "F26": 1304, "M27": 1373, "F27": 1182, "M28": 1379, "F28": 1302, "M29": 1376, "F29": 1254, "M30": 1382, "F30": 1302},BASE_H={m:1408,f:1326};
 const RETIRED=['M04B','F04B'];
 for(const [id,sx,n,ser,lv,cost,w,h] of LOOKS)add({id:'L-'+id,hide:RETIRED.includes(id),sh:SRC_H[id],fest:FEST_LOOK[id],code:id,slot:'special',sx,n,ser,lv,cost,quote:ser,r:ser,cat:ser,src:w?`outfits/${id}.webp`:null,w,h,coming:!w});
 const IT=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
@@ -1109,7 +1107,7 @@ function festWindow(F,year){
   const d=F.lunar[year];if(!d)return null;const c=new Date(`${year}-${d}T00:00:00`);return [new Date(+c-F.pre*864e5),new Date(+c+(F.post+1)*864e5-1)];
 }
 function festState(F,now=new Date()){
-  let next=null;
+  let next=null;if(!F||F.off)return {on:false,next:null};
   for(const y of [now.getFullYear()-1,now.getFullYear(),now.getFullYear()+1]){const w=festWindow(F,y);if(!w)continue;
     if(now>=w[0]&&now<=w[1])return {on:true,end:w[1]};
     if(w[0]>now&&(!next||w[0]<next))next=w[0]}
@@ -1391,7 +1389,13 @@ const HOMES=[
  {id:'R09',n:'粉色夢幻小屋',st:'粉彩色、蕾絲、可愛家具',img:'rooms/R09.webp',lv:40,cost:4200},
  {id:'R10',n:'熱帶度假小屋',st:'竹藤家具、綠植、陽光',img:'rooms/R10.webp',lv:44,cost:5200},
  {id:'SP01',n:'萬聖節派對小屋',st:'南瓜燈、蝙蝠、滿月窗景',img:'rooms/SP01.webp',lv:5,cost:1000,fest:'halloween'},
- {id:'SP02',n:'聖誕節溫馨小屋',st:'聖誕樹、壁爐、禮物、雪景窗外',img:'rooms/SP02.webp',lv:5,cost:1000,fest:'xmas'}];
+ {id:'SP02',n:'聖誕節溫馨小屋',st:'聖誕樹、壁爐、禮物、雪景窗外',img:'rooms/SP02.webp',lv:5,cost:1000,fest:'xmas'},
+ {id:'SP03',n:'新春團圓小屋',st:'紅燈籠、福字春聯、窗外煙火',img:'rooms/SP03.webp',lv:5,cost:1000,fest:'newyear'},
+ {id:'SP04',n:'童樂玩具小屋',st:'玩具、彩旗氣球、摩天輪窗景',img:'rooms/SP04.webp',lv:5,cost:1000,fest:'children'},
+ {id:'SP05',n:'端午粽香小屋',st:'竹簾香包、粽子、龍舟窗景',img:'rooms/SP05.webp',lv:5,cost:1000,fest:'duanwu'},
+ {id:'SP06',n:'七夕鵲橋小屋',st:'紫粉紗簾、星燈、鵲橋煙火窗景',img:'rooms/SP06.webp',lv:5,cost:1000,fest:'qixi'},
+ {id:'SP07',n:'中秋賞月小屋',st:'玉兔、月餅、桂花、滿月窗景',img:'rooms/SP07.webp',lv:5,cost:1000,fest:'moon'},
+ {id:'SP08',n:'國慶雙十小屋',st:'國旗彩帶、101 與飛行表演窗景',img:'rooms/SP08.webp',lv:5,cost:1000,fest:'national'}];
 const HM=Object.fromEntries(HOMES.map(h=>[h.id,h]));
 function curHome(){const h=HM[S.home];return h&&h.img&&(S.homes||[]).includes(h.id)?h:HOMES[0]}
 const homeImg=h=>`<img src="${h.img}" alt="${h.n}" style="display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px">`;
@@ -1403,7 +1407,7 @@ function homeCard(h,L,mode){const o=(S.homes||[]).includes(h.id),on=curHome().id
   else if(lock)btn=`<button class="act" disabled>Lv.${h.lv} 解鎖</button>`;
   else if(h.fest&&!festState(FESTS.find(f=>f.k===h.fest)).on)btn=`<button class="act" disabled>${fmtMD(festState(FESTS.find(f=>f.k===h.fest)).next)} 開賣</button>`;
   else btn=`<button class="act buy" data-hbuy="${h.id}" ${S.candy<h.cost?'disabled':''}>${mini}${h.cost}</button>`;
-  return `<div class="hc ${on?'on':''} ${dark&&h.img?'locked':''}"><div class="silwrap">${pic}${dark&&h.img?`<span class="lockbadge">${why}</span>`:''}</div><b><span class="code">${h.fest?h.id:h.id.slice(1)}</span>${h.n}</b><small>${h.st}${h.fest?`・<b class="fbadge">${FESTS.find(f=>f.k===h.fest).n}限定</b>`:''}</small><small>${o?(on?'✦ 目前的家':'已擁有'):h.cost===0?'預設':h.lv>1?`需要 Lv.${h.lv} · ${h.cost} 星星糖`:`${h.cost} 星星糖・不限等級`}</small><div class="petacts">${btn}</div></div>`}
+  return `<div class="hc ${on?'on':''} ${dark&&h.img?'locked':''}"><div class="silwrap">${pic}${dark&&h.img?`<span class="lockbadge">${why}</span>`:''}</div><b><span class="code">${h.fest?h.id.replace(/^SP/,'RSP'):h.id.slice(1)}</span>${h.n}</b><small>${h.st}${h.fest?`・<b class="fbadge">${FESTS.find(f=>f.k===h.fest).n}限定</b>`:''}</small><small>${o?(on?'✦ 目前的家':'已擁有'):h.cost===0?'預設':h.lv>1?`需要 Lv.${h.lv} · ${h.cost} 星星糖`:`${h.cost} 星星糖・不限等級`}</small><div class="petacts">${btn}</div></div>`}
 function bindHomes(p,L){
   p.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>{const id=b.dataset.home;if(id===S.home)return;S.home=id;save();render();roomFX(()=>stage(),HM[id].n)});
   p.querySelectorAll('[data-hbuy]').forEach(b=>b.onclick=()=>{const h=HM[b.dataset.hbuy];if(!h.img||S.candy<h.cost||L<h.lv)return;if(h.fest&&!festState(FESTS.find(f=>f.k===h.fest)).on)return;S.candy-=h.cost;(S.homes=S.homes||['R00']).push(h.id);S.home=h.id;save();render();SND.play('coin');roomFX(()=>stage(),h.n);setTimeout(()=>toast('買到新房間了！別忘了按右上角「存檔」'),2200)});
@@ -1942,12 +1946,12 @@ let STORAGE_OK=true;
 const B32='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function lookIds(){return LOOKS.map(r=>'L-'+r[0])}
 function packSave(){
-  const LI=lookIds(),b=[2],put=(v,n)=>{for(let i=n-1;i>=0;i--)b.push((v>>(8*i))&255)};
+  const LI=lookIds(),b=[3],put=(v,n)=>{for(let i=n-1;i>=0;i--)b.push((v>>(8*i))&255)};
   b.push(S.char==='m'?1:S.char==='f'?0:2);
   put(Math.min(S.exp|0,16777215),3);put(Math.min(Math.max(0,S.candy|0),16777215),3);
   const nl=Math.ceil(LI.length/8);b.push(nl);const bits=new Array(nl).fill(0);LI.forEach((id,i)=>{if(S.items.includes(id))bits[i>>3]|=1<<(i&7)});b.push(...bits);
   const eq=k=>{const id=S.eqs[k]&&S.eqs[k].special;const i=LI.indexOf(id);return i+1};b.push(eq('f'),eq('m'));
-  let hb=0;HOMES.forEach((h,i)=>{if((S.homes||[]).includes(h.id))hb|=1<<i});put(hb,2);b.push(Math.max(0,HOMES.findIndex(h=>h.id===S.home)));
+  let hb=0;HOMES.forEach((h,i)=>{if((S.homes||[]).includes(h.id))hb|=1<<i});put(hb,3);b.push(Math.max(0,HOMES.findIndex(h=>h.id===S.home)));
   const ml=Math.min(255,S.maxLv||0);b.push(ml);const sb=new Array(Math.ceil(ml*2/8)).fill(0);for(let i=0;i<ml;i++){const st=Math.min(3,S.lvStars[i]||0);sb[i>>2]|=st<<((i&3)*2)}b.push(...sb);
   let pb=0;PETS.forEach((d,i)=>{if(S.pets.some(x=>x.k===d.k))pb|=1<<i});b.push(pb,Math.min(15,S.plotN||4));
   let c=7;for(const x of b)c=(c*31+x)&255;b.push(c);
@@ -1962,11 +1966,11 @@ function unpackSave(code){
   let bitsStr='';for(const ch of t){const v=B32.indexOf(ch);if(v<0)throw new Error('char');bitsStr+=v.toString(2).padStart(5,'0')}
   const b=[];for(let i=0;i+8<=bitsStr.length;i+=8)b.push(parseInt(bitsStr.slice(i,i+8),2));
   let p=0;const get=n=>{let v=0;for(let i=0;i<n;i++)v=v*256+b[p++];return v};
-  if(get(1)!==2)throw new Error('ver');
+  const ver=get(1);if(ver!==2&&ver!==3)throw new Error('ver');
   const o=freshS();const ch=get(1);o.char=ch===1?'m':ch===0?'f':null;o.exp=get(3);o.candy=get(3);
   const LI=lookIds(),nl=get(1);for(let i=0;i<nl*8;i++){if(i%8===0)var by=get(1);if(by&(1<<(i&7))&&LI[i])o.items.push(LI[i])}
   const ef=get(1),em=get(1);if(ef)o.eqs.f.special=LI[ef-1];if(em)o.eqs.m.special=LI[em-1];
-  const hb=get(2);o.homes=HOMES.filter((h,i)=>hb&(1<<i)).map(h=>h.id);o.home=(HOMES[get(1)]||HOMES[0]).id;
+  const hb=get(ver===3?3:2);o.homes=HOMES.filter((h,i)=>hb&(1<<i)).map(h=>h.id);o.home=(HOMES[get(1)]||HOMES[0]).id;
   o.maxLv=get(1);o.lvStars={};for(let i=0;i<o.maxLv;i++){if(i%4===0)var sb=get(1);const st=(sb>>((i&3)*2))&3;if(st)o.lvStars[i]=st}
   const pb=get(1);o.plotN=get(1);o.pets=PETS.filter((d,i)=>pb&(1<<i)).map(d=>({k:d.k,h:80,hT:Date.now(),aff:0,gT:Date.now(),gifts:0,pT:0}));
   const sumAt=p;let c=7;for(let i=0;i<sumAt;i++)c=(c*31+b[i])&255;if(c!==b[sumAt])throw new Error('checksum');
@@ -2100,7 +2104,7 @@ function render(){
       if(o)btns+=on?`<button class="act ghost2" data-off="special">脫下</button>`:`<button class="act wear" data-wear="${i.id}">穿上</button>`;
       else if(!fOn(i)){const st=festState(FESTS.find(f=>f.k===i.fest));btns+=`<button class="act" disabled>${fmtMD(st.next)} 開賣</button>`}
       else btns+=`<button class="act buy" data-buy="${i.id}" ${lock||S.candy<i.cost?'disabled':''}>${lock?'Lv.'+i.lv+' 解鎖':mini+i.cost}</button>`;
-      return `<div class="spc ${on||tr?'on':''} ${hid?'locked':''}"><div class="silwrap">${thumb(i)}${hid?`<span class="lockbadge">${why}</span>`:''}</div><b><span class="code">${i.code.replace('B','')}${i.code.endsWith('B')?'+':''}</span>${i.n}</b><small>${i.ser}${i.fest?`・<b class="fbadge">${fName(i)}限定</b>`:''}</small><small>${o?(on?'✦ 穿著中':(i.cost===0?'免費贈送・已擁有':'已擁有')):(i.lv>1?`需要 Lv.${i.lv} · ${i.cost} 星星糖`:`${i.cost} 星星糖・不限等級`)}</small><div class="petacts">${btns}</div></div>`};
+      return `<div class="spc ${on||tr?'on':''} ${hid?'locked':''}"><div class="silwrap">${thumb(i)}${hid?`<span class="lockbadge">${why}</span>`:''}</div><b><span class="code">${i.code.replace('B','').replace(/^[MF]SP/,'SP')}${i.code.endsWith('B')?'+':''}</span>${i.n}</b><small>${i.ser}${i.fest?`・<b class="fbadge">${fName(i)}限定</b>`:''}</small><small>${o?(on?'✦ 穿著中':(i.cost===0?'免費贈送・已擁有':'已擁有')):(i.lv>1?`需要 Lv.${i.lv} · ${i.cost} 星星糖`:`${i.cost} 星星糖・不限等級`)}</small><div class="petacts">${btns}</div></div>`};
     const head2=tab==='wardrobe'?`<div class="fh"><h2>我的衣櫥 <span class="hint">（${sps.filter(i=>own(i.id)).length}/${sps.length} 套）</span></h2><button class="act ghost2" id="swc">切換成${ch==='m'?'女生':'男生'}角色</button></div><p class="hint">穿上套裝，角色就會整個變身；脫下後回到白色基本服。</p>`
       :`${shopTabs(festTab?'fest':'normal')}
       ${festTab?`<div class="merchant">${merchantSVG('#c2185b')}<p><b>節日應援商人</b>「我只在節日期間開賣限定造型！平常先存好星星糖，節日到了再來買喔。」</p></div><div class="festcal">${FESTS.map(f=>({f,st:festState(f)})).sort((a,b)=>(b.st.on-a.st.on)||((a.st.next||0)-(b.st.next||0))).map(({f,st})=>`<span class="${st.on?'on':''}" style="--fc:${f.c}"><b>${f.n}</b>${st.on?`販售中・剩 ${daysTo(st.end)} 天`:`${fmtMD(st.next)} 開賣`}</span>`).join('')}</div>`
@@ -2742,7 +2746,7 @@ const SND=(()=>{
   d.innerHTML=`<button class="sndbtn" id="sndBgm" aria-label="音樂開關"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="17" cy="16" r="3" fill="currentColor"/></svg></button><button class="sndbtn" id="sndSfx" aria-label="音效開關"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`;
   document.body.appendChild(d);$('#sndBgm').onclick=()=>SND.toggle('bgm');$('#sndSfx').onclick=()=>SND.toggle('sfx');SND.paint()})();
 
-function baseTheme(){const map={halloween:'halloween',xmas:'xmas',newyear:'chinese',duanwu:'chinese',moon:'moon',qixi:'qixi',valentine:'valentine',children:'festive'};
+function baseTheme(){const map={halloween:'halloween',xmas:'xmas',newyear:'chinese',duanwu:'chinese',moon:'moon',qixi:'qixi',valentine:'valentine',children:'festive',national:'festive'};
   try{const f=FESTS.find(f=>festState(f).on);if(f)return map[f.k]||'festive'}catch(e){}return new Date().getDay()===0?'sunday':'main'}
 SND.setTheme(baseTheme());
 /* ---------- 換裝變身動畫 ---------- */
@@ -3033,7 +3037,7 @@ function hwBanner(){if(!hwOn())return '';const H=hwS(),st=festState(HWF());
 $('#modal').addEventListener('click',e=>{if(e.target.id==='modal'&&!$('#quit'))closeQuiz()});
 
 function defEq(k){const e=Object.fromEntries(Object.entries(DEF[k]).map(([sl,id])=>[sl,IT[id]]));if(e.outfit){e.top=IT[e.outfit.t];e.bottom=IT[e.outfit.b];delete e.outfit}return e}
-const ART_URL='https://bubble0810.github.io/fantasy-star/';
+const ART_URL='https://claude.ai/artifact/Rf8EquhKuo5U2NRypQ8Sa1';
 const EXT_URL=ART_URL+'?openExternalBrowser=1';
 const saveLink=code=>EXT_URL+'#'+code;
 function copyText(txt,okMsg,el){const fb=()=>{if(el){const r=document.createRange();r.selectNodeContents(el);const sl=getSelection();sl.removeAllRanges();sl.addRange(r)}toast('請長按選取的文字，按「拷貝」')};
@@ -3083,9 +3087,8 @@ function checkHashRestore(){
 function pickChar(first){
   openSheet(`<div class="result"><span class="qtag">${first?'歡迎來到幻想智慧星':'切換角色'}</span><p class="qtext">選一位角色開始吧！</p><p class="hint">之後隨時可以在衣櫥切換，兩個角色的穿搭會分開保存。</p>
   <div class="pick">${['f','m'].map(k=>{const B=BASES[k];return `<button data-pick="${k}"><svg viewBox="${vb3(k,'all')}">${ONLY_SETS?plainDoll(k):doll3(k,defEq(k),'pk'+k)}</svg><b>${B.n}</b></button>`}).join('')}</div>${first?'<button class="big" id="pkrestore" style="width:100%;background:#3f8f7a">我玩過了，讀取存檔</button>':''}</div>`);
-  if(first){const pk=document.querySelector('#sheet .pick');pk.insertAdjacentHTML('beforebegin',`<label class="nickbox">幫自己取個暱稱<input id="nick" maxlength="10" placeholder="例如：星星小兔（最多 10 個字）" value="${/^玩家 \d+$/.test(curName())?'':curName().replace(/"/g,'')}"></label><p class="hint" style="margin:-4px 0 0">暱稱會顯示在畫面上，請不要用真實姓名喔！</p>`)}
   const pr=$('#pkrestore');if(pr)pr.onclick=()=>openRestore(true);
-  document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{const nk=document.getElementById('nick');if(nk){const v=nk.value.trim().replace(/[<>"'`]/g,'').slice(0,10);if(v){const me=PL.list.find(x=>x.id===PL.cur);if(me){me.name=v;savePL()}}}S.char=b.dataset.pick;save();closeQuiz();stage(true);toast(`歡迎！你選了${BASES[S.char].n}角色`)});
+  document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{S.char=b.dataset.pick;save();closeQuiz();stage(true);toast(`歡迎！你選了${BASES[S.char].n}角色`)});
 }
 $('#candyIco').innerHTML=CANDY;
 $('#pbtn').onclick=playerSheet;
@@ -3104,17 +3107,9 @@ $('#stage').addEventListener('click',e=>{if(e.target.closest('[data-hwgo]'))hwMe
 
 function savePop(){saveBoard();const ok=S.lastBackup&&S.backupSig===progSig();
   openSheet(head('💾 存檔')+`<div class="fb ${ok?'ok':'no'}"><b>${$('#sbtitle').textContent}</b>${ok?'目前的進度已經備份好了。':'關掉網頁前，記得按「立即存檔」並保存存檔連結或 QR Code，進度才不會不見！'}<br><small>${$('#sbstat').textContent==='還沒備份過'?'還沒有備份過':'上次備份：'+$('#sbstat').textContent.replace('上次 ','')}</small></div>
-  ${window.cloudBox?cloudBox():''}<button class="big" id="sp1" style="width:100%">💾 備份碼／QR Code</button><button class="ghost" id="sp2" style="width:100%">📂 用備份碼讀取</button>`);
-  $('#sp1').onclick=saveSheet;$('#sp2').onclick=()=>openRestore(false);if(window.cloudBind)cloudBind();if(window.cloudPush)cloudPush()}
+  <button class="big" id="sp1" style="width:100%">💾 立即存檔</button><button class="ghost" id="sp2" style="width:100%">📂 讀取存檔</button>`);
+  $('#sp1').onclick=saveSheet;$('#sp2').onclick=()=>openRestore(false)}
 $('#saveicon').onclick=savePop;
-function gearPop(){openSheet(head('⚙️ 設定')+`<div class="cloudbox"><b>😊 我的暱稱</b><div class="petacts"><input id="nk2" maxlength="10" value="${curName().replace(/"/g,'')}"><button class="act buy" id="nkok">修改</button></div><span>請不要用真實姓名喔！</span></div>
-  ${window.cloudSettings?cloudSettings():'<p class="hint">雲端功能載入中…</p>'}
-  <div class="cloudbox"><b>🎵 聲音</b><div class="petacts"><button class="act water" id="gbgm">${SND.cfg.bgm?'關閉音樂':'開啟音樂'}</button><button class="act water" id="gsfx">${SND.cfg.sfx?'關閉音效':'開啟音效'}</button></div></div>
-  <div class="petacts"><button class="act ghost2" id="gplayers">切換／新增玩家</button><button class="act ghost2" id="gbak">備份碼／QR Code</button></div>`);
-  $('#nkok').onclick=()=>{const v=$('#nk2').value.trim().replace(/[<>"'`]/g,'').slice(0,10);if(!v)return;const m=PL.list.find(x=>x.id===PL.cur);if(m){m.name=v;savePL();save();hud();toast('暱稱改好了！')}};
-  $('#gbgm').onclick=()=>{SND.toggle('bgm');gearPop()};$('#gsfx').onclick=()=>{SND.toggle('sfx');gearPop()};
-  $('#gplayers').onclick=playerSheet;$('#gbak').onclick=saveSheet;if(window.cloudBind)cloudBind()}
-$('#gearicon').onclick=gearPop;
 $('.tabs').addEventListener('click',()=>setTimeout(()=>{const p=$('#panel'),w=$('#stagewrap');if(!p||!w)return;const y=p.getBoundingClientRect().top+scrollY-w.offsetHeight-6;if(scrollY>y)scrollTo({top:Math.max(0,y)})},0));
 $('#svbtn').onclick=saveSheet;
 $('#ldbtn').onclick=()=>openRestore(false);
@@ -3124,68 +3119,5 @@ stage();render();
 if(!checkHashRestore()&&!S.char)pickChar(true);
 if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造型已下架，已退回 350 星星糖'),800)}
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
-<script>
-/* ---------- 雲端存檔（Firebase） ---------- */
-(function(){
-  const CS={ok:false,uid:null,last:0,timer:0,err:''};window.CS=CS;
-  if(typeof firebase==='undefined'){CS.err='雲端程式載入失敗';return}
-  firebase.initializeApp({apiKey:"AIzaSyCdIKLj_pLIMpLIFicH82REBqffA99l8oQ",authDomain:"fantasystar-game.firebaseapp.com",projectId:"fantasystar-game",storageBucket:"fantasystar-game.firebasestorage.app",messagingSenderId:"951490146041",appId:"1:951490146041:web:85d7745d295eba4ec87c28"});
-  const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue;
-  const AB='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const newCode=()=>'STAR'+Array.from(crypto.getRandomValues(new Uint8Array(8)),b=>AB[b&31]).join('');
-  const show=c=>c?c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8):'';
-  const norm=s=>{const t=String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');return t.startsWith('STAR')&&t.length===12?t:null};
-  const me=()=>PL.list.find(x=>x.id===PL.cur);
-  const ref=c=>db.collection('saves').doc(c);
-  function applyGift(g){if(!g||!g.id||(S.gifts0||[]).includes(g.id))return false;const out=[];
-    if(g.candy){S.candy+=g.candy;out.push(g.candy+' 星星糖')}if(g.exp){S.exp+=g.exp;out.push(g.exp+' 經驗')}
-    (g.items||[]).forEach(id=>{if(!S.items.includes(id)){S.items.push(id);out.push('造型')}});
-    (g.homes||[]).forEach(id=>{S.homes=S.homes||['R00'];if(!S.homes.includes(id)){S.homes.push(id);out.push('小屋')}});
-    (g.pets||[]).forEach(k=>{if(!S.pets.some(p=>p.k===k)){S.pets.push({k,h:80,hT:Date.now(),aff:0,gT:Date.now(),gifts:0,pT:0});out.push('寵物')}});
-    if(g.maxLv&&g.maxLv>(S.maxLv||0))S.maxLv=g.maxLv;
-    S.gifts0=[...(S.gifts0||[]),g.id].slice(-30);_save();stage(true);render();
-    openSheet(head('🎁 管理員送你禮物')+`<div class="result"><div class="score" style="font-size:2rem">🎁</div><b>${g.msg||'這是給你的禮物！'}</b><p class="hint">${[...new Set(out)].join('、')||'已收到'}</p><button class="big" id="close" style="width:100%">謝謝！</button></div>`);$('#close').onclick=closeQuiz;return true}
-  async function push(){
-    CS.timer=0;if(!CS.uid)return;const p=me();if(!p)return;
-    const wait=25000-(Date.now()-CS.last);if(wait>0){CS.timer=setTimeout(push,wait);return}
-    CS.last=Date.now();
-    if(p.cloud&&!p.cloudNew){try{const d=await ref(p.cloud).get();if(d.exists&&d.data().gift)applyGift(d.data().gift)}catch(e){}}
-    const data=JSON.stringify(S);
-    try{
-      if(!p.cloud){p.cloud=newCode();p.cloudNew=1;savePL()}
-      if(p.cloudNew){for(let k=0;k<5;k++){try{await ref(p.cloud).set({uids:[CS.uid],t:FV.serverTimestamp(),v:1,n:curName(),data});break}catch(e){if(e.code!=='permission-denied'||k===4)throw e;p.cloud=newCode();savePL()}}delete p.cloudNew;savePL()}
-      else await ref(p.cloud).update({uids:FV.arrayUnion(CS.uid),t:FV.serverTimestamp(),n:curName(),data,gift:FV.delete()});
-      S.lastBackup=Date.now();S.backupSig=progSig();_save();CS.err='';hud();
-    }catch(e){CS.err=e.code||e.message;if(!CS.timer)CS.timer=setTimeout(push,30000)}
-  }
-
-  window.cloudPush=()=>{if(!CS.timer)CS.timer=setTimeout(push,1500)};
-  const _save=save;save=function(){_save.apply(this,arguments);if(CS.uid&&!CS.timer)CS.timer=setTimeout(push,Math.max(3000,25000-(Date.now()-CS.last)))};
-  document.addEventListener('visibilitychange',()=>{if(document.hidden&&CS.uid){clearTimeout(CS.timer);CS.timer=0;push()}});
-  async function pull(){
-    const p=me();if(!p||!p.cloud||p.cloudNew)return;
-    try{const d=await ref(p.cloud).get();if(!d.exists)return;const c=JSON.parse(d.data().data);if(d.data().gift)setTimeout(()=>{applyGift(d.data().gift);window.cloudPush()},500);
-      if((c.savedAt||0)>(S.savedAt||0)+5000){localStorage.setItem(skey(PL.cur),d.data().data);loadS(PL.cur);stage(true);render();toast('已從雲端讀回最新進度')}}catch(e){}
-  }
-  auth.onAuthStateChanged(async u=>{if(!u)return;CS.uid=u.uid;CS.ok=true;await pull();window.cloudPush()});
-  auth.signInAnonymously().catch(e=>{CS.err=e.code||e.message});
-  window.cloudBox=()=>`<div class="cloudbox"><b>☁️ 雲端存檔</b><span class="${CS.ok?'':'no'}">${CS.ok?'進度會自動存到雲端，換手機時到右上角「⚙️ 設定」用玩家代碼找回。':CS.err?'目前連不上雲端（'+CS.err+'），進度先存在這台裝置。':'連線中…'}</span></div>`;
-  window.cloudSettings=()=>{const p=me();return `<div class="cloudbox"><b>🔑 我的玩家代碼</b><span>換手機或電腦時，輸入這組代碼就能找回進度。<b>請截圖或抄下來，不要告訴別人！</b></span>${CS.ok&&p&&p.cloud?`<div class="ccode" id="ccode">${show(p.cloud).slice(0,9)}-••••</div><div class="petacts"><button class="act water" id="creveal">顯示完整代碼</button><button class="act buy" id="ccopy">複製代碼</button></div>`:`<span class="no">${CS.err?'目前連不上雲端（'+CS.err+'）':'連線中，請稍等…'}</span>`}</div>
-    <div class="cloudbox"><b>📲 用玩家代碼找回進度</b><div class="petacts"><input id="cin" placeholder="STAR-XXXX-XXXX" maxlength="16"><button class="act buy" id="cgo">找回進度</button></div><div id="cmsg"></div></div>`};
-  window.cloudBind=()=>{const rv=document.getElementById('creveal'),cp=document.getElementById('ccopy'),p0=me();if(rv)rv.onclick=()=>{const c=$('#ccode');const full=c.textContent.indexOf('•')<0;c.textContent=full?show(p0.cloud).slice(0,9)+'-••••':show(p0.cloud);rv.textContent=full?'顯示完整代碼':'隱藏代碼'};if(cp)cp.onclick=()=>{try{navigator.clipboard.writeText(show(p0.cloud));toast('已複製玩家代碼，請保存好')}catch(e){toast('請長按代碼手動複製')}};
-    const b=document.getElementById('cgo');if(!b)return;b.onclick=async()=>{const c=norm($('#cin').value),m=$('#cmsg');
-    if(!c){m.innerHTML='<p class="fb no">代碼格式不對，應該是 STAR- 開頭的 12 個字</p>';return}
-    if(!CS.uid){m.innerHTML='<p class="fb no">還沒連上雲端，請稍等再試</p>';return}
-    m.innerHTML='<p class="hint">搜尋中…</p>';
-    try{const d=await ref(c).get();if(!d.exists){m.innerHTML='<p class="fb no">找不到這個代碼，請再確認一次</p>';return}
-      const s=JSON.parse(d.data().data);m.innerHTML=`<div class="fb ok"><b>找到了：${d.data().n||'玩家'}・Lv.${levelOf(s.exp||0)}</b>讀取後，這台裝置目前「${curName()}」的進度會換成雲端的進度。<div class="petacts" style="margin-top:6px"><button class="act buy" id="cyes">讀取雲端進度</button></div></div>`;
-      $('#cyes').onclick=()=>{const p=me();p.cloud=c;delete p.cloudNew;if(d.data().n&&/^玩家 \d+$/.test(p.name))p.name=d.data().n;savePL();localStorage.setItem(skey(PL.cur),d.data().data);loadS(PL.cur);closeQuiz();stage(true);render();toast('已讀回雲端進度，歡迎回來！');CS.last=0;window.cloudPush()}}
-    catch(e){m.innerHTML=`<p class="fb no">讀取失敗：${e.code||e.message}</p>`}}};
-})();
-
-</script>
+</body></html>
 </body></html>
