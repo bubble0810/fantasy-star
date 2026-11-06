@@ -1,73 +1,259 @@
-<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>幻想智慧星・GM 管理後台</title>
-<meta name="robots" content="noindex">
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>幻想智慧星・管理後台</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 <style>
-:root{--bg:#f4ecfb;--card:#fff;--ink:#3b2853;--mute:#7d6a94;--line:#e5d8f2;--rose:#e2508f;--ok:#1f9d55}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1726;--card:#2a2235;--ink:#eee;--mute:#b9a9cc;--line:#45395a}}
-:root[data-theme="dark"]{--bg:#1d1726;--card:#2a2235;--ink:#eee;--mute:#b9a9cc;--line:#45395a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,sans-serif;padding:16px}
-.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-.card{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px}
-h1{margin:0;font-size:1.4rem}h2{margin:0 0 8px;font-size:1.1rem}small,.m{color:var(--mute)}
-button{font:inherit;border:0;border-radius:10px;padding:8px 14px;background:var(--rose);color:#fff;cursor:pointer;font-weight:700}
-button.g{background:transparent;color:var(--ink);border:2px solid var(--line)}button:disabled{opacity:.5}
-input,select,textarea{font:inherit;border:2px solid var(--line);border-radius:10px;padding:7px 10px;background:var(--card);color:var(--ink);width:100%}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:120px}
-table{width:100%;border-collapse:collapse;font-size:.88rem}td,th{padding:6px;border-bottom:1px solid var(--line);text-align:left}tr.c{cursor:pointer}tr.c:hover{background:#e2508f14}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stats div{background:var(--bg);border-radius:12px;padding:8px;text-align:center}.stats b{display:block;font-size:1.4rem}
-.chips{display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow:auto}.chips label{border:1.5px solid var(--line);border-radius:99px;padding:2px 10px;font-size:.82rem;display:flex;gap:4px;align-items:center}
-.chips label.own{opacity:.45}.chips input{width:auto}
-.msg{padding:8px 12px;border-radius:10px;background:#1f9d5520}.err{background:#c2185b22}
-@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
-</style></head><body><div class="wrap">
-<div class="card row" style="justify-content:space-between"><div><h1>🛠 幻想智慧星・GM 管理後台</h1><small id="who">尚未登入</small></div><div style="flex:0"><button id="login">用 Google 登入</button><button class="g" id="logout" hidden>登出</button></div></div>
-<div id="main" hidden>
-<div class="card"><h2>📊 玩家概況（最近存檔的 300 位）</h2><div class="stats"><div><b id="s1">-</b><small>玩家數</small></div><div><b id="s2">-</b><small>24 小時內上線</small></div><div><b id="s3">-</b><small>7 天內上線</small></div><div><b id="s4">-</b><small>平均等級</small></div></div></div>
-<div class="card"><h2>🔍 找玩家</h2><div class="row"><input id="q" placeholder="輸入玩家代碼（STAR-XXXX-XXXX）或暱稱"><button id="find" style="flex:0">搜尋</button><button class="g" id="reload" style="flex:0">重新整理</button></div>
-<table><thead><tr><th>暱稱</th><th>玩家代碼</th><th>等級</th><th>星星糖</th><th>最後存檔</th></tr></thead><tbody id="list"></tbody></table></div>
-<div class="card" id="ed" hidden></div>
-</div>
-<div id="out"></div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
+:root{--ink:#2e2340;--muted:#6b5b7d;--line:#e3d9ef;--bg:#f6f2fb;--accent:#c23258;--ok:#1f7a45;--warn:#b42318}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-size:14px}
+header{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:18px;color:var(--accent)}
+nav{display:flex;gap:4px}
+nav button,.btn{min-height:38px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:0 14px;font:inherit;color:var(--ink);cursor:pointer}
+nav button[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.btn.danger{color:var(--warn);border-color:#f1c4c0}
+.btn:disabled{opacity:.5}
+.who{margin-left:auto;color:var(--muted);font-size:13px;display:flex;gap:8px;align-items:center}
+main{padding:16px;max-width:1400px;margin:0 auto}
+.grid{display:grid;grid-template-columns:minmax(320px,1fr) minmax(0,1.4fr);gap:16px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.card h2{margin:0;font-size:16px}
+.card h3{margin:6px 0 0;font-size:14px;color:var(--muted)}
+input,textarea,select{font:inherit;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff}
+textarea{width:100%;min-height:80px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
+tbody tr{cursor:pointer}tbody tr:hover{background:#faf6ff}tbody tr.sel{background:#f1e8ff}
+.tablewrap{overflow-x:auto;max-height:70vh;overflow-y:auto}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;align-items:center}
+.kv span{color:var(--muted)}
+.pw{font-size:22px;letter-spacing:4px}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:2px 8px;background:#eee}
+.tag.on{background:#e3f6ea;color:var(--ok)}.tag.off{background:#fde8e6;color:var(--warn)}
+.looks{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px;max-height:340px;overflow-y:auto}
+.looks label{border:1px solid var(--line);border-radius:10px;padding:4px;display:flex;flex-direction:column;align-items:center;font-size:11px;text-align:center;gap:2px;cursor:pointer}
+.looks label.own{border-color:var(--accent);background:#fff2f6}
+.looks img{height:60px;width:auto}
+.homes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.homes label{border:1px solid var(--line);border-radius:10px;padding:6px;display:flex;gap:6px;align-items:center;font-size:12px;cursor:pointer}
+.homes label.own{border-color:var(--accent);background:#fff2f6}
+.homes img{width:48px;height:32px;object-fit:cover;border-radius:4px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.nums{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.nums label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.mail{border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.mail small{color:var(--muted)}
+.empty{color:var(--muted);text-align:center;padding:30px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;z-index:20}
+.login{max-width:380px;margin:12vh auto}
+.login input{width:100%}
+.stage{display:flex;gap:10px;align-items:flex-end}
+.stage img{height:150px;width:auto}
+details summary{cursor:pointer;font-weight:700}
+</style>
+</head>
+<body>
+<div id="app"><div class="login card"><h2>幻想智慧星・管理後台</h2><p id="boot">讀取中…</p></div></div>
 <script>
-const D={"looks": [["M01", "m", "都會休閒青年"], ["M02", "m", "日系高中制服"], ["M03", "m", "韓系偶像舞台服"], ["M04", "m", "美式嘻哈街頭風"], ["M05", "m", "極限運動滑板少年"], ["M06", "m", "英倫維多利亞紳士"], ["M07", "m", "1920年代爵士男爵"], ["M08", "m", "1980年代復古搖滾"], ["M09", "m", "蒸氣龐克發明家"], ["M10", "m", "青竹江湖俠客"], ["M11", "m", "日本浪人武士"], ["M12", "m", "中式江湖劍客"], ["M13", "m", "古埃及法老王"], ["M14", "m", "北歐維京戰士"], ["M15", "m", "阿拉伯沙漠旅人"], ["M16", "m", "希臘奧林帕斯神使"], ["M17", "m", "東方龍族皇子"], ["M18", "m", "暗夜吸血鬼伯爵"], ["M19", "m", "聖光天界守護者"], ["M20", "m", "深淵惡魔領主"], ["M21", "m", "賽博龐克駭客"], ["M22", "m", "星際機甲駕駛員"], ["M23", "m", "末日廢土拾荒者"], ["M24", "m", "神秘魔法學院教授"], ["M25", "m", "深海探險潛水員"], ["M26", "m", "企鵝玩偶裝"], ["M27", "m", "暴龍充氣裝"], ["M28", "m", "柴犬布偶裝"], ["M29", "m", "香蕉超人"], ["M30", "m", "浴袍拖鞋大叔"], ["F01", "f", "韓系時尚少女"], ["F02", "f", "日系水手制服"], ["F03", "f", "甜酷街頭女孩"], ["F04", "f", "都會職場菁英"], ["F05", "f", "偶像舞台歌姬"], ["F06", "f", "維多利亞宮廷淑女"], ["F07", "f", "洛可可華麗公主"], ["F08", "f", "1920年代爵士舞孃"], ["F09", "f", "1980年代復古迪斯可"], ["F10", "f", "翠綠花仙少女"], ["F11", "f", "中式漢服仙子"], ["F12", "f", "日本櫻花巫女"], ["F13", "f", "印度宮廷舞者"], ["F14", "f", "埃及尼羅河祭司"], ["F15", "f", "西班牙佛朗明哥舞者"], ["F16", "f", "月光女神"], ["F17", "f", "九尾狐妖姬"], ["F18", "f", "暗夜吸血鬼公主"], ["F19", "f", "暗黑魔女"], ["F20", "f", "冰雪女皇"], ["F21", "f", "未來科技特務"], ["F22", "f", "星際機械少女"], ["F23", "f", "蒸氣龐克女工程師"], ["F24", "f", "魔法學院見習生"], ["F25", "f", "海盜女船長"], ["F26", "f", "粉紅兔兔裝"], ["F27", "f", "熊貓布偶裝"], ["F28", "f", "貓咪女僕裝"], ["F29", "f", "草莓蛋糕人"], ["F30", "f", "睡衣拖鞋宅女"], ["MSP01", "m", "萬聖南瓜魔術師"], ["FSP01", "f", "萬聖小幽靈甜心"], ["MSP02", "m", "聖誕禮物紳士"], ["FSP02", "f", "聖誕雪人甜心"]], "homes": [["R00", "小木屋"], ["R01", "現代溫馨小屋"], ["R02", "日式和風小屋"], ["R03", "韓式清新小屋"], ["R04", "中式古風小屋"], ["R05", "歐式鄉村小屋"], ["R06", "北歐森林小屋"], ["R07", "地中海海景小屋"], ["R08", "美式復古小屋"], ["R09", "粉色夢幻小屋"], ["R10", "熱帶度假小屋"], ["SP01", "萬聖節派對小屋"], ["SP02", "聖誕節溫馨小屋"]], "pets": [["bunny", "小兔"], ["dog", "柴犬"], ["uni", "獨角獸"], ["tanuki", "狸貓"], ["koi", "鯉魚王"], ["dragon", "幻影龍"]]};
-const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const lvCost=k=>Math.min(100*k,600),levelOf=e=>{let L=1,t=0;while(t+lvCost(L)<=e){t+=lvCost(L);L++}return L};
-const show=c=>c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8),ago=t=>{if(!t)return '-';const m=(Date.now()-t)/6e4;return m<60?Math.round(m)+' 分鐘前':m<1440?Math.round(m/60)+' 小時前':Math.round(m/1440)+' 天前'};
-function out(t,bad){$('#out').innerHTML=`<div class="msg ${bad?'err':''}">${t}</div>`;setTimeout(()=>$('#out').innerHTML='',6000)}
-firebase.initializeApp({apiKey:"AIzaSyCdIKLj_pLIMpLIFicH82REBqffA99l8oQ",authDomain:"fantasystar-game.firebaseapp.com",projectId:"fantasystar-game",storageBucket:"fantasystar-game.firebasestorage.app",messagingSenderId:"951490146041",appId:"1:951490146041:web:85d7745d295eba4ec87c28"});
-const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue;let ROWS=[];
-$('#login').onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>out('登入失敗：'+(e.code||e.message),1));
-$('#logout').onclick=()=>auth.signOut();
-auth.onAuthStateChanged(u=>{const real=u&&!u.isAnonymous;$('#who').textContent=real?'已登入：'+u.email:'尚未登入';$('#login').hidden=real;$('#logout').hidden=!real;$('#main').hidden=!real;if(real)load()});
-function parse(d){const x=d.data();let s={};try{s=JSON.parse(x.data||'{}')}catch(e){}return {code:d.id,n:x.n||'玩家',t:x.t?x.t.toMillis():0,s,gift:x.gift}}
-async function load(){try{const q=await db.collection('saves').orderBy('t','desc').limit(300).get();ROWS=q.docs.map(parse);stats();draw(ROWS.slice(0,30))}catch(e){out('讀取失敗：'+(e.code||e.message)+'（如果是 permission-denied，代表安全規則還沒加上你的管理員信箱）',1)}}
-function stats(){const now=Date.now();$('#s1').textContent=ROWS.length;$('#s2').textContent=ROWS.filter(r=>now-r.t<864e5).length;$('#s3').textContent=ROWS.filter(r=>now-r.t<7*864e5).length;$('#s4').textContent=ROWS.length?(ROWS.reduce((a,r)=>a+levelOf(r.s.exp||0),0)/ROWS.length).toFixed(1):'-'}
-function draw(rs){$('#list').innerHTML=rs.map(r=>`<tr class="c" data-c="${r.code}"><td>${esc(r.n)}</td><td>${show(r.code)}</td><td>Lv.${levelOf(r.s.exp||0)}</td><td>${r.s.candy||0}</td><td>${ago(r.t)}</td></tr>`).join('')||'<tr><td colspan="5" class="m">沒有符合的玩家</td></tr>';document.querySelectorAll('[data-c]').forEach(tr=>tr.onclick=()=>open(tr.dataset.c))}
-$('#reload').onclick=load;
-$('#find').onclick=async()=>{const v=$('#q').value.trim(),c=v.toUpperCase().replace(/[^A-Z0-9]/g,'');
-  if(c.startsWith('STAR')&&c.length===12){const r=ROWS.find(x=>x.code===c);if(r)return open(c);try{const d=await db.collection('saves').doc(c).get();if(!d.exists)return out('找不到這個玩家代碼',1);ROWS.unshift(parse(d));open(c)}catch(e){out('讀取失敗：'+(e.code||e.message),1)}return}
-  draw(ROWS.filter(r=>r.n.includes(v)))};
-$('#q').onkeydown=e=>{if(e.key==='Enter')$('#find').click()};
-function open(code){const r=ROWS.find(x=>x.code===code);if(!r)return;const s=r.s,own=new Set(s.items||[]),homes=new Set(s.homes||[]),pets=new Set((s.pets||[]).map(p=>p.k));
-  const ch=(arr,set,name,lab)=>arr.map(a=>`<label class="${set.has(a[2])?'own':''}"><input type="checkbox" name="${name}" value="${a[2]}" ${set.has(a[2])?'disabled':''}>${esc(lab(a))}</label>`).join('');
-  $('#ed').hidden=false;$('#ed').innerHTML=`<h2>👤 ${esc(r.n)}　<small>${show(code)}</small></h2>
-  <p class="m">Lv.${levelOf(s.exp||0)}・經驗 ${s.exp||0}・星星糖 ${s.candy||0}・闖關到第 ${s.maxLv||0} 關・造型 ${(s.items||[]).filter(i=>i.startsWith('L-')).length} 套・小屋 ${(s.homes||[]).length} 間・寵物 ${(s.pets||[]).length} 隻・最後存檔 ${ago(r.t)}</p>
-  ${r.gift?'<p class="msg err">⚠ 還有一份禮物玩家尚未領取，送出新禮物會取代它。</p>':''}
-  <h2>🎁 補發禮物</h2><p class="m">玩家下次開遊戲或自動存檔時會收到（會跳出「管理員送你禮物」）。已擁有的項目會反灰。</p>
-  <div class="row"><label>星星糖<input id="gc" type="number" value="0" min="0"></label><label>經驗<input id="ge" type="number" value="0" min="0"></label><label>解鎖到第幾關<input id="gl" type="number" value="0" min="0" max="108"></label></div>
-  <p><b>造型</b></p><div class="chips">${ch(D.looks.map(l=>[l[0],l[2],'L-'+l[0],l[1]]),own,'gi',a=>a[0]+' '+a[1])}</div>
-  <p><b>小屋</b></p><div class="chips">${ch(D.homes.map(h=>[h[0],h[1],h[0]]),homes,'gh',a=>a[0]+' '+a[1])}</div>
-  <p><b>寵物</b></p><div class="chips">${ch(D.pets.map(p=>[p[0],p[1],p[0]]),pets,'gp',a=>a[1])}</div>
-  <p><b>留言給玩家</b></p><input id="gm" placeholder="例如：系統補償，謝謝你的回報！" maxlength="60">
-  <div class="row" style="margin-top:10px"><button id="gsend">送出禮物</button><button class="g" id="gclose" style="flex:0">關閉</button></div>`;
-  $('#ed').scrollIntoView({behavior:'smooth'});$('#gclose').onclick=()=>$('#ed').hidden=true;
-  $('#gsend').onclick=async()=>{const pick=n=>[...document.querySelectorAll(`[name="${n}"]:checked`)].map(i=>i.value);
-    const g={id:'g'+Date.now(),candy:Math.max(0,+$('#gc').value||0),exp:Math.max(0,+$('#ge').value||0),maxLv:Math.min(108,Math.max(0,+$('#gl').value||0)),items:pick('gi'),homes:pick('gh'),pets:pick('gp'),msg:$('#gm').value.trim()||'這是管理員送你的禮物！'};
-    if(!g.candy&&!g.exp&&!g.maxLv&&!g.items.length&&!g.homes.length&&!g.pets.length)return out('請至少選一項禮物',1);
-    if(!confirm(`確定送給「${r.n}」這份禮物？`))return;
-    try{await db.collection('saves').doc(code).update({gift:g});await db.collection('adminlog').add({code,n:r.n,g,by:auth.currentUser.email,t:FV.serverTimestamp()});r.gift=g;out('✅ 禮物已送出，玩家下次上線就會收到');open(code)}catch(e){out('送出失敗：'+(e.code||e.message),1)}};
+(()=>{
+const $=s=>document.querySelector(s),app=$('#app');
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2400)}
+if(!window.CLOUD_GATE){app.innerHTML=`<div class="login card"><h2>還沒設定 Firebase</h2><p>請先把 Firebase 設定碼填進 <b>firebase-config.js</b>，再重新整理這一頁。</p></div>`;return}
+firebase.initializeApp(window.FIREBASE_CONFIG);
+const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue;
+let ME=null,PLAYERS=[],SEL=null,SELS=null,LOOKS=[],HOMES=[],tab='players',sortK='lastLogin',sortD=-1,q='';
+
+/* 從遊戲檔讀出造型和小屋清單 */
+async function loadCatalog(){
+  try{const t=await (await fetch('index.html',{cache:'no-store'})).text();
+    const m=t.match(/const LOOKS=(\[.*?\]\]);/s);if(m)LOOKS=JSON.parse(m[1]).filter(r=>!/B$/.test(r[0]));
+    const hb=t.slice(t.indexOf('const HOMES=['),t.indexOf('];',t.indexOf('const HOMES=['))+2);
+    HOMES=[...hb.matchAll(/\{id:'(\w+)',n:'([^']+)'[^}]*?img:'([^']+)'[^}]*\}/g)].map(x=>({id:x[1],n:x[2],img:x[3],fest:(x[0].match(/fest:'(\w+)'/)||[])[1]||''}));
+  }catch(e){toast('讀不到遊戲的造型清單（請確認 admin.html 和 index.html 放在同一個資料夾）')}
 }
-</script></body></html>
+const fmt=ts=>ts&&ts.toDate?ts.toDate().toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+const lvOf=exp=>{let l=1,t=0;while(true){const need=Math.min(100*l,600);if(exp<t+need)return l;t+=need;l++}};
+async function log(action,target,detail){try{await db.collection('adminlog').add({at:FV.serverTimestamp(),admin:ME.email,action,target:target||'',detail:detail||''})}catch(e){}}
+
+/* ---------- 登入 ---------- */
+function loginView(msg){
+  app.innerHTML=`<form class="login card" id="lf"><h2>幻想智慧星・管理後台</h2>
+  <label>管理員 Email<input id="le" type="email" autocomplete="username" required></label>
+  <label>密碼<input id="lp" type="password" autocomplete="current-password" required></label>
+  <p style="color:var(--warn);margin:0">${esc(msg||'')}</p><button class="btn primary">登入</button></form>`;
+  $('#lf').onsubmit=async e=>{e.preventDefault();try{await auth.signInWithEmailAndPassword($('#le').value.trim(),$('#lp').value)}catch(er){loginView('登入失敗：'+(er.code||er.message))}};
+}
+auth.onAuthStateChanged(async u=>{
+  if(!u)return loginView();
+  const a=await db.doc('admins/'+u.uid).get().catch(()=>null);
+  if(!a||!a.exists){app.innerHTML=`<div class="login card"><h2>這個帳號不是管理員</h2><p>請到 Firestore 建立 <b>admins/${esc(u.uid)}</b> 這份文件，再重新整理。</p><p style="font-size:12px;color:var(--muted)">你的 UID：${esc(u.uid)}</p><button class="btn" id="lo">登出</button></div>`;$('#lo').onclick=()=>auth.signOut();return}
+  ME=u;await loadCatalog();shell();loadPlayers();
+});
+
+/* ---------- 外框 ---------- */
+function shell(){
+  app.innerHTML=`<header><h1>幻想智慧星・管理後台</h1><nav>
+  <button data-t="players">玩家</button><button data-t="bc">寄信給全部玩家</button><button data-t="log">操作紀錄</button></nav>
+  <div class="who">${esc(ME.email)}<button class="btn" id="lo">登出</button></div></header><main id="main"></main>`;
+  app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;view()});
+  $('#lo').onclick=()=>auth.signOut();view();
+}
+function view(){app.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===tab));
+  if(tab==='players')playersView();else if(tab==='bc')bcView();else logView()}
+
+/* ---------- 玩家列表 ---------- */
+async function loadPlayers(){
+  const s=await db.collection('players').get();PLAYERS=s.docs.map(d=>({uid:d.id,...d.data()}));if(tab==='players')playersView();
+}
+function playersView(){
+  const m=$('#main');
+  const rows=PLAYERS.filter(p=>!q||(p.name||'').includes(q)||(p.code||'').includes(q.toLowerCase()))
+    .sort((a,b)=>{const va=a[sortK],vb=b[sortK];const x=va&&va.toMillis?va.toMillis():va??'',y=vb&&vb.toMillis?vb.toMillis():vb??'';return (x>y?1:x<y?-1:0)*sortD});
+  const H=[['name','顯示名稱'],['code','代號'],['exp','等級'],['candy','星星糖'],['looks','造型'],['homes','小屋'],['lastLogin','最後登入'],['disabled','狀態']];
+  m.innerHTML=`<div class="grid"><div class="card"><div class="row"><h2>玩家（${PLAYERS.length} 人）</h2><button class="btn" id="rf">重新整理</button></div>
+    <input id="qs" placeholder="搜尋顯示名稱或代號" value="${esc(q)}">
+    <div class="tablewrap"><table><thead><tr>${H.map(([k,t])=>`<th data-k="${k}">${t}${sortK===k?(sortD>0?' ▲':' ▼'):''}</th>`).join('')}</tr></thead><tbody>
+    ${rows.map(p=>`<tr data-u="${p.uid}" class="${SEL&&SEL.uid===p.uid?'sel':''}"><td>${esc(p.name)}</td><td>${esc(p.code)}</td><td>Lv.${lvOf(p.exp||0)}</td><td>${p.candy||0}</td><td>${p.looks||0}</td><td>${p.homes||0}</td><td>${fmt(p.lastLogin)}</td><td>${p.disabled?'<span class="tag off">停用</span>':'<span class="tag on">正常</span>'}</td></tr>`).join('')||`<tr><td colspan="8" class="empty">還沒有玩家</td></tr>`}
+    </tbody></table></div></div><div id="detail">${SEL?'':'<div class="card empty">點左邊的玩家，查看他的全部資料</div>'}</div></div>`;
+  $('#rf').onclick=loadPlayers;
+  $('#qs').oninput=e=>{q=e.target.value.trim();const pos=e.target.selectionStart;playersView();const i=$('#qs');i.focus();i.setSelectionRange(pos,pos)};
+  m.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{if(sortK===th.dataset.k)sortD*=-1;else{sortK=th.dataset.k;sortD=-1}playersView()});
+  m.querySelectorAll('tr[data-u]').forEach(tr=>tr.onclick=()=>openPlayer(tr.dataset.u));
+  if(SEL)detailView();
+}
+
+/* ---------- 玩家詳細 ---------- */
+async function openPlayer(uid){
+  const [d,pv,mb]=await Promise.all([db.doc('players/'+uid).get(),db.doc('private/'+uid).get(),db.collection(`players/${uid}/inbox`).orderBy('createdAt','desc').limit(50).get()]);
+  SEL={uid,...d.data(),pw:pv.exists?pv.data():{},mail:mb.docs.map(x=>({id:x.id,...x.data()}))};
+  try{SELS=SEL.sj?JSON.parse(SEL.sj):{}}catch(e){SELS={}}
+  playersView();
+}
+function detailView(){
+  const p=SEL,S=SELS,el=$('#detail');if(!el)return;
+  const items=new Set(S.items||[]),homes=new Set(S.homes||[]),ch=S.char||'f';
+  const sp=S.eqs&&S.eqs[ch]&&S.eqs[ch].special;const cur=sp?String(sp).replace('L-',''):'';
+  const fc=[['hw','萬聖糖果',S.hw&&S.hw.c]];
+  for(const [k,v] of Object.entries(S.fest||{}))fc.push(['fest.'+k,'節慶貨幣：'+k,v&&v.c]);
+  el.innerHTML=`<div class="card">
+  <div class="row"><h2>${esc(p.name)}</h2>${p.disabled?'<span class="tag off">停用中</span>':'<span class="tag on">正常</span>'}</div>
+  <div class="stage">${cur?`<img src="outfits/${esc(cur)}.webp" alt="目前穿著">`:''}<div class="kv">
+    <span>代號</span><b>${esc(p.code)}</b>
+    <span>圖案密碼</span><b class="pw" title="${esc(p.pw.pwName||'')}">${esc(p.pw.pw||'（沒有紀錄）')}</b>
+    <span></span><small>${esc(p.pw.pwName||'')}</small>
+    <span>角色</span><b>${S.char==='m'?'男生':S.char==='f'?'女生':'還沒選'}</b>
+    <span>等級</span><b>Lv.${lvOf(S.exp||0)}（經驗值 ${S.exp||0}）</b>
+    <span>註冊</span><b>${fmt(p.createdAt)}</b><span>最後登入</span><b>${fmt(p.lastLogin)}</b><span>最後存檔</span><b>${fmt(p.updatedAt)}</b>
+    <span>UID</span><small>${esc(p.uid)}</small></div></div>
+
+  <h3>基本資料與數值</h3>
+  <div class="nums">
+    <label>顯示名稱<input id="eName" value="${esc(p.name)}" maxlength="8"></label>
+    <label>星星糖<input id="eCandy" type="number" min="0" value="${S.candy||0}"></label>
+    <label>經驗值<input id="eExp" type="number" min="0" value="${S.exp||0}"></label>
+    <label>已過關到第幾關（maxLv）<input id="eMax" type="number" min="0" max="108" value="${S.maxLv||0}"></label>
+    ${fc.map(([k,t,v])=>`<label>${esc(t)}<input data-fc="${k}" type="number" min="0" value="${v||0}"></label>`).join('')}
+  </div>
+
+  <h3>造型（打勾＝擁有，${[...items].filter(x=>x.startsWith('L-')).length} 套）</h3>
+  <div class="looks">${LOOKS.map(r=>{const id='L-'+r[0],o=items.has(id);return `<label class="${o?'own':''}"><input type="checkbox" data-look="${id}" ${o?'checked':''}><img src="outfits/${r[0]}.webp" alt="" loading="lazy">${esc(r[0])}<br>${esc(r[2])}</label>`}).join('')}</div>
+
+  <h3>小屋（打勾＝擁有）</h3>
+  <div class="homes">${HOMES.map(h=>{const o=homes.has(h.id);return `<label class="${o?'own':''}"><input type="checkbox" data-home="${h.id}" ${o?'checked':''} ${h.id==='R00'?'disabled':''}><img src="${esc(h.img)}" alt="">${esc(h.fest?h.id.replace(/^SP/,'RSP'):h.id)} ${esc(h.n)}</label>`}).join('')}</div>
+
+  <details><summary>進階：直接編輯全部遊戲資料（JSON）</summary><p style="color:var(--muted);margin:6px 0">改這裡會蓋過上面的設定，請小心。</p><textarea id="eRaw" style="min-height:240px;font-family:monospace;font-size:12px">${esc(JSON.stringify(S,null,1))}</textarea></details>
+
+  <div class="row"><button class="btn primary" id="eSave">儲存修改</button><button class="btn ${p.disabled?'':'danger'}" id="eDis">${p.disabled?'恢復帳號':'停用帳號'}</button></div>
+  <p style="color:var(--muted);margin:0;font-size:12px">玩家正在玩的話，遊戲會自動重新讀取並顯示「管理員更新了你的資料」。</p>
+  </div>
+
+  <div class="card"><h2>寄信給 ${esc(p.name)}</h2>${mailForm('m')}<button class="btn primary" id="mSend">寄出</button>
+  <h3>信件紀錄</h3>${p.mail.length?p.mail.map(x=>`<div class="mail"><div><b>${x.kind==='gift'?'🎁':x.kind==='system'?'🔔':'📢'} ${esc(x.title)}</b>${x.bc?' <small>（全體信）</small>':''}<br><small>${fmt(x.createdAt)}・${x.claimed?'已領取 '+fmt(x.claimedAt):x.read?'已讀':'還沒看'}</small></div>${x.claimed?'':`<button class="btn danger" data-recall="${x.id}">收回</button>`}</div>`).join(''):'<p class="empty">還沒有信</p>'}</div>
+
+  <div class="card"><h2>搬移進度</h2><p style="margin:0;color:var(--muted)">小朋友忘記密碼、改用新帳號時，把這個帳號的進度整份複製到新帳號。新帳號原本的進度會被蓋掉。</p>
+  <div class="row"><input id="mvTo" placeholder="新帳號的代號"><button class="btn" id="mvGo">搬過去</button></div></div>`;
+
+  el.querySelectorAll('.looks input,.homes input').forEach(c=>c.onchange=()=>c.parentElement.classList.toggle('own',c.checked));
+  $('#eSave').onclick=saveEdit;$('#eDis').onclick=toggleDis;$('#mSend').onclick=()=>sendMail(p.uid);$('#mvGo').onclick=moveProgress;
+  el.querySelectorAll('[data-recall]').forEach(b=>b.onclick=()=>recall(b.dataset.recall));
+}
+function mailForm(px){return `<div class="nums">
+  <label>種類<select id="${px}Kind"><option value="gift">🎁 禮物</option><option value="notice">📢 公告</option></select></label>
+  <label>標題<input id="${px}Title" placeholder="例如：生日快樂！"></label>
+  <label>幾天內要領取<input id="${px}Days" type="number" min="0" value="7"><small>0＝沒有期限</small></label></div>
+  <textarea id="${px}Body" placeholder="內文（可以不寫）"></textarea>
+  <div class="nums"><label>附件：星星糖<input id="${px}Candy" type="number" min="0" value="0"></label><label>附件：經驗值<input id="${px}Exp" type="number" min="0" value="0"></label>
+  <label>附件：造型<select id="${px}Look"><option value="">（不送）</option>${LOOKS.map(r=>`<option value="${r[0]}">${r[0]} ${esc(r[2])}</option>`).join('')}</select></label>
+  <label>附件：小屋<select id="${px}Home"><option value="">（不送）</option>${HOMES.filter(h=>h.id!=='R00').map(h=>`<option value="${h.id}">${esc(h.fest?h.id.replace(/^SP/,'RSP'):h.id)} ${esc(h.n)}</option>`).join('')}</select></label></div>`}
+function readMail(px){
+  const title=$('#'+px+'Title').value.trim();if(!title){toast('請寫標題');return null}
+  const days=+$('#'+px+'Days').value||0,att={};
+  const c=+$('#'+px+'Candy').value||0,e=+$('#'+px+'Exp').value||0,l=$('#'+px+'Look').value,h=$('#'+px+'Home').value;
+  if(c)att.candy=c;if(e)att.exp=e;if(l)att.looks=[l];if(h)att.homes=[h];
+  const kind=Object.keys(att).length?'gift':$('#'+px+'Kind').value;
+  return {title,body:$('#'+px+'Body').value.trim(),kind,att,createdAt:FV.serverTimestamp(),expireAt:days?firebase.firestore.Timestamp.fromMillis(Date.now()+days*864e5):null,read:false,claimed:false};
+}
+async function saveEdit(){
+  const p=SEL;let S;
+  try{S=JSON.parse($('#eRaw').value)}catch(e){return toast('進階 JSON 格式有錯，沒有儲存')}
+  const raw0=JSON.stringify(SELS);
+  if(JSON.stringify(S)===raw0){ // 沒動 JSON，就用上面的欄位
+    S.candy=+$('#eCandy').value||0;S.exp=+$('#eExp').value||0;S.maxLv=+$('#eMax').value||0;
+    document.querySelectorAll('[data-fc]').forEach(i=>{const k=i.dataset.fc,v=+i.value||0;if(k==='hw'){S.hw=S.hw||{c:0,first:0,best:0,clears:0};S.hw.c=v}else{const f=k.split('.')[1];S.fest=S.fest||{};S.fest[f]=S.fest[f]||{};S.fest[f].c=v}});
+    const looks=[...document.querySelectorAll('[data-look]')].filter(c=>c.checked).map(c=>c.dataset.look);
+    S.items=(S.items||[]).filter(x=>!x.startsWith('L-')).concat(looks);
+    S.homes=['R00',...[...document.querySelectorAll('[data-home]')].filter(c=>c.checked&&c.dataset.home!=='R00').map(c=>c.dataset.home)];
+    if(S.home&&!S.homes.includes(S.home))S.home='R00';
+  }
+  const name=$('#eName').value.trim()||p.name;
+  const sum={sj:JSON.stringify(S),name,exp:S.exp|0,candy:S.candy|0,char:S.char||null,maxLv:S.maxLv|0,looks:(S.items||[]).filter(x=>x.startsWith('L-')).length,homes:(S.homes||[]).length,updatedAt:FV.serverTimestamp(),adminRev:FV.increment(1)};
+  try{await db.doc('players/'+p.uid).update(sum);await log('修改資料',p.code,`星星糖 ${S.candy}・經驗值 ${S.exp}・造型 ${sum.looks}・小屋 ${sum.homes}${name!==p.name?'・名稱改為 '+name:''}`);
+    toast('已儲存');await loadPlayers();openPlayer(p.uid)}catch(e){toast('儲存失敗：'+(e.code||e.message))}
+}
+async function toggleDis(){const p=SEL;const to=!p.disabled;if(to&&!confirmBox(`確定要停用「${p.name}」的帳號嗎？`))return;
+  try{await db.doc('players/'+p.uid).update({disabled:to});await log(to?'停用帳號':'恢復帳號',p.code);toast(to?'已停用':'已恢復');await loadPlayers();openPlayer(p.uid)}catch(e){toast('失敗：'+(e.code||e.message))}}
+function confirmBox(msg){return window.confirm?window.confirm(msg):true}
+async function sendMail(uid){const m=readMail('m');if(!m)return;
+  try{await db.collection(`players/${uid}/inbox`).add(m);await log('寄信',SEL.code,m.title+(Object.keys(m.att).length?'（有附件）':''));toast('已寄出');openPlayer(uid)}catch(e){toast('寄信失敗：'+(e.code||e.message))}}
+async function recall(id){if(!confirmBox('確定收回這封信？'))return;
+  try{await db.doc(`players/${SEL.uid}/inbox/${id}`).delete();await log('收回信件',SEL.code,id);toast('已收回');openPlayer(SEL.uid)}catch(e){toast('失敗：'+(e.code||e.message))}}
+async function moveProgress(){
+  const code=$('#mvTo').value.trim().toLowerCase();const to=PLAYERS.find(p=>p.code===code);
+  if(!to)return toast('找不到這個代號');if(to.uid===SEL.uid)return toast('不能搬給自己');
+  if(!confirmBox(`把「${SEL.name}」的進度複製到「${to.name}（${to.code}）」？${to.name} 原本的進度會被蓋掉。`))return;
+  try{await db.doc('players/'+to.uid).update({sj:SEL.sj||'',exp:SEL.exp||0,candy:SEL.candy||0,char:SEL.char||null,maxLv:SEL.maxLv||0,looks:SEL.looks||0,homes:SEL.homes||1,updatedAt:FV.serverTimestamp(),adminRev:FV.increment(1)});
+    await log('搬移進度',SEL.code+' → '+to.code);toast('已搬移');loadPlayers()}catch(e){toast('失敗：'+(e.code||e.message))}
+}
+
+/* ---------- 寄信給全部玩家 ---------- */
+async function bcView(){
+  const m=$('#main');m.innerHTML=`<div class="grid"><div class="card"><h2>寄信給全部玩家</h2><p style="margin:0;color:var(--muted)">每位玩家下次登入時都會收到，之後才註冊的新玩家也會收到（期限內）。</p>${mailForm('b')}<button class="btn primary" id="bSend">寄給全部玩家</button></div><div class="card"><h2>已寄出的全體信</h2><div id="bList">讀取中…</div></div></div>`;
+  $('#bSend').onclick=async()=>{const x=readMail('b');if(!x)return;delete x.read;delete x.claimed;
+    if(!confirmBox(`確定寄給全部玩家？\n${x.title}`))return;
+    try{await db.collection('broadcasts').add(x);await log('寄全體信','全部玩家',x.title);toast('已寄出');bcView()}catch(e){toast('失敗：'+(e.code||e.message))}};
+  const s=await db.collection('broadcasts').orderBy('createdAt','desc').limit(50).get();
+  $('#bList').innerHTML=s.docs.map(d=>{const x=d.data();return `<div class="mail"><div><b>${x.kind==='gift'?'🎁':'📢'} ${esc(x.title)}</b><br><small>${fmt(x.createdAt)}${x.expireAt?'・期限 '+fmt(x.expireAt):''}</small></div><button class="btn danger" data-del="${d.id}">停止發送</button></div>`}).join('')||'<p class="empty">還沒有寄過</p>';
+  m.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(!confirmBox('停止發送這封信？已經收到的玩家不受影響。'))return;await db.doc('broadcasts/'+b.dataset.del).delete();await log('停止全體信','',b.dataset.del);bcView()});
+}
+
+/* ---------- 操作紀錄 ---------- */
+async function logView(){
+  const m=$('#main');m.innerHTML=`<div class="card"><h2>操作紀錄（最近 200 筆）</h2><div class="tablewrap" id="lg">讀取中…</div></div>`;
+  const s=await db.collection('adminlog').orderBy('at','desc').limit(200).get();
+  $('#lg').innerHTML=`<table><thead><tr><th>時間</th><th>動作</th><th>對象</th><th>內容</th><th>管理員</th></tr></thead><tbody>${s.docs.map(d=>{const x=d.data();return `<tr><td>${fmt(x.at)}</td><td>${esc(x.action)}</td><td>${esc(x.target)}</td><td style="white-space:normal">${esc(x.detail)}</td><td>${esc(x.admin)}</td></tr>`}).join('')||'<tr><td colspan="5" class="empty">還沒有紀錄</td></tr>'}</tbody></table>`;
+}
+})();
+</script>
+</body>
+</html>

@@ -595,6 +595,10 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 <div class="modal" id="modal" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script>
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -974,14 +978,14 @@ for(const o of OUTFITS){
 });
 // festivals (節日限定)
 const FESTS=[
- {k:'newyear',n:'春節',lunar:{2026:'02-17',2027:'02-06',2028:'01-26',2029:'02-13'},pre:14,post:14,c:'#d7192f'},
+ {k:'newyear',n:'春節',lunar:{2026:'02-17',2027:'02-06',2028:'01-26',2029:'02-13'},pre:3,post:14,c:'#d7192f'},
  {k:'valentine',n:'情人節',md:['02-07','02-21'],c:'#ff3d7f',off:true},
  {k:'children',n:'兒童節',md:['03-28','04-10'],c:'#ffb000'},
  {k:'duanwu',n:'端午節',lunar:{2026:'06-19',2027:'06-09',2028:'05-28',2029:'06-16'},pre:7,post:7,c:'#3b9a5a'},
  {k:'qixi',n:'七夕',lunar:{2026:'08-19',2027:'08-08',2028:'08-26',2029:'08-16'},pre:7,post:7,c:'#8a6ce0'},
  {k:'moon',n:'中秋節',lunar:{2026:'09-25',2027:'09-15',2028:'10-03',2029:'09-22'},pre:10,post:7,c:'#e0a800'},
  {k:'national',n:'國慶日',md:['10-03','10-13'],c:'#1f5fbf'},
- {k:'halloween',n:'萬聖節',md:['10-15','11-10'],c:'#ff8c1a'},
+ {k:'halloween',n:'萬聖節',md:['10-24','11-03'],ov:{2026:['10-15','11-10']},c:'#ff8c1a'},  // 平常 10/24～11/3；2026 年特別延長
  {k:'xmas',n:'聖誕節',md:['12-01','12-31'],c:'#1f9d55'}
 ];
 // 節慶：萬聖SP01 聖誕SP02 春節SP03 兒童節SP04 端午SP05 七夕SP06 中秋SP07 國慶SP08（小屋同順序 RSP01～RSP08）
@@ -1103,7 +1107,7 @@ const DEF={f:{hair:'hair-orig-f',head:'morning-h',outfit:'morning-o',feet:'acc15
 const ONLY_SETS=true;
 const fits=i=>(!ONLY_SETS||i.slot==='special')&&!i.hide&&!i.coming&&(i.sx==='u'||i.sx===(S.char||'f'));
 function festWindow(F,year){
-  if(F.md){const [a,b]=F.md;return [new Date(`${year}-${a}T00:00:00`),new Date(`${year}-${b}T23:59:59`)]}
+  if(F.md){const [a,b]=(F.ov&&F.ov[year])||F.md;return [new Date(`${year}-${a}T00:00:00`),new Date(`${year}-${b}T23:59:59`)]}
   const d=F.lunar[year];if(!d)return null;const c=new Date(`${year}-${d}T00:00:00`);return [new Date(+c-F.pre*864e5),new Date(+c+(F.post+1)*864e5-1)];
 }
 function festState(F,now=new Date()){
@@ -1405,7 +1409,7 @@ function homeCard(h,L,mode){const o=(S.homes||[]).includes(h.id),on=curHome().id
   if(!h.img)btn=`<button class="act" disabled>即將推出</button>`;
   else if(o)btn=on?`<button class="act worn" disabled>使用中</button>`:`<button class="act wear" data-home="${h.id}">${mode==='shop'?'已擁有・':''}搬進去</button>`;
   else if(lock)btn=`<button class="act" disabled>Lv.${h.lv} 解鎖</button>`;
-  else if(h.fest&&!festState(FESTS.find(f=>f.k===h.fest)).on)btn=`<button class="act" disabled>${fmtMD(festState(FESTS.find(f=>f.k===h.fest)).next)} 開賣</button>`;
+  else if(h.fest&&!festState(FESTS.find(f=>f.k===h.fest)).on)btn=`<button class="act" disabled>${fmtMD(festState(FESTS.find(f=>f.k===h.fest)).next)} 開賣</button>`; else if(h.fest&&window.GAMEF&&GAMEF[h.fest])btn=`<button class="act buy" data-fgo="${h.fest}">用${GAMEF[h.fest].cur}兌換</button>`;
   else btn=`<button class="act buy" data-hbuy="${h.id}" ${S.candy<h.cost?'disabled':''}>${mini}${h.cost}</button>`;
   return `<div class="hc ${on?'on':''} ${dark&&h.img?'locked':''}"><div class="silwrap">${pic}${dark&&h.img?`<span class="lockbadge">${why}</span>`:''}</div><b><span class="code">${h.fest?h.id.replace(/^SP/,'RSP'):h.id.slice(1)}</span>${h.n}</b><small>${h.st}${h.fest?`・<b class="fbadge">${FESTS.find(f=>f.k===h.fest).n}限定</b>`:''}</small><small>${o?(on?'✦ 目前的家':'已擁有'):h.cost===0?'預設':h.lv>1?`需要 Lv.${h.lv} · ${h.cost} 星星糖`:`${h.cost} 星星糖・不限等級`}</small><div class="petacts">${btn}</div></div>`}
 function bindHomes(p,L){
@@ -2102,7 +2106,7 @@ function render(){
       const fOff=!fOn(i),hid=!o&&(lock||fOff),why=lock?`🔒 Lv.${i.lv} 解鎖`:fOff?`🔒 ${fmtMD(festState(FESTS.find(f=>f.k===i.fest)).next)} 開賣`:'';
       let btns='';
       if(o)btns+=on?`<button class="act ghost2" data-off="special">脫下</button>`:`<button class="act wear" data-wear="${i.id}">穿上</button>`;
-      else if(!fOn(i)){const st=festState(FESTS.find(f=>f.k===i.fest));btns+=`<button class="act" disabled>${fmtMD(st.next)} 開賣</button>`}
+      else if(!fOn(i)){const st=festState(FESTS.find(f=>f.k===i.fest));btns+=`<button class="act" disabled>${fmtMD(st.next)} 開賣</button>`} else if(window.GAMEF&&GAMEF[i.fest]&&/SP0/.test(i.code))btns+=`<button class="act buy" data-fgo="${i.fest}">用${GAMEF[i.fest].cur}兌換</button>`
       else btns+=`<button class="act buy" data-buy="${i.id}" ${lock||S.candy<i.cost?'disabled':''}>${lock?'Lv.'+i.lv+' 解鎖':mini+i.cost}</button>`;
       return `<div class="spc ${on||tr?'on':''} ${hid?'locked':''}"><div class="silwrap">${thumb(i)}${hid?`<span class="lockbadge">${why}</span>`:''}</div><b><span class="code">${i.code.replace('B','').replace(/^[MF]SP/,'SP')}${i.code.endsWith('B')?'+':''}</span>${i.n}</b><small>${i.ser}${i.fest?`・<b class="fbadge">${fName(i)}限定</b>`:''}</small><small>${o?(on?'✦ 穿著中':(i.cost===0?'免費贈送・已擁有':'已擁有')):(i.lv>1?`需要 Lv.${i.lv} · ${i.cost} 星星糖`:`${i.cost} 星星糖・不限等級`)}</small><div class="petacts">${btns}</div></div>`};
     const head2=tab==='wardrobe'?`<div class="fh"><h2>我的衣櫥 <span class="hint">（${sps.filter(i=>own(i.id)).length}/${sps.length} 套）</span></h2><button class="act ghost2" id="swc">切換成${ch==='m'?'女生':'男生'}角色</button></div><p class="hint">穿上套裝，角色就會整個變身；脫下後回到白色基本服。</p>`
@@ -2703,16 +2707,63 @@ const SND=(()=>{
   Object.assign(TH.main,{pad:1,seventh:1,strum:'off'});Object.assign(TH.sunday,{pad:1,seventh:1});Object.assign(TH.valentine,{pad:1,seventh:1});
   Object.assign(TH.festive,{pad:1,strum:'beat'});Object.assign(TH.xmas,{pad:1,seventh:1,strum:'beat'});Object.assign(TH.chinese,{pad:1});
   Object.assign(TH.moon,{pad:1});Object.assign(TH.qixi,{pad:1});Object.assign(TH.halloween,{pad:1,strum:'off'});Object.assign(TH.hwevent,{pad:1,strum:'beat'});
+  /* ===== 新增：各節慶專屬音樂（節慶一般＋節慶遊戲），全部原創旋律 ===== */
+  const PEN=[0,2,4,7,9],MAJ=[0,2,4,5,7,9,11];
+  const I4=[[0,4,7],[-7,-3,0],[-5,-1,2],[0,4,7]], I6=[[0,4,7],[-3,0,4],[-7,-3,0],[-5,-1,2]], I5=[[0,4,7],[-5,-1,2],[-3,0,4],[-7,-3,0]];
+  Object.assign(TH,{
+    newyear:{bpm:126,root:62,beats:8,prog:I4,scale:PEN,arp:[0,2,1,2,0,2,1,2],lead:'guzheng',acc:'pluck',perc:['gong','bigdrum','cymbal'],bass2:1,pad:1,strum:'beat',
+      mel:[P('5 . 6 . 7 6 5 .|3 . 4 . 3 2 1 .|2 . 3 . 4 . 3 2|0 . . . 5 . . .'),P('7 . 7 6 5 . 6 .|8 . 7 . 6 5 . .|4 . 5 . 6 . 4 3|5 . . . . . . .')]},
+    duanwu:{bpm:112,root:67,beats:8,prog:I6,scale:PEN,arp:[0,null,1,2,null,1,2,1],lead:'flute',acc:'guzheng',perc:['row'],pad:1,
+      mel:[P('2 . 3 . 4 . . 3|2 . 1 . 0 . . .|1 . 2 . 3 . 4 .|3 . 2 . 1 . . .'),P('4 . 5 . 6 . 5 4|3 . 4 . 2 . . .|1 . 2 3 4 . 3 2|0 . . . . . . .')]},
+    children:{bpm:138,root:60,beats:8,prog:I5,scale:MAJ,arp:[0,2,1,2,0,2,1,3],lead:'marimba',acc:'bell',perc:['clap','tick'],bass2:1,pad:1,strum:'beat',
+      mel:[P('4 . 4 5 6 . 4 .|3 . 3 4 5 . . .|2 . 2 3 4 . 2 .|1 2 3 4 5 . . .'),P('7 . 6 5 4 . 6 .|5 . 4 3 2 . 4 .|3 . 4 5 6 . 5 4|3 . 2 . 0 . . .')]},
+    national:{bpm:116,root:58,beats:8,prog:I4,scale:MAJ,arp:[0,2,1,2,0,2,1,2],lead:'brass',acc:'pluck',perc:['march'],bass2:1,pad:1,strum:'beat',
+      mel:[P('4 . . 4 5 . 6 .|7 . 6 . 5 . . .|5 . . 5 6 . 5 .|4 . 3 . 2 . . .'),P('4 . . 4 5 . 6 .|7 . 9 . 8 . 7 .|6 . 5 . 4 . 2 .|0 . . . . . . .')]},
+    moon:{bpm:100,root:64,beats:8,prog:I6,scale:PEN,arp:[0,null,1,null,2,null,1,null],lead:'flute',acc:'bell',perc:'shaker',pad:1,seventh:1,
+      mel:[P('5 . . 4 3 . 2 .|3 . . 2 1 . . .|2 . 3 . 4 . 5 .|4 . . 3 2 . . .'),P('5 . 6 . 7 . 6 5|4 . . 3 2 . . .|1 . 2 . 3 . 2 1|0 . . . . . . .')]},
+    qixi:{bpm:104,root:65,beats:6,prog:I6,scale:MAJ,arp:[0,null,1,null,2,null],lead:'flute',acc:'bell',perc:'shaker',pad:1,seventh:1,
+      mel:[P('4 . . 5 . 4|2 . . 0 . .|3 . . 4 . 5|4 . . . . .'),P('7 . . 6 . 5|4 . . 2 . .|3 . 4 . 2 .|0 . . . . .')]},
+    /* 節慶遊戲：更快、節奏更密 */
+    xmasgame:{bpm:160,root:62,beats:8,prog:I4,scale:MAJ,arp:[0,1,2,1,0,1,2,3],lead:'bell',acc:'marimba',perc:['jingle','drive'],bass2:1,pad:1,strum:'beat',
+      mel:[P('4 . 2 4 7 . 4 .|5 . 3 5 8 . 5 .|6 5 4 3 2 . 4 .|0 . 0 . 0 . . .'),P('7 . 7 6 5 . 4 .|8 . 7 6 5 . . .|4 5 6 . 6 5 4 2|0 . . . . . . .')]},
+    newyeargame:{bpm:152,root:62,beats:8,prog:I4,scale:PEN,arp:[0,1,2,1,0,1,2,1],lead:'guzheng',acc:'pluck',perc:['gong','bigdrum','cymbal','drive'],bass2:1,pad:1,strum:'beat',
+      mel:[P('5 6 7 . 5 6 7 .|8 7 6 5 3 . . .|3 4 5 . 3 4 5 .|6 5 4 3 2 . . .'),P('7 . 8 . 7 6 5 .|6 . 7 . 6 5 3 .|4 . 5 6 5 4 3 2|0 . . . 5 . . .')]},
+    childrengame:{bpm:160,root:60,beats:8,prog:I5,scale:MAJ,arp:[0,2,1,2,0,2,1,3],lead:'marimba',acc:'bell',perc:['clap','drive'],bass2:1,pad:1,strum:'beat',
+      mel:[P('0 2 4 . 4 . 7 .|6 5 4 . 4 . . .|0 2 4 . 4 . 8 .|7 6 5 . 5 . . .'),P('5 . 6 . 7 . 8 .|9 . 8 7 6 . . .|4 5 6 . 5 4 3 .|2 . 1 . 0 . . .')]},
+    duanwugame:{bpm:140,root:67,beats:8,prog:I6,scale:PEN,arp:[0,1,2,1,0,1,2,1],lead:'flute',acc:'guzheng',perc:['row','drive'],bass2:1,pad:1,
+      mel:[P('2 . 4 . 2 . 4 .|5 . 4 3 2 . . .|1 . 3 . 1 . 3 .|4 . 3 2 1 . . .'),P('5 . 5 4 5 . 6 .|7 . 6 5 4 . . .|3 . 4 . 5 4 3 2|0 . . . 0 . . .')]},
+    qixigame:{bpm:132,root:65,beats:8,prog:I6,scale:MAJ,arp:[0,1,2,1,0,1,2,3],lead:'bell',acc:'pluck',perc:['shaker','tick'],bass2:1,pad:1,strum:'beat',
+      mel:[P('4 . 5 . 6 . 4 .|7 . 6 5 4 . . .|3 . 4 . 5 . 3 .|2 . 3 4 2 . . .'),P('7 . 8 . 9 . 7 .|8 . 7 6 5 . . .|4 . 6 5 4 2 1 .|0 . . . . . . .')]},
+    moongame:{bpm:124,root:64,beats:8,prog:I6,scale:PEN,arp:[0,1,2,1,0,1,2,1],lead:'flute',acc:'guzheng',perc:['shaker','thump'],bass2:1,pad:1,strum:'off',
+      mel:[P('3 . 5 . 4 3 2 .|3 . 2 . 1 . . .|2 . 4 . 3 2 1 .|2 . 1 . 0 . . .'),P('5 . 6 . 7 6 5 .|6 . 5 . 4 . . .|3 4 5 . 4 3 2 .|0 . . . . . . .')]},
+    nationalgame:{bpm:138,root:58,beats:8,prog:I4,scale:MAJ,arp:[0,2,1,2,0,2,1,2],lead:'brass',acc:'pluck',perc:['march','drive'],bass2:1,pad:1,strum:'beat',
+      mel:[P('4 . 4 4 5 . 6 .|7 . 7 7 6 . 5 .|4 . 4 4 5 . 6 .|5 . 4 . 2 . . .'),P('7 . 7 . 8 . 9 .|10 . 9 . 8 . 7 .|6 . 5 . 4 . 2 .|0 . . . . . . .')]}
+  });
   function padChord(notes,t,dur){const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=1400;f.Q.value=.3;const gn=ctx.createGain();
     gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(.045,t+.35);gn.gain.setValueAtTime(.045,t+dur*.7);gn.gain.linearRampToValueAtTime(0,t+dur+.25);f.connect(gn);gn.connect(bgmBus);
     for(const n of notes)for(const d of [-6,6]){const o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=hz(n);o.detune.value=d;o.connect(f);o.start(t);o.stop(t+dur+.3)}}
   function strumChord(notes,t,v){notes.forEach((n,i)=>inst('pluck',n,t+i*.018,v))}
   function inst(k,n,t,v){if(k==='pluck'){note(bgmBus,hz(n),t,.4,{type:'triangle',vol:v*1.1,dec:.4});note(bgmBus,hz(n)*2,t,.2,{vol:v*.25,dec:.2})}
+    else if(k==='marimba'){note(bgmBus,hz(n),t,.25,{vol:v*1.2,a:.002,dec:.25});note(bgmBus,hz(n)*4,t,.06,{vol:v*.12,a:.001,dec:.06})}
+    else if(k==='guzheng'){note(bgmBus,hz(n)*1.012,t,.6,{type:'triangle',vol:v*1.15,a:.003,slide:.988,dec:.6});note(bgmBus,hz(n)*2,t,.25,{vol:v*.3,a:.002,dec:.25});note(bgmBus,hz(n)*3,t,.12,{type:'triangle',vol:v*.1,dec:.12})}
+    else if(k==='brass'){const f=ctx.createBiquadFilter(),g=ctx.createGain(),o=ctx.createOscillator(),o2=ctx.createOscillator();o.type='sawtooth';o2.type='square';o.frequency.value=hz(n);o2.frequency.value=hz(n)/2;
+      f.type='lowpass';f.Q.value=2;f.frequency.setValueAtTime(500,t);f.frequency.linearRampToValueAtTime(2600,t+.05);f.frequency.exponentialRampToValueAtTime(900,t+.4);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*.6,t+.03);g.gain.exponentialRampToValueAtTime(.0008,t+.45);const g2=ctx.createGain();g2.gain.value=.25;
+      o.connect(f);o2.connect(g2);g2.connect(f);f.connect(g);g.connect(bgmBus);o.start(t);o2.start(t);o.stop(t+.5);o2.stop(t+.5)}
     else if(k==='flute'){note(bgmBus,hz(n),t,.7,{vol:v*.95,a:.06,dec:.75});note(bgmBus,hz(n)*1.004,t,.7,{type:'triangle',vol:v*.3,a:.08,dec:.7})}
     else bell(bgmBus,n,t,v,1.1)}
   let NB=null;function shaker(t,v){if(!NB){NB=ctx.createBuffer(1,ctx.sampleRate*.06,ctx.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length)}
     const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),gn=ctx.createGain();s.buffer=NB;f.type='highpass';f.frequency.value=6500;gn.gain.value=v;s.connect(f);f.connect(gn);gn.connect(bgmBus);s.start(t)}
-  function perc(k,b,B,t){if(!k)return;
+  function nz(t,dur,v,ft,fq){const len=Math.ceil(ctx.sampleRate*dur),buf=ctx.createBuffer(1,len,ctx.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
+    const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),gn=ctx.createGain();s.buffer=buf;f.type=ft;f.frequency.value=fq;gn.gain.value=v;s.connect(f);f.connect(gn);gn.connect(bgmBus);s.start(t)}
+  function perc(k,b,B,t,bar){if(!k)return;if(Array.isArray(k)){k.forEach(x=>perc(x,b,B,t,bar));return}
+    if(k==='bigdrum'&&b%4===0)note(bgmBus,95,t,.3,{vol:b===0?.2:.13,slide:.5});
+    if(k==='gong'&&b===0&&bar===0){note(bgmBus,98,t,2.4,{vol:.07,a:.01,dec:2.4});note(bgmBus,98*2.76,t,1.6,{vol:.03,dec:1.6});note(bgmBus,98*5.4,t,.8,{type:'triangle',vol:.012,dec:.8})}
+    if(k==='cymbal'&&b%4===2)nz(t,.35,.05,'highpass',7000);
+    if(k==='row'&&b%2===0)note(bgmBus,b%4===0?120:105,t,.22,{vol:b%4===0?.17:.1,slide:.45});
+    if(k==='march'){if(b===0||b===4)note(bgmBus,110,t,.2,{vol:.14,slide:.4});if(b===2||b===6)nz(t,.14,.09,'bandpass',2200);if(b===7){nz(t,.05,.04,'bandpass',2400);nz(t+.06,.05,.05,'bandpass',2400)}}
+    if(k==='clap'&&(b===2||b===6)){nz(t,.08,.08,'bandpass',1500);nz(t+.012,.08,.06,'bandpass',1500)}
+    if(k==='drive'){if(b%2===0)note(bgmBus,130,t,.14,{vol:.09,slide:.4});nz(t,.03,.025,'highpass',8000)}
     if(k==='shaker')shaker(t,b%2?.05:.025);
     if(k==='tick'&&b%2===1)note(bgmBus,2400,t,.03,{type:'square',vol:.012});
     if(k==='thump'&&b%(B/2)===0)note(bgmBus,130,t,.2,{vol:.12,slide:.4});
@@ -2728,7 +2779,7 @@ const SND=(()=>{
         if(T.pad&&b===0)padChord(voice,nextT,spb*B);
         if(T.strum==='beat'&&b%2===0)strumChord(voice.map(n=>n+12),nextT,.035);
         if(T.strum==='off'&&b%4===2)strumChord(voice.map(n=>n+12),nextT,.03);}
-      perc(T.perc,b,B,nextT);nextT+=spb;step++}
+      perc(T.perc,b,B,nextT,bar);nextT+=spb;step++}
   }
   function startBgm(){if(!cfg.bgm||!init())return;if(ctx.state!=='running')ctx.resume();if(timer)return;nextT=ctx.currentTime+.1;timer=setInterval(tick,60);
     bgmBus.gain.cancelScheduledValues(ctx.currentTime);bgmBus.gain.setValueAtTime(bgmBus.gain.value,ctx.currentTime);bgmBus.gain.linearRampToValueAtTime(.55,ctx.currentTime+1.2)}
@@ -2740,14 +2791,14 @@ const SND=(()=>{
   document.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.disabled&&!b.matches('[data-buy],[data-hbuy],[data-wear],.opt,.mc,.hwg,.hwbone,#roll,.sndbtn'))play('tap')},true);
   function toggle(k){cfg[k]=cfg[k]?0:1;keep();if(k==='bgm'){started=true;cfg.bgm?startBgm():stopBgm()}else if(cfg.sfx)play('tap');paint()}
   function paint(){const a=document.getElementById('sndBgm'),b=document.getElementById('sndSfx');if(a){a.classList.toggle('off',!cfg.bgm);a.title=cfg.bgm?'關閉音樂':'開啟音樂'}if(b){b.classList.toggle('off',!cfg.sfx);b.title=cfg.sfx?'關閉音效':'開啟音效'}}
-  return {play,toggle,paint,setTheme,cfg,get theme(){return theme}};
+  return {play,toggle,paint,setTheme,cfg,get theme(){return theme},pause(){stopBgm()},resume(){if(cfg.bgm&&started)startBgm()}};
 })();
 (function(){const d=document.createElement('div');d.className='sndbar';
   d.innerHTML=`<button class="sndbtn" id="sndBgm" aria-label="音樂開關"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="17" cy="16" r="3" fill="currentColor"/></svg></button><button class="sndbtn" id="sndSfx" aria-label="音效開關"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`;
   document.body.appendChild(d);$('#sndBgm').onclick=()=>SND.toggle('bgm');$('#sndSfx').onclick=()=>SND.toggle('sfx');SND.paint()})();
 
-function baseTheme(){const map={halloween:'halloween',xmas:'xmas',newyear:'chinese',duanwu:'chinese',moon:'moon',qixi:'qixi',valentine:'valentine',children:'festive',national:'festive'};
-  try{const f=FESTS.find(f=>festState(f).on);if(f)return map[f.k]||'festive'}catch(e){}return new Date().getDay()===0?'sunday':'main'}
+function baseTheme(){const map={halloween:'halloween',xmas:'xmas',newyear:'newyear',duanwu:'duanwu',moon:'moon',qixi:'qixi',valentine:'valentine',children:'children',national:'national'};
+  try{const f=FESTS.find(f=>festState(f).on);if(f)return map[f.k]||'festive'}catch(e){}const dw=new Date().getDay();return dw===0||dw===6?'sunday':'main'}  // 假日（週六、週日）
 SND.setTheme(baseTheme());
 /* ---------- 換裝變身動畫 ---------- */
 function fxLayer(cls){const w=$('#stagewrap'),st=$('#stage');if(!w||!st)return null;w.querySelectorAll('.'+cls).forEach(x=>x.remove());
@@ -3116,8 +3167,10 @@ $('#ldbtn').onclick=()=>openRestore(false);
 setInterval(saveBoard,30000);
 addEventListener('pagehide',()=>save());document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save()});
 stage();render();
-if(!checkHashRestore()&&!S.char)pickChar(true);
+if(!window.CLOUD_GATE){if(!checkHashRestore()&&!S.char)pickChar(true)}
 if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造型已下架，已退回 350 星星糖'),800)}
 </script>
+<script src="festgames.js"></script>
+<script src="cloud.js"></script>
 </body></html>
 </body></html>

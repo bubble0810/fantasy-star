@@ -1,0 +1,67 @@
+rules_version = '2';
+// 幻想智慧星：Firestore 安全規則
+// 貼到 Firebase 後台 → Firestore Database → 規則，按「發布」。
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isMe(uid) { return signedIn() && request.auth.uid == uid; }
+    function isAdmin() { return signedIn() && exists(/databases/$(db)/documents/admins/$(request.auth.uid)); }
+
+    // 管理員名單：只能在 Firebase 後台手動新增
+    match /admins/{uid} {
+      allow read: if isMe(uid);
+      allow write: if false;
+    }
+
+    // 玩家資料：自己讀寫自己的；管理員可以讀寫全部
+    match /players/{uid} {
+      allow read: if isMe(uid) || isAdmin();
+      allow create: if isMe(uid)
+        && request.resource.data.disabled == false
+        && request.resource.data.adminRev == 0;
+      allow update: if isAdmin() || (
+        isMe(uid)
+        && resource.data.disabled != true
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['adminRev', 'disabled', 'code', 'createdAt'])
+      );
+      allow delete: if isAdmin();
+
+      // 信箱：玩家只能把信標成已讀、已領取；全體信可以複製一份進自己的信箱
+      match /inbox/{mid} {
+        allow read: if isMe(uid) || isAdmin();
+        allow create: if isAdmin() || (
+          isMe(uid)
+          && exists(/databases/$(db)/documents/broadcasts/$(mid))
+          && request.resource.data.claimed == false
+          && request.resource.data.att == get(/databases/$(db)/documents/broadcasts/$(mid)).data.att
+        );
+        allow update: if isAdmin() || (
+          isMe(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'claimed', 'claimedAt'])
+        );
+        allow delete: if isAdmin();
+      }
+    }
+
+    // 圖案密碼的副本：只有管理員看得到
+    match /private/{uid} {
+      allow read: if isAdmin();
+      allow create: if isMe(uid);
+      allow update, delete: if isAdmin();
+    }
+
+    // 寄給全部玩家的信
+    match /broadcasts/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // 管理員操作紀錄
+    match /adminlog/{id} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
+  }
+}
