@@ -59,8 +59,9 @@ const css=document.createElement('style');css.textContent=`
 .cl-sub{min-height:44px;border:2px solid #e5d8f2;border-radius:999px;background:#fff;color:#3b2853;font:inherit;font-weight:700;cursor:pointer}
 .cl-err{color:#b42318;font-size:14px;font-weight:700;text-align:center;min-height:20px;margin:0}
 .cl-note{font-size:12px;color:#7d6a94;text-align:center;margin:0;line-height:1.5}
-.cl-fab{position:fixed;z-index:900;top:10px;right:10px;display:flex;gap:6px}
+.cl-fab{position:fixed;z-index:900;top:10px;right:calc(var(--fl,0px) + 10px);display:flex;gap:6px}
 .cl-fab button{position:relative;min-width:44px;height:44px;border-radius:999px;border:2px solid #e5d8f2;background:#fff;color:#3b2853;font:inherit;font-size:14px;font-weight:700;padding:0 12px;cursor:pointer;box-shadow:0 2px 8px #0001}
+body:has(.modal.full:not([hidden])) .cl-fab{display:none}
 .cl-fab b.dot{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:999px;background:#e2508f;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0 5px}
 .cl-mail{border:2px solid #e5d8f2;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
 .cl-mail.new{border-color:#e2508f;background:#fff5f9}
