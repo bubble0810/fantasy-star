@@ -401,5 +401,18 @@ function sfx(k){MUSIC.fx(k)}
 show('startP');
 })();
 </script>
+
+<!-- v7 統一全框：場景圖模糊延伸填滿手機框上下空白；說明卡、結算卡置中且太長可以捲動 -->
+<style id="fs-unify">
+html{background:#120c22!important}
+body{background:transparent!important}
+body::before{content:"";position:fixed;inset:-40px;background:url('img/scene1.webp') center/cover no-repeat;filter:blur(18px) brightness(.72) saturate(1.1);z-index:-1;pointer-events:none}
+.panel{position:fixed!important;inset:0!important;justify-content:flex-start!important;align-items:center!important;overflow-y:auto!important;z-index:20}
+.panel>.card{margin:auto!important;flex:none}
+</style>
+<script>
+/* 萬聖節：換關卡時，背景跟著換成那一關的場景 */
+(function(){const st=document.getElementById('fs-unify');let last='';setInterval(()=>{const b=document.querySelector('.scene>img.bg');if(b&&b.getAttribute('src')&&b.getAttribute('src')!==last){last=b.getAttribute('src');st.textContent=st.textContent.replace(/url\('[^']*'\)/,"url('"+last+"')")}},800)})();
+</script>
 </body>
 </html>
