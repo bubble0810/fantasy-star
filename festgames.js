@@ -7,7 +7,8 @@ window.GAMEF={
   newyear:  {n:'春節',title:'趕年獸・搶紅包',cur:'紅包',ic:'🧧',runs:3,look:320,room:400,url:'fest/newyear/index.html',home:'SP03',lk:'SP03'}
 };
 const FG_RATE=3;   // 1 個節慶貨幣 = 3 顆星星糖
-const TRIAL_PRICE=50;   // 星宮體驗館：每個遊戲每天體驗 1 次的價格（星星糖）
+const TRIAL_PRICE=50;   // 星宮體驗館：每次體驗的價格（星星糖）
+const TRIAL_DAILY=3;    // 星宮體驗館：每個遊戲每天可體驗 3 次
 const TRIAL_COVER={   // 體驗館卡片圖：直接用各節慶遊戲的場景圖裁一段（第二個值＝從上往下的位置）
   halloween:['fest/halloween/img/scene1.webp','5%'],xmas:['fest/xmas/img/bg_slope.webp','0%'],newyear:['fest/newyear/img/scene1.webp','62%']};
 const TRIAL_SOON=[['children','兒童節','🎈'],['dragon','端午節','🐉'],['qixi','七夕','💞'],['moon','中秋節','🥮'],['national','國慶日','🎆']];   // 還沒做好的節慶遊戲
@@ -103,18 +104,18 @@ function launch(k,trial){
 function TS(){const d=new Date().toDateString();if(!S.trial||S.trial.day!==d)S.trial={day:d,used:{}};S.trial.used=S.trial.used||{};return S.trial}
 window.starPalace=function(){
   const t=TS();
-  const cards=Object.keys(GAMEF).map(k=>{const g=GAMEF[k],home=HOMES.find(h=>h.id===g.home),used=!!t.used[k];
+  const cards=Object.keys(GAMEF).map(k=>{const g=GAMEF[k],home=HOMES.find(h=>h.id===g.home),used=t.used[k]|0;
     const cv=TRIAL_COVER[k]||(home&&home.img?[home.img,'50%']:null);
     return `<div class="tp-card"><div class="pic" style="${cv?`background-image:url('${cv[0]}');background-position:50% ${cv[1]}`:''}">${cv?'':g.ic}</div><div class="tx">
       <b>${g.ic} ${g.n}・${g.title}</b><span class="tagx">體驗模式・沒有獎勵</span>
-      ${used?'<button class="act" disabled>今天已體驗</button>':`<button class="act buy" data-tp="${k}" ${S.candy<TRIAL_PRICE?'disabled':''}>⭐ ${TRIAL_PRICE} 體驗一次</button>`}</div></div>`}).join('')
+      ${used>=TRIAL_DAILY?'<button class="act" disabled>今天已體驗 3/3</button>':`<button class="act buy" data-tp="${k}" ${S.candy<TRIAL_PRICE?'disabled':''}>⭐ ${TRIAL_PRICE} 體驗一次（${used}/${TRIAL_DAILY}）</button>`}</div></div>`}).join('')
    +TRIAL_SOON.map(([k,n,ic])=>`<div class="tp-card soon"><div class="pic">${ic}</div><div class="tx"><b>${ic} ${n}</b><span class="tagx">敬請期待</span><button class="act" disabled>還沒開放</button></div></div>`).join('');
-  openSheet(head('🏰 星宮體驗館')+`<p class="hint mobile-compact">八大節慶的小遊戲都可以在這裡體驗！每個遊戲每天可以體驗 1 次，每次 ${TRIAL_PRICE} 顆星星糖。<br>體驗模式<b>沒有任何獎勵</b>，也不會用掉節慶活動的次數。</p>
+  openSheet(head('🏰 星宮體驗館')+`<p class="hint mobile-compact">八大節慶的小遊戲都可以在這裡體驗！每個遊戲每天可以體驗 ${TRIAL_DAILY} 次，每次 ${TRIAL_PRICE} 顆星星糖。<br>體驗模式<b>沒有任何獎勵</b>，也不會用掉節慶活動的次數。</p>
     <div class="fg-bal">⭐ 我的星星糖<span>${S.candy}</span></div><div class="tp-grid">${cards}</div>`);
   document.querySelectorAll('[data-tp]').forEach(b=>b.onclick=()=>{const k=b.dataset.tp,g=GAMEF[k],t=TS();
-    if(t.used[k]||S.candy<TRIAL_PRICE)return;
+    if((t.used[k]|0)>=TRIAL_DAILY||S.candy<TRIAL_PRICE)return;
     if(!confirm(`花 ${TRIAL_PRICE} 顆星星糖體驗「${g.title}」一次？\n體驗模式沒有任何獎勵喔！`))return;
-    S.candy-=TRIAL_PRICE;t.used[k]=1;window.FSTAT&&FSTAT('t:'+k);save();render();launch(k,true)});
+    S.candy-=TRIAL_PRICE;t.used[k]=(t.used[k]|0)+1;window.FSTAT&&FSTAT('t:'+k);save();render();launch(k,true)});
 };
 document.addEventListener('click',e=>{const b=e.target.closest('[data-tpgo]');if(b){e.preventDefault();starPalace()}});
 addEventListener('message',e=>{
