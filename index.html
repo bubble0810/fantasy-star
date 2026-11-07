@@ -383,7 +383,7 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 .hwshop{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .hwitem{border:2px solid #ffd7a8;border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:4px;background:#fffaf3}.hwitem small{color:#7a6a8a;flex:1}
 
-.sndbar{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;z-index:40}
+.sndbar{position:static;display:flex;flex-direction:row;gap:6px;z-index:2;flex:none;margin-left:auto}
 .sndbtn{width:40px;height:40px;border-radius:50%;border:2px solid #fff;background:#e2508fe6;color:#fff;display:grid;place-items:center;padding:0;box-shadow:0 4px 12px -4px #8a5bb0aa}
 .sndbtn svg{width:20px;height:20px}.sndbtn.off{background:#b9b0c9e6}.sndbtn.off::after{content:"";position:absolute;width:26px;height:2.5px;background:#fff;transform:rotate(-45deg);border-radius:2px}
 .sndbtn{position:relative}
@@ -465,6 +465,10 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 .stagewrap .hud .exptxt{font-size:.62rem;line-height:1.2}
 .stagewrap .hud .pchip{font-size:.8rem;padding:3px 9px}
 .stagewrap .hud .candy{font-size:.9rem}.stagewrap .hud .candy svg{width:17px;height:17px}
+/* 信箱／帳號固定在角色舞台右上角；功能仍由 cloud.js 負責 */
+.stagewrap>.cl-fab{position:absolute!important;top:calc(8px + env(safe-area-inset-top))!important;right:8px!important;left:auto!important;z-index:6!important;display:flex;gap:6px}
+.stagewrap>.cl-fab button{height:40px;min-width:40px;padding:0 10px}
+@media (max-width:420px){.stagewrap>.cl-fab{gap:4px;right:6px}.stagewrap>.cl-fab button{height:38px;min-width:38px;padding:0 9px}}
 .stagewrap .stbadge{top:auto;bottom:10px;right:10px;font-size:.76rem;padding:3px 9px}
 .ministage{display:none!important}
 @media (max-width:420px){.stagewrap .hud{max-width:100%}.stagewrap .stage .tag{font-size:.72rem;padding:3px 8px;bottom:8px;left:8px}}
@@ -581,7 +585,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 /* 固定在畫面上的東西都限制在框裡 */
 .modal{left:var(--fl)!important;right:var(--fl)!important}
 .sheet{max-width:100%!important}
-.sndbar{right:calc(var(--fl) + 12px)!important}
+.sndbar{right:auto!important;bottom:auto!important}
 .ministage{left:calc(var(--fl) + 10px)!important}
 .toast{max-width:calc(var(--fw) - 32px)!important}
 /* 分頁：4 個（衣櫥｜房間｜家園｜商店），闖關移到舞台 */
@@ -2854,7 +2858,7 @@ const SND=(()=>{
 })();
 (function(){const d=document.createElement('div');d.className='sndbar';
   d.innerHTML=`<button class="sndbtn" id="sndBgm" aria-label="音樂開關"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="17" cy="16" r="3" fill="currentColor"/></svg></button><button class="sndbtn" id="sndSfx" aria-label="音效開關"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`;
-  document.body.appendChild(d);$('#sndBgm').onclick=()=>SND.toggle('bgm');$('#sndSfx').onclick=()=>SND.toggle('sfx');SND.paint()})();
+  {const top=document.querySelector('.top'),save=document.getElementById('saveicon');if(top)top.insertBefore(d,save||null);else document.body.appendChild(d)};$('#sndBgm').onclick=()=>SND.toggle('bgm');$('#sndSfx').onclick=()=>SND.toggle('sfx');SND.paint()})();
 
 function baseTheme(){const map={halloween:'halloween',xmas:'xmas',newyear:'newyear',duanwu:'duanwu',moon:'moon',qixi:'qixi',valentine:'valentine',children:'children',national:'national'};
   try{const f=FESTS.find(f=>festState(f).on);if(f)return map[f.k]||'festive'}catch(e){}const dw=new Date().getDay();return dw===0||dw===6?'sunday':'main'}  // 假日（週六、週日）
@@ -3214,6 +3218,8 @@ $('#swbtn').onclick=saveSheet;
   ms.addEventListener('click',e=>{if(e.target.closest('#mshide')){closed=true;upd();return}window.scrollTo({top:0,behavior:'smooth'})});
 })();
 $('#stage').addEventListener('click',e=>{if(e.target.closest('[data-hwgo]'))hwMenu()});
+/* cloud.js 載入後，把信箱／帳號控制列放進角色舞台右上角。 */
+(function attachCloudFab(){const move=()=>{const fab=document.querySelector('.cl-fab'),wrap=document.getElementById('stagewrap');if(fab&&wrap&&fab.parentNode!==wrap)wrap.appendChild(fab)};move();new MutationObserver(move).observe(document.body,{childList:true,subtree:false})})();
 
 function savePop(){saveBoard();const ok=S.lastBackup&&S.backupSig===progSig();
   openSheet(head('💾 存檔')+`<div class="fb ${ok?'ok':'no'}"><b>${$('#sbtitle').textContent}</b>${ok?'目前的進度已經備份好了。':'關掉網頁前，記得按「立即存檔」並保存存檔連結或 QR Code，進度才不會不見！'}<br><small>${$('#sbstat').textContent==='還沒備份過'?'還沒有備份過':'上次備份：'+$('#sbstat').textContent.replace('上次 ','')}</small></div>
