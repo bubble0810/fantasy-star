@@ -567,15 +567,37 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 /* ===== v6 背包圖示 ===== */
 .bagico{width:46px;height:46px;flex:none;display:block}
 .bi .bin{display:flex;align-items:center;gap:8px}.bi .bin .bagico{width:40px;height:40px}
-/* ===== v5 版面：電腦左右兩欄、手機橫拿提示轉直 ===== */
-@media (min-width:1000px) and (min-aspect-ratio:5/4){
-  .app{max-width:1240px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(400px,1fr);column-gap:22px;row-gap:10px;align-items:start}
-  .app>*{grid-column:2;min-width:0}
-  .app>.stagewrap{grid-column:1;grid-row:1/span 30;position:sticky;top:12px;align-self:start;width:100%;max-width:calc((100vh - 120px) * 1.5);margin:0;justify-self:end;padding-top:0}
-  .stagewrap .stage{border-radius:22px;border-top:3px solid #fff}
-  .stagewrap .tabs{margin-top:10px}
-  .stagewrap .hud{top:8px}
-}
+/* ===== v7 版面：統一直式手機框（9:19.5）。手機填滿螢幕；平板、電腦置中顯示，框外是裝飾背景 ===== */
+:root{--fw:min(100vw,max(375px,calc(100dvh * 9 / 19.5)));--fl:calc((100vw - var(--fw)) / 2)}
+@media (max-aspect-ratio:10/16){:root{--fw:100vw}}
+html{background:radial-gradient(circle at 20% 15%,#5b3f8f 0,transparent 45%) fixed,radial-gradient(circle at 85% 80%,#7a3f7a 0,transparent 45%) fixed,#2b1d4a!important;min-height:100%}
+html::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.7;
+  background-image:radial-gradient(1.5px 1.5px at 12% 22%,#fff,transparent),radial-gradient(1px 1px at 30% 70%,#fff,transparent),radial-gradient(2px 2px at 78% 18%,#ffe9a8,transparent),radial-gradient(1px 1px at 88% 55%,#fff,transparent),radial-gradient(1.5px 1.5px at 8% 82%,#ffd1e8,transparent),radial-gradient(1px 1px at 60% 10%,#fff,transparent),radial-gradient(2px 2px at 92% 92%,#fff,transparent),radial-gradient(1px 1px at 45% 40%,#ffffffaa,transparent);background-size:420px 420px}
+body{padding:0!important;background:transparent!important;background-image:none!important}
+.app{position:relative;z-index:1;width:var(--fw);max-width:none!important;margin:0 auto!important;min-height:100dvh;padding:max(10px,env(safe-area-inset-top,0px)) 12px calc(40px + env(safe-area-inset-bottom,0px));box-sizing:border-box;
+  background:var(--bg) radial-gradient(circle at 12% 8%,#ffe6f2 0,transparent 40%),radial-gradient(circle at 90% 30%,#e3f1ff 0,transparent 38%);background-color:var(--bg)}
+@media (min-aspect-ratio:10/16){.app{box-shadow:0 0 0 1px #ffffff22,0 0 60px -10px #000a}}
+.stagewrap{max-width:100%!important}
+/* 固定在畫面上的東西都限制在框裡 */
+.modal{left:var(--fl)!important;right:var(--fl)!important}
+.sheet{max-width:100%!important}
+.sndbar{right:calc(var(--fl) + 12px)!important}
+.ministage{left:calc(var(--fl) + 10px)!important}
+.toast{max-width:calc(var(--fw) - 32px)!important}
+/* 分頁：4 個（衣櫥｜房間｜家園｜商店），闖關移到舞台 */
+.tabs{grid-template-columns:repeat(4,1fr)!important}
+/* 舞台下緣：⚔ 闖關｜節慶活動｜🏰 星宮 */
+.stbar{position:absolute;left:8px;right:8px;bottom:8px;display:flex;align-items:center;gap:6px;z-index:3}
+.stbar .stbadge{position:static!important;margin:0!important;font-size:.74rem!important;padding:4px 9px!important;white-space:nowrap;flex:none}
+.stbar .fests{flex:1;display:flex;gap:6px;justify-content:center;min-width:0;overflow:hidden}
+.stbtn{border:2px solid #ffffffcc;border-radius:999px;padding:5px 12px;font-weight:700;font-size:.86rem;color:#fff;white-space:nowrap;flex:none;box-shadow:0 4px 10px -4px #3b285399;font-family:inherit;cursor:pointer}
+.stbtn.quest{background:linear-gradient(120deg,#e2508fe8,#c23258e8)}
+.stbtn.quest[aria-pressed="true"]{outline:3px solid #fff;outline-offset:1px}
+.stbtn.tp{background:linear-gradient(120deg,#7b5bd6e8,#4a3a9ce8)}
+.stagewrap .stage .tag{bottom:48px!important}
+/* 遊戲（答題、電流急急棒、記憶翻牌、顏色陷阱）一律佔滿手機框 */
+.modal.full{align-items:stretch!important;padding:0!important;background:var(--bg)}
+.modal.full .sheet{max-width:100%!important;width:100%;max-height:none!important;height:100dvh;border-radius:0!important;animation:none;padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(18px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
 .rotmask{display:none}
 @media (orientation:landscape) and (max-height:500px) and (pointer:coarse){
   .rotmask{display:flex;position:fixed;inset:0;z-index:10050;background:#f4ecfb;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:#3b2853;padding:16px;
@@ -597,11 +619,10 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
   </header>
 
   <div class="stagewrap" id="stagewrap"><div class="stage" id="stage"></div><nav class="tabs" role="tablist">
-    <button role="tab" id="t-quest" aria-selected="true">闖關</button>
     <button role="tab" id="t-wardrobe" aria-selected="false">衣櫥</button>
-    <button role="tab" id="t-shop" aria-selected="false">商店</button>
-    <button role="tab" id="t-home" aria-selected="false">家園</button>
     <button role="tab" id="t-room" aria-selected="false">房間</button>
+    <button role="tab" id="t-home" aria-selected="false">家園</button>
+    <button role="tab" id="t-shop" aria-selected="false">商店</button>
   </nav><div class="hud">
       <div class="chip"><span class="lvbadge" id="lv">Lv.1</span><div><div class="bar"><i id="xpbar"></i></div><div class="exptxt" id="xptxt"></div></div></div>
       <button class="chip pchip" id="pbtn" title="切換玩家"><span id="pname0">玩家</span></button>
@@ -2062,7 +2083,7 @@ function stage(anim){
     fig=`<image href="${src}" x="${W0/2-W2/2}" y="${FOOT-H2}" width="${W2}" height="${H2}"/>`;label=e.special.n}
   else{const Hf=BASE_H[ch]*K,vh=B.H+290,vw=B.W+520,h=Hf*vh/B.H,w=h*vw/vh,y0=FOOT-h*(B.floor+240)/vh;fw=w*.4;
     fig=`<svg x="${W0/2-w/2}" y="${y0}" width="${w}" height="${h}" viewBox="${vb3(ch,'all')}">${ONLY_SETS?plainDoll(ch):doll3(ch,e,'main')}</svg>`;label=ONLY_SETS?'基本服':(e.top.set||e.top.n)}
-  $('#stage').innerHTML=`<svg viewBox="0 0 ${W0} ${H0}" role="img" aria-label="${R.n}裡${spi?'穿著'+label+'的':'的'}${B.n}角色">${bg}<ellipse cx="${W0/2}" cy="${FOOT-2}" rx="${Math.max(48,fw*.42)}" ry="9" fill="#3b2853" opacity=".22"/><g class="fig">${fig}</g></svg><div class="tag"><b>${label}</b><span>· ${R.n}</span></div>${stBadge()}`;
+  $('#stage').innerHTML=`<svg viewBox="0 0 ${W0} ${H0}" role="img" aria-label="${R.n}裡${spi?'穿著'+label+'的':'的'}${B.n}角色">${bg}<ellipse cx="${W0/2}" cy="${FOOT-2}" rx="${Math.max(48,fw*.42)}" ry="9" fill="#3b2853" opacity=".22"/><g class="fig">${fig}</g></svg><div class="tag"><b>${label}</b><span>· ${R.n}</span></div><div class="stbar"><button class="stbtn quest" id="t-quest" aria-pressed="${tab==='quest'}">🗺️ 闖關</button><div class="fests">${stBadge()}</div><button class="stbtn tp" data-tpgo aria-label="星宮體驗館">🏰 星宮</button></div>`;
   {const m=$('#msin');if(m){const sv=$('#stage svg');m.innerHTML=sv?sv.outerHTML.replace(/viewBox="[^"]*"/,'viewBox="190 60 220 330" preserveAspectRatio="xMidYMid slice"'):''}}
   if(anim){const el=$('#stage');el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}
 }
@@ -2092,7 +2113,7 @@ const slotChips=(cur,attr,count)=>`<div class="filters">${slotsFor(S.char||'f').
 function render(){
   hud();
   {const ks=slotsFor(S.char||'f').map(x=>x[0]);if(!ks.includes(wSlot))wSlot=ks.includes('outfit')?'outfit':'top';if(!ks.includes(shopSlot))shopSlot=ks.includes('outfit')?'outfit':'top'}
-  for(const k of ['quest','wardrobe','shop','home','room'])$('#t-'+k).setAttribute('aria-selected',tab===k);
+  for(const k of ['wardrobe','room','home','shop']){const b=$('#t-'+k);if(b)b.setAttribute('aria-selected',tab===k)}{const q=$('#t-quest');if(q)q.setAttribute('aria-pressed',tab==='quest')}
   const p=$('#panel');const L=levelOf(S.exp);uidN=0;
   if(tab==='quest'){
     p.innerHTML=mapHTML()+`<h2>自由練習 <span class="hint">（不限次數，隨時賺糖果）</span></h2>
@@ -2294,7 +2315,9 @@ function renderHome(p,L){
   const se=p.querySelector('[data-sellevery]');if(se)se.onclick=()=>{let g=0;Object.keys(S.bag).forEach(k=>g+=sell(k,S.bag[k]));save();toast(`全部賣出，獲得 ${g} 星星糖！`);render()};
 }
 setInterval(()=>{if(tab==='home'&&$('#modal').hidden)render()},15000);
-['quest','wardrobe','shop','home','room'].forEach(k=>$('#t-'+k).onclick=()=>{tab=k;if(trySp&&k!=='shop'){trySp=null;stage()}render()});
+['wardrobe','room','home','shop'].forEach(k=>$('#t-'+k).onclick=()=>{tab=k;if(trySp&&k!=='shop'){trySp=null;stage()}render()});
+document.addEventListener('click',e=>{if(e.target.closest('#t-quest')){e.preventDefault();tab='quest';if(trySp){trySp=null;stage()}render();
+  setTimeout(()=>{const p=$('#panel'),w=$('#stagewrap');if(!p||!w)return;const y=p.getBoundingClientRect().top+scrollY-w.offsetHeight-6;if(scrollY>y)scrollTo({top:Math.max(0,y)})},0)}});
 
 
 /* ---------- quiz ---------- */
@@ -2378,7 +2401,10 @@ function finish(){
   $('#close').onclick=closeQuiz;$('#again').onclick=()=>startQuiz(QZ.c);
   render();
 }
-function closeQuiz(){SND.setTheme(baseTheme());clearInterval(timer);stopGame();$('#modal').hidden=true;render();stage()}
+function closeQuiz(){window.__inGame=false;$('#modal').classList.remove('full');SND.setTheme(baseTheme());clearInterval(timer);stopGame();$('#modal').hidden=true;render();stage()}
+/* 進入遊戲 → 全框模式（直到 closeQuiz） */
+setTimeout(()=>['startQuiz','mazePlay','memStart','stroopStart'].forEach(fn=>{const f=window[fn];if(typeof f!=='function'||f.__full)return;
+  const w=window[fn]=function(){window.__inGame=true;const r=f.apply(this,arguments);$('#modal').classList.add('full');return r};w.__full=1}),0);
 
 /* ---------- shared rewards ---------- */
 function grant(exp,candy){
@@ -2390,7 +2416,7 @@ function grant(exp,candy){
 }
 let gameStop=null;
 function stopGame(){if(gameStop){gameStop();gameStop=null}}
-function openSheet(html){stopGame();clearInterval(timer);$('#modal').hidden=false;$('#sheet').innerHTML=html;const q=$('#quit');if(q)q.onclick=closeQuiz}
+function openSheet(html){stopGame();clearInterval(timer);$('#modal').hidden=false;$('#modal').classList.toggle('full',!!window.__inGame);$('#sheet').innerHTML=html;const q=$('#quit');if(q)q.onclick=closeQuiz}
 const head=(tag,extra='')=>`<div class="qhead"><span class="qtag">${tag}</span>${extra}<button class="ghost" id="quit" style="padding:4px 10px">離開</button></div>`;
 function resultSheet(tag,big,msg,exp,candy,again){SND.play('win');
   const lvMsg=grant(exp,candy);
@@ -3200,7 +3226,7 @@ function savePop(){saveBoard();const ok=S.lastBackup&&S.backupSig===progSig();
   <button class="big" id="sp1" style="width:100%">💾 立即存檔</button><button class="ghost" id="sp2" style="width:100%">📂 讀取存檔</button>`);
   $('#sp1').onclick=saveSheet;$('#sp2').onclick=()=>openRestore(false)}
 $('#saveicon').onclick=savePop;
-$('.tabs').addEventListener('click',()=>setTimeout(()=>{const p=$('#panel'),w=$('#stagewrap');if(!p||!w)return;const two=matchMedia('(min-width:1000px) and (min-aspect-ratio:5/4)').matches;const y=p.getBoundingClientRect().top+scrollY-(two?12:w.offsetHeight+6);if(scrollY>y)scrollTo({top:Math.max(0,y)})},0));
+$('.tabs').addEventListener('click',()=>setTimeout(()=>{const p=$('#panel'),w=$('#stagewrap');if(!p||!w)return;const y=p.getBoundingClientRect().top+scrollY-w.offsetHeight-6;if(scrollY>y)scrollTo({top:Math.max(0,y)})},0));
 $('#svbtn').onclick=saveSheet;
 $('#ldbtn').onclick=()=>openRestore(false);
 setInterval(saveBoard,30000);
