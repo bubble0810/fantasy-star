@@ -595,9 +595,6 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stbtn.quest[aria-pressed="true"]{outline:3px solid #fff;outline-offset:1px}
 .stbtn.tp{background:linear-gradient(120deg,#7b5bd6e8,#4a3a9ce8)}
 .stagewrap .stage .tag{bottom:48px!important}
-/* 遊戲（答題、電流急急棒、記憶翻牌、顏色陷阱）一律佔滿手機框 */
-.modal.full{align-items:stretch!important;padding:0!important;background:var(--bg)}
-.modal.full .sheet{max-width:100%!important;width:100%;max-height:none!important;height:100dvh;border-radius:0!important;animation:none;padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(18px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
 .rotmask{display:none}
 @media (orientation:landscape) and (max-height:500px) and (pointer:coarse){
   .rotmask{display:flex;position:fixed;inset:0;z-index:10050;background:#f4ecfb;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:#3b2853;padding:16px;
@@ -2401,10 +2398,7 @@ function finish(){
   $('#close').onclick=closeQuiz;$('#again').onclick=()=>startQuiz(QZ.c);
   render();
 }
-function closeQuiz(){window.__inGame=false;$('#modal').classList.remove('full');SND.setTheme(baseTheme());clearInterval(timer);stopGame();$('#modal').hidden=true;render();stage()}
-/* 進入遊戲 → 全框模式（直到 closeQuiz） */
-setTimeout(()=>['startQuiz','mazePlay','memStart','stroopStart'].forEach(fn=>{const f=window[fn];if(typeof f!=='function'||f.__full)return;
-  const w=window[fn]=function(){window.__inGame=true;const r=f.apply(this,arguments);$('#modal').classList.add('full');return r};w.__full=1}),0);
+function closeQuiz(){SND.setTheme(baseTheme());clearInterval(timer);stopGame();$('#modal').hidden=true;render();stage()}
 
 /* ---------- shared rewards ---------- */
 function grant(exp,candy){
@@ -2416,7 +2410,7 @@ function grant(exp,candy){
 }
 let gameStop=null;
 function stopGame(){if(gameStop){gameStop();gameStop=null}}
-function openSheet(html){stopGame();clearInterval(timer);$('#modal').hidden=false;$('#modal').classList.toggle('full',!!window.__inGame);$('#sheet').innerHTML=html;const q=$('#quit');if(q)q.onclick=closeQuiz}
+function openSheet(html){stopGame();clearInterval(timer);$('#modal').hidden=false;$('#sheet').innerHTML=html;const q=$('#quit');if(q)q.onclick=closeQuiz}
 const head=(tag,extra='')=>`<div class="qhead"><span class="qtag">${tag}</span>${extra}<button class="ghost" id="quit" style="padding:4px 10px">離開</button></div>`;
 function resultSheet(tag,big,msg,exp,candy,again){SND.play('win');
   const lvMsg=grant(exp,candy);
