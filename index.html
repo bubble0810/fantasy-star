@@ -564,8 +564,29 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 .mknews li span{flex:1}
 .mkhot{position:absolute;margin:-30px 0 0 18px;background:#ff8c1a;color:#fff;font-size:.62rem;font-weight:700;border-radius:99px;padding:1px 6px;animation:sdp 1.4s infinite}
 .mkh{position:relative}
+/* ===== v6 背包圖示 ===== */
+.bagico{width:46px;height:46px;flex:none;display:block}
+.bi .bin{display:flex;align-items:center;gap:8px}.bi .bin .bagico{width:40px;height:40px}
+/* ===== v5 版面：電腦左右兩欄、手機橫拿提示轉直 ===== */
+@media (min-width:1000px) and (min-aspect-ratio:5/4){
+  .app{max-width:1240px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(400px,1fr);column-gap:22px;row-gap:10px;align-items:start}
+  .app>*{grid-column:2;min-width:0}
+  .app>.stagewrap{grid-column:1;grid-row:1/span 30;position:sticky;top:12px;align-self:start;width:100%;max-width:calc((100vh - 120px) * 1.5);margin:0;justify-self:end;padding-top:0}
+  .stagewrap .stage{border-radius:22px;border-top:3px solid #fff}
+  .stagewrap .tabs{margin-top:10px}
+  .stagewrap .hud{top:8px}
+}
+.rotmask{display:none}
+@media (orientation:landscape) and (max-height:500px) and (pointer:coarse){
+  .rotmask{display:flex;position:fixed;inset:0;z-index:10050;background:#f4ecfb;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:#3b2853;padding:16px;
+    background-image:radial-gradient(circle at 12% 8%,#ffe6f2 0,transparent 40%),radial-gradient(circle at 90% 30%,#e3f1ff 0,transparent 38%)}
+  .rotmask b{font-family:var(--display);font-weight:400;font-size:1.5rem;color:#c23258}
+  .rotmask .ph{width:46px;height:76px;border:4px solid #c23258;border-radius:10px;animation:rotph 1.8s ease-in-out infinite}
+  @keyframes rotph{0%,25%{transform:rotate(-90deg)}60%,100%{transform:rotate(0)}}
+}
 </style>
 
+<div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
   <header class="top">
     <div class="brand">幻想智慧星<small>答題闖關 · 收集造型 · 布置小屋</small></div><button class="saveicon need" id="saveicon" aria-label="存檔"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="currentColor"/><rect x="7" y="4" width="8" height="5" rx="1" fill="#fff"/><rect x="6.5" y="13" width="11" height="6" rx="1" fill="#fff"/></svg><span>存檔</span><i class="sdot"></i></button>
@@ -2171,6 +2192,24 @@ const MER_IMG={'#e2508f':'royal','#c2185b':'candy','#3f8f7a':'sakura','#3fb39a':
 function merchantSVG(c){const k=MER_IMG[c];if(k)return `<img class="merimg" src="merchants/${k}.webp" alt="" style="border-color:${c}66">`;return `<svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="38" fill="${c}" opacity=".18"/><path d="M18,78Q20,54 40,52Q60,54 62,78Z" fill="${c}"/><circle cx="40" cy="36" r="17" fill="${SKIN}"/><path d="M22,30Q24,12 40,12Q56,12 58,30Q50,22 40,24Q30,22 22,30Z" fill="#6b4630"/><path d="M16,26L64,26L58,18Q40,6 22,18Z" fill="${c}"/><circle cx="34" cy="38" r="2.6" fill="#3b2853"/><circle cx="46" cy="38" r="2.6" fill="#3b2853"/><path d="M35,45Q40,49 45,45" stroke="#c2566e" stroke-width="2" fill="none"/></svg>`}
 
 function bagAdd(name,n=1){S.bag[name]=(S.bag[name]||0)+n}
+/* 背包道具小圖示（v6）：花朵沿用花園的畫法，寵物禮物是同風格的向量圖 */
+const GIFT_SVG={
+ '幸運草':`<path d="M50,92Q52,70 50,52" stroke="#3f8f4f" stroke-width="5" fill="none" stroke-linecap="round"/>${[0,90,180,270].map(a=>`<path transform="rotate(${a} 50 42)" d="M50,42C40,30 30,18 40,12C46,8 50,14 50,20C50,14 54,8 60,12C70,18 60,30 50,42Z" fill="#5fbf6a" stroke="#3f8f4f" stroke-width="2"/>`).join('')}<circle cx="50" cy="42" r="4" fill="#3f8f4f"/>`,
+ '毛線球':`<circle cx="48" cy="52" r="34" fill="#ff8fb8" stroke="#d9578a" stroke-width="3"/><path d="M20,40Q48,52 76,36M16,58Q46,66 80,52M26,76Q50,72 72,74M40,20Q56,50 46,86" stroke="#d9578a" stroke-width="3" fill="none"/><path d="M78,70Q92,78 86,92" stroke="#d9578a" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+ '古錢幣':`<circle cx="50" cy="50" r="38" fill="#f2c14e" stroke="#b9841c" stroke-width="4"/><circle cx="50" cy="50" r="30" fill="none" stroke="#d9a032" stroke-width="2"/><rect x="40" y="40" width="20" height="20" fill="#fff6dc" stroke="#b9841c" stroke-width="3"/><circle cx="36" cy="30" r="4" fill="#fff" opacity=".7"/>`,
+ '楓葉書籤':`<rect x="28" y="10" width="44" height="80" rx="6" fill="#fff4e0" stroke="#d98b3a" stroke-width="3"/><path d="M50,24L54,36L64,32L60,44L70,48L58,54L60,66L50,60L40,66L42,54L30,48L40,44L36,32L46,36Z" fill="#ff8c3a" stroke="#d9652a" stroke-width="2"/><path d="M50,60L50,76" stroke="#d9652a" stroke-width="3"/><circle cx="50" cy="16" r="3" fill="#d98b3a"/>`,
+ '葉子護身符':`<path d="M50,8L50,22" stroke="#c9a06a" stroke-width="3"/><circle cx="50" cy="8" r="4" fill="none" stroke="#c9a06a" stroke-width="3"/><path d="M50,22C78,34 80,70 50,92C20,70 22,34 50,22Z" fill="#7ccf8a" stroke="#3f8f4f" stroke-width="3"/><path d="M50,30L50,84M50,48L38,40M50,48L62,40M50,64L36,56M50,64L64,56" stroke="#3f8f4f" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+ '幸運珍珠':`<path d="M10,70Q50,30 90,70Q70,90 50,90Q30,90 10,70Z" fill="#ffd3e2" stroke="#e58cab" stroke-width="3"/><path d="M50,90L50,62M30,86L38,62M70,86L62,62" stroke="#e58cab" stroke-width="2"/><circle cx="50" cy="46" r="20" fill="#fffaf6" stroke="#d8c8e8" stroke-width="3"/><circle cx="43" cy="40" r="6" fill="#fff"/>`,
+ '彩虹寶石':`<path d="M50,90L12,40L28,16L72,16L88,40Z" fill="#fff" stroke="#8a6ad8" stroke-width="3"/><path d="M50,90L12,40L28,16Z" fill="#ff8fb8"/><path d="M50,90L28,16L50,16Z" fill="#ffd166"/><path d="M50,90L50,16L72,16Z" fill="#7fd6a0"/><path d="M50,90L72,16L88,40Z" fill="#7fb6ff"/><path d="M12,40L88,40" stroke="#8a6ad8" stroke-width="2.5"/><path d="M50,90L12,40L28,16L72,16L88,40Z" fill="none" stroke="#8a6ad8" stroke-width="3"/>`,
+ '星晶碎片':`<path d="M50,6L64,40L50,94L36,40Z" fill="#b48cff" stroke="#6a4ab8" stroke-width="3"/><path d="M50,6L50,94M36,40L64,40" stroke="#e5d6ff" stroke-width="2"/><path d="M22,40L30,58L22,84L14,58Z" fill="#8f6ae8" stroke="#6a4ab8" stroke-width="2.5"/><path d="M78,30L88,52L78,76L68,52Z" fill="#d1b8ff" stroke="#6a4ab8" stroke-width="2.5"/><path d="${star(76,14,6)}" fill="#ffd166"/>`};
+function bagIco(name){
+  const sd=SEEDS.find(x=>x.n===name);let g;
+  if(sd){g=`<path d="M50,96L50,58" stroke="#4f9a5e" stroke-width="5"/><ellipse cx="38" cy="78" rx="12" ry="5" fill="#6abb7a" transform="rotate(-30 38 78)"/><ellipse cx="62" cy="72" rx="12" ry="5" fill="#6abb7a" transform="rotate(30 62 72)"/>`;
+    const hd=sd.tulip?`<path d="M30,52Q30,14 40,22L50,32L60,22Q70,14 70,52Q50,68 30,52Z" fill="${sd.c}" stroke="#00000022" stroke-width="2"/>`:sd.k==='lotus'?`<path d="M50,8Q64,26 50,52Q36,26 50,8ZM50,52Q20,46 20,28Q38,28 50,52ZM50,52Q80,46 80,28Q62,28 50,52Z" fill="${sd.c}" stroke="#fff" stroke-width="2"/>`:sd.k==='lily'?`<path d="${star(50,36,30)}" fill="${sd.c}" stroke="#ffd166" stroke-width="3"/><circle cx="50" cy="36" r="6" fill="${sd.m}"/>`:flower(50,36,sd.k==='sun'||sd.k==='hydra'?32:28,sd.c,sd.m);
+    g+=hd;if(sd.c==='#ffffff')g=`<circle cx="50" cy="40" r="34" fill="#fff6c8" opacity=".6"/>`+g}
+  else g=GIFT_SVG[name]||`<path d="${star(50,50,36)}" fill="#ffd166" stroke="#e39b00" stroke-width="3"/>`;
+  return `<svg class="bagico" viewBox="0 0 100 100" aria-hidden="true">${g}</svg>`}
+window.bagIco=bagIco;
 function sellPrice(k){const pet=PETS.find(x=>x.gift===k);if(!pet)return priceOf(k);const o=S.pets.find(x=>x.k===pet.k);return Math.round(pet.gv*(1+(o?petLevel(o)-1:0)*.1))}
 function priceOf(name){const s=SEEDS.find(x=>x.n===name);if(s)return s.sell;const p=PETS.find(x=>x.gift===name);return p?p.gv:0}
 function rollDice(){
@@ -2224,7 +2263,7 @@ function renderHome(p,L){
   if(homeSub==='sell'){
     const items=Object.entries(S.bag).filter(([,n])=>n>0),total=items.reduce((a,[k,n])=>a+sellPrice(k)*n,0);
     body=`<div class="merchant">${merchantSVG('#3fb39a')}<p><b>收購商人</b>「花園的花、寵物帶回來的寶物，我都高價收購！」</p></div>
-    ${items.length?`<div class="bag">${items.map(([k,n])=>`<div class="bi"><b>${k}</b><small>×${n} · 每個 ${sellPrice(k)} 糖</small><div class="petacts"><button class="act buy" data-sell="${k}">賣 1 個</button><button class="act wear" data-sellall="${k}">全賣 +${sellPrice(k)*n}</button></div></div>`).join('')}</div><button class="big" data-sellevery>全部賣掉 +${total} 糖</button>`:'<p class="hint">背包空空的。去花園收成，或是收寵物的禮物吧！</p>'}`;
+    ${items.length?`<div class="bag">${items.map(([k,n])=>`<div class="bi"><b class="bin">${bagIco(k)}${k}</b><small>×${n} · 每個 ${sellPrice(k)} 糖</small><div class="petacts"><button class="act buy" data-sell="${k}">賣 1 個</button><button class="act wear" data-sellall="${k}">全賣 +${sellPrice(k)*n}</button></div></div>`).join('')}</div><button class="big" data-sellevery>全部賣掉 +${total} 糖</button>`:'<p class="hint">背包空空的。去花園收成，或是收寵物的禮物吧！</p>'}`;
   }
   const bagN=Object.values(S.bag).reduce((a,b)=>a+b,0),gifts=S.pets.reduce((a,x)=>a+x.gifts,0),ready=S.plots.filter(pl=>pl&&plantState(pl).ready).length;
   p.innerHTML=`<h2>我的家園</h2><div class="sub"><button aria-pressed="${homeSub==='garden'}" data-hs="garden">花園${ready?` <span class="dot">${ready}</span>`:''}</button><button aria-pressed="${homeSub==='pets'}" data-hs="pets">寵物${gifts?` <span class="dot">${gifts}</span>`:''}</button><button aria-pressed="${homeSub==='dice'}" data-hs="dice">幸運骰子${diceState().free?` <span class="dot">${diceState().free}</span>`:''}</button><button aria-pressed="${homeSub==='market'}" data-hs="market">星星市場</button><button aria-pressed="${homeSub==='sell'}" data-hs="sell">收購商人${bagN?` <span class="dot">${bagN}</span>`:''}</button></div>${body}`;
@@ -3161,7 +3200,7 @@ function savePop(){saveBoard();const ok=S.lastBackup&&S.backupSig===progSig();
   <button class="big" id="sp1" style="width:100%">💾 立即存檔</button><button class="ghost" id="sp2" style="width:100%">📂 讀取存檔</button>`);
   $('#sp1').onclick=saveSheet;$('#sp2').onclick=()=>openRestore(false)}
 $('#saveicon').onclick=savePop;
-$('.tabs').addEventListener('click',()=>setTimeout(()=>{const p=$('#panel'),w=$('#stagewrap');if(!p||!w)return;const y=p.getBoundingClientRect().top+scrollY-w.offsetHeight-6;if(scrollY>y)scrollTo({top:Math.max(0,y)})},0));
+$('.tabs').addEventListener('click',()=>setTimeout(()=>{const p=$('#panel'),w=$('#stagewrap');if(!p||!w)return;const two=matchMedia('(min-width:1000px) and (min-aspect-ratio:5/4)').matches;const y=p.getBoundingClientRect().top+scrollY-(two?12:w.offsetHeight+6);if(scrollY>y)scrollTo({top:Math.max(0,y)})},0));
 $('#svbtn').onclick=saveSheet;
 $('#ldbtn').onclick=()=>openRestore(false);
 setInterval(saveBoard,30000);

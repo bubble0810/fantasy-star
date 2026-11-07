@@ -49,6 +49,12 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#faf6ff}tbody tr.sel{backgroun
 .homes label.own{border-color:var(--accent);background:#fff2f6}
 .homes img{width:48px;height:32px;object-fit:cover;border-radius:4px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.card>label{display:flex;flex-direction:column;gap:4px;font-weight:700}.card>label small{font-weight:400;color:var(--muted)}
+.seg{gap:6px}.seg .btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.picks{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px 10px;display:flex;flex-direction:column;gap:4px}
+.picks label{display:flex;gap:6px;align-items:center;font-weight:400}.picks small{color:var(--muted)}
+.note{margin:0;color:var(--muted);font-size:13px}.boxinfo{background:#f6f0ff;border-radius:10px;padding:10px;font-size:13px;line-height:1.7}
+.tag a{color:var(--warn);text-decoration:none;margin-left:2px}
 .nums{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .nums label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
 .mail{border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;justify-content:space-between;gap:8px;align-items:center}
@@ -101,6 +107,9 @@ async function loadCatalog(){
 }
 const fmt=ts=>ts&&ts.toDate?ts.toDate().toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
 const lvOf=exp=>{let l=1,t=0;while(true){const need=Math.min(100*l,600);if(exp<t+need)return l;t+=need;l++}};
+const lvNeed=l=>Math.min(100*l,600);                       // 這一級升到下一級要多少
+const lvBase=l=>{let t=0;for(let i=1;i<l;i++)t+=lvNeed(i);return t};   // 到達這一級的總經驗值
+const lvInfo=exp=>{const l=lvOf(exp),b=lvBase(l);return {l,cur:exp-b,need:lvNeed(l)}};
 async function log(action,target,detail){try{await db.collection('adminlog').add({at:FV.serverTimestamp(),admin:ME.email,action,target:target||'',detail:detail||''})}catch(e){}}
 
 /* ---------- 登入 ---------- */
@@ -121,7 +130,7 @@ auth.onAuthStateChanged(async u=>{
 /* ---------- 外框 ---------- */
 function shell(){
   app.innerHTML=`<header><h1>幻想智慧星・管理後台</h1><nav>
-  <button data-t="players">玩家</button><button data-t="stat">📊 統計</button><button data-t="bc">寄信給全部玩家</button><button data-t="log">操作紀錄</button></nav>
+  <button data-t="players">玩家</button><button data-t="stat">📊 統計</button><button data-t="bc">🎁 送禮物</button><button data-t="log">操作紀錄</button></nav>
   <div class="who">${esc(ME.email)}<button class="btn" id="lo">登出</button></div></header><main id="main"></main>`;
   app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;view()});
   $('#lo').onclick=()=>auth.signOut();view();
@@ -170,7 +179,7 @@ function detailView(){
     <span>密碼</span><b class="pw" title="${esc(p.pw.pwName||'')}">${esc(p.pw.pw||'（沒有紀錄）')}</b>
     <span></span><small>${esc(p.pw.pwName||'')}</small>
     <span>角色</span><b>${S.char==='m'?'男生':S.char==='f'?'女生':'還沒選'}</b>
-    <span>等級</span><b>Lv.${lvOf(S.exp||0)}（經驗值 ${S.exp||0}）</b>
+    <span>等級</span><b>${(i=>`Lv.${i.l}｜這一級 ${i.cur}／${i.need}｜總經驗值 ${(S.exp||0).toLocaleString()}`)(lvInfo(S.exp||0))}</b>
     <span>註冊</span><b>${fmt(p.createdAt)}</b><span>最後登入</span><b>${fmt(p.lastLogin)}</b><span>最後存檔</span><b>${fmt(p.updatedAt)}</b>
     <span>UID</span><small>${esc(p.uid)}</small></div></div>
 
@@ -178,7 +187,9 @@ function detailView(){
   <div class="nums">
     <label>暱稱<input id="eName" value="${esc(p.name)}" maxlength="8"></label>
     <label>星星糖<input id="eCandy" type="number" min="0" value="${S.candy||0}"></label>
-    <label>經驗值<input id="eExp" type="number" min="0" value="${S.exp||0}"></label>
+    <label>等級<input id="eLv" type="number" min="1" value="${lvInfo(S.exp||0).l}"></label>
+    <label>這一級已累積<input id="eCur" type="number" min="0" value="${lvInfo(S.exp||0).cur}"><small id="eCurHint">這一級滿級是 ${lvInfo(S.exp||0).need}</small></label>
+    <label>總經驗值<input id="eExp" type="number" min="0" value="${S.exp||0}"><small>改等級會自動換算，也可以直接改這裡</small></label>
     <label>已過關到第幾關（maxLv）<input id="eMax" type="number" min="0" max="108" value="${S.maxLv||0}"></label>
     ${fc.map(([k,t,v])=>`<label>${esc(t)}<input data-fc="${k}" type="number" min="0" value="${v||0}"></label>`).join('')}
   </div>
@@ -191,18 +202,22 @@ function detailView(){
 
   <details><summary>進階：直接編輯全部遊戲資料（JSON）</summary><p style="color:var(--muted);margin:6px 0">改這裡會蓋過上面的設定，請小心。</p><textarea id="eRaw" style="min-height:240px;font-family:monospace;font-size:12px">${esc(JSON.stringify(S,null,1))}</textarea></details>
 
-  <div class="row"><button class="btn primary" id="eSave">儲存修改</button><button class="btn ${p.disabled?'':'danger'}" id="eDis">${p.disabled?'恢復帳號':'停用帳號'}</button></div>
+  <div class="row"><button class="btn primary" id="eSave">儲存修改</button><button class="btn ${p.disabled?'':'danger'}" id="eDis">${p.disabled?'恢復帳號':'停用帳號'}</button><button class="btn danger" id="eDel">🗑 刪除帳號</button></div>
   <p style="color:var(--muted);margin:0;font-size:12px">玩家正在玩的話，遊戲會自動重新讀取並顯示「管理員更新了你的資料」。</p>
   </div>
 
-  <div class="card"><h2>寄信給 ${esc(p.name)}</h2>${mailForm('m')}<button class="btn primary" id="mSend">寄出</button>
-  <h3>信件紀錄</h3>${p.mail.length?p.mail.map(x=>`<div class="mail"><div><b>${x.kind==='gift'?'🎁':x.kind==='system'?'🔔':'📢'} ${esc(x.title)}</b>${x.bc?' <small>（全體信）</small>':''}<br><small>${fmt(x.createdAt)}・${x.claimed?'已領取 '+fmt(x.claimedAt):x.read?'已讀':'還沒看'}</small></div>${x.claimed?'':`<button class="btn danger" data-recall="${x.id}">收回</button>`}</div>`).join(''):'<p class="empty">還沒有信</p>'}</div>
+  <div class="card"><div class="row"><h2>信件與禮物</h2><button class="btn primary" id="mSend">🎁 送禮物給 ${esc(p.name)}</button></div>
+  <h3>信件紀錄</h3>${p.mail.length?p.mail.map(x=>`<div class="mail"><div><b>${gIcon(x.kind)} ${esc(x.title)}</b>${x.bc?' <small>（全體信）</small>':''}<br><small>${esc(gText(x.result||x.att)||'公告')}${x.kind==='box'&&x.result?'（開出）':''}・${fmt(x.createdAt)}・${x.claimed?'已領取 '+fmt(x.claimedAt):x.read?'已讀':'還沒看'}</small></div>${x.claimed?'':`<button class="btn danger" data-recall="${x.id}">收回</button>`}</div>`).join(''):'<p class="empty">還沒有信</p>'}</div>
 
   <div class="card"><h2>搬移進度</h2><p style="margin:0;color:var(--muted)">小朋友忘記密碼、改用新帳號時，把這個帳號的進度整份複製到新帳號。新帳號原本的進度會被蓋掉。</p>
   <div class="row"><input id="mvTo" placeholder="新帳號"><button class="btn" id="mvGo">搬過去</button></div></div>`;
 
   el.querySelectorAll('.looks input,.homes input').forEach(c=>c.onchange=()=>c.parentElement.classList.toggle('own',c.checked));
-  $('#eSave').onclick=saveEdit;$('#eDis').onclick=toggleDis;$('#mSend').onclick=()=>sendMail(p.uid);$('#mvGo').onclick=moveProgress;
+  $('#eSave').onclick=saveEdit;$('#eDis').onclick=toggleDis;$('#eDel').onclick=delPlayer;
+  const eLv=$('#eLv'),eCur=$('#eCur'),eExp=$('#eExp'),hint=$('#eCurHint');
+  const fromLv=()=>{const l=Math.max(1,+eLv.value||1),n=lvNeed(l),c=Math.min(Math.max(0,+eCur.value||0),n-1);eCur.value=c;eExp.value=lvBase(l)+c;hint.textContent='這一級滿級是 '+n};
+  const fromExp=()=>{const i=lvInfo(Math.max(0,+eExp.value||0));eLv.value=i.l;eCur.value=i.cur;hint.textContent='這一級滿級是 '+i.need};
+  eLv.onchange=fromLv;eCur.onchange=fromLv;eExp.oninput=fromExp;$('#mSend').onclick=()=>giftTo(p.uid);$('#mvGo').onclick=moveProgress;
   el.querySelectorAll('[data-recall]').forEach(b=>b.onclick=()=>recall(b.dataset.recall));
 }
 function mailForm(px){return `<div class="nums">
@@ -240,6 +255,15 @@ async function saveEdit(){
 }
 async function toggleDis(){const p=SEL;const to=!p.disabled;if(to&&!confirmBox(`確定要停用「${p.name}」的帳號嗎？`))return;
   try{await db.doc('players/'+p.uid).update({disabled:to});await log(to?'停用帳號':'恢復帳號',p.code);toast(to?'已停用':'已恢復');await loadPlayers();openPlayer(p.uid)}catch(e){toast('失敗：'+(e.code||e.message))}}
+async function delPlayer(){const p=SEL;
+  const t=window.prompt(`確定要刪除「${p.name}」的帳號嗎？存檔、信箱、密碼紀錄都會刪掉，不能復原。\n請輸入這個玩家的帳號「${p.code}」確認：`);
+  if(t===null)return;if(t.trim().toLowerCase()!==String(p.code).toLowerCase())return toast('帳號輸入不一致，沒有刪除');
+  try{const box=await db.collection(`players/${p.uid}/inbox`).get();
+    for(const d of box.docs)await d.ref.delete();
+    await db.doc('private/'+p.uid).delete().catch(()=>{});
+    await db.doc('players/'+p.uid).delete();
+    await log('刪除帳號',p.code,`${p.name}・Lv.${lvOf(p.exp||0)}・星星糖 ${p.candy||0}`);
+    toast('已刪除');SEL=null;await loadPlayers();view()}catch(e){toast('刪除失敗：'+(e.code||e.message))}}
 function confirmBox(msg){return window.confirm?window.confirm(msg):true}
 async function sendMail(uid){const m=readMail('m');if(!m)return;
   try{await db.collection(`players/${uid}/inbox`).add(m);await log('寄信',SEL.code,m.title+(Object.keys(m.att).length?'（有附件）':''));toast('已寄出');openPlayer(uid)}catch(e){toast('寄信失敗：'+(e.code||e.message))}}
@@ -278,7 +302,7 @@ function statView(){
 }
 function gamesStat(){
   const keys=[['g:maze','⚡ 電流急急棒'],['g:memory','🃏 記憶翻牌'],['g:stroop','🎨 顏色陷阱'],['g:dice','🎲 家園擲骰子'],['q:all','📝 答題・綜合大冒險'],
-    ...CATS.map(c=>['q:'+c.k,'📝 答題・'+c.n]),...GAMEF.map(g=>['f:'+g.k,`${g.ic} 節慶・${g.title}`])];
+    ...CATS.map(c=>['q:'+c.k,'📝 答題・'+c.n]),...GAMEF.map(g=>['f:'+g.k,`${g.ic} 節慶・${g.title}`]),...GAMEF.map(g=>['t:'+g.k,`🏰 星宮體驗館・${g.title}`])];
   const rows=agg(keys).sort((a,b)=>b.tot-a.tot||b.ppl-a.ppl);
   const sum=rows.reduce((a,r)=>a+r.tot,0);
   return `<div class="kpis"><div class="kpi"><small>${rangeName()}總遊玩次數</small><b>${sum}</b></div><div class="kpi"><small>最受歡迎</small><b style="font-size:16px">${rows[0]&&rows[0].tot?rows[0].label:'—'}</b></div></div>
@@ -323,14 +347,96 @@ function festStat(){
     <div class="kpi"><small>獲得${esc(g.cur)}</small><b>${cur}</b></div><div class="kpi"><small>擁有節慶服裝</small><b>${ol}</b><small>${esc(g.lk.replace(/^SP/,'SP'))}</small></div><div class="kpi"><small>擁有節慶小屋</small><b>${or}</b><small>${esc(g.home.replace(/^SP/,'RSP'))}</small></div></div>
     <h3>兌換紀錄（${rangeName()}）</h3><div class="row">${ex.map(([t,v])=>`<span class="tag">${t}：<b>${v}</b></span>`).join('')}</div></div>`}).join('');
 }
+/* ---------- 🎁 送禮物（v6）：公告／固定禮物／隨機禮物盒 × 全體／指定玩家 ---------- */
+const G_FLOWERS=[['小雛菊',12],['鬱金香',30],['向日葵',52],['玫瑰',95],['繡球花',170],['粉蓮花',300],['星光百合',520]];
+const G_PETS=[['幸運草',25],['古錢幣',42],['葉子護身符',55],['幸運珍珠',85],['彩虹寶石',120],['星晶碎片',180]];
+const G_ITEMS=[['candy','⭐ 星星糖',1688],['exp','✨ 經驗值',1000],['flower','🌸 花朵',10],['pet','🍀 寵物禮物',10],['dice','🎲 骰子加碼券',5]];
+let GF={type:'gift',to:'all',picks:new Set(),item:'candy',sub:'',n:100,title:'',body:'',days:7,starMax:1688,expMax:1000,q:''};
+window.giftTo=uid=>{GF.to='pick';GF.picks=new Set([uid]);tab='bc';view()};
+function gAtt(){const n=Math.max(1,Math.floor(+GF.n||0)),cap=G_ITEMS.find(x=>x[0]===GF.item)[2],v=Math.min(n,cap);
+  if(GF.item==='candy')return {candy:v};if(GF.item==='exp')return {exp:v};if(GF.item==='dice')return {dice:v};
+  const list=GF.item==='flower'?G_FLOWERS:G_PETS,name=GF.sub||list[0][0];return {bag:{[name]:v}}}
+function gWorth(a){if(a.candy)return `約值 ${a.candy} 星星糖`;if(a.exp)return `約 ${(a.exp/600).toFixed(1)} 級（Lv.6 以後每級 600）`;if(a.dice)return '家園骰子多擲 '+a.dice+' 次';
+  const [k,n]=Object.entries(a.bag)[0];const p=([...G_FLOWERS,...G_PETS].find(x=>x[0]===k)||[,0])[1];return `約值 ${p*n} 星星糖（每個 ${p}）`}
+function gText(a){if(!a)return '';if(a.box)return '隨機禮物盒';if(a.candy)return '星星糖 ×'+a.candy;if(a.exp)return '經驗值 ×'+a.exp;if(a.dice)return '骰子加碼券 ×'+a.dice;
+  if(a.bag)return Object.entries(a.bag).map(([k,n])=>k+' ×'+n).join('、');const o=[];(a.looks||[]).forEach(x=>o.push('造型 '+x));(a.homes||[]).forEach(x=>o.push('小屋 '+x));return o.join('、')}
+const gIcon=k=>k==='box'?'🎲':k==='gift'?'🎁':k==='system'?'🔔':'📢';
 async function bcView(){
-  const m=$('#main');m.innerHTML=`<div class="grid"><div class="card"><h2>寄信給全部玩家</h2><p style="margin:0;color:var(--muted)">每位玩家下次登入時都會收到，之後才註冊的新玩家也會收到（期限內）。</p>${mailForm('b')}<button class="btn primary" id="bSend">寄給全部玩家</button></div><div class="card"><h2>已寄出的全體信</h2><div id="bList">讀取中…</div></div></div>`;
-  $('#bSend').onclick=async()=>{const x=readMail('b');if(!x)return;delete x.read;delete x.claimed;
-    if(!confirmBox(`確定寄給全部玩家？\n${x.title}`))return;
-    try{await db.collection('broadcasts').add(x);await log('寄全體信','全部玩家',x.title);toast('已寄出');bcView()}catch(e){toast('失敗：'+(e.code||e.message))}};
-  const s=await db.collection('broadcasts').orderBy('createdAt','desc').limit(50).get();
-  $('#bList').innerHTML=s.docs.map(d=>{const x=d.data();return `<div class="mail"><div><b>${x.kind==='gift'?'🎁':'📢'} ${esc(x.title)}</b><br><small>${fmt(x.createdAt)}${x.expireAt?'・期限 '+fmt(x.expireAt):''}</small></div><button class="btn danger" data-del="${d.id}">停止發送</button></div>`}).join('')||'<p class="empty">還沒有寄過</p>';
-  m.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(!confirmBox('停止發送這封信？已經收到的玩家不受影響。'))return;await db.doc('broadcasts/'+b.dataset.del).delete();await log('停止全體信','',b.dataset.del);bcView()});
+  const m=$('#main'),G=GF;
+  const list=G.item==='flower'?G_FLOWERS:G.item==='pet'?G_PETS:null;if(list&&!list.find(x=>x[0]===G.sub))G.sub=list[0][0];
+  const cap=(G_ITEMS.find(x=>x[0]===G.item)||[])[2];
+  const shown=PLAYERS.filter(p=>!G.q||(p.code||'').includes(G.q.toLowerCase())||(p.name||'').includes(G.q)).slice(0,60);
+  m.innerHTML=`<div class="grid"><div class="card"><h2>🎁 送禮物</h2>
+  <h3>① 類型</h3><div class="row seg" id="gType">${[['notice','📢 公告（不附禮物）'],['gift','🎁 固定禮物'],['box','🎲 隨機禮物盒']].map(([k,t])=>`<button class="btn ${G.type===k?'on':''}" data-gt="${k}">${t}</button>`).join('')}</div>
+  <h3>② 對象</h3><div class="row seg">${[['all','👥 全體玩家'],['pick','👤 指定玩家']].map(([k,t])=>`<button class="btn ${G.to===k?'on':''}" data-go="${k}">${t}</button>`).join('')}</div>
+  ${G.to==='all'?`<p class="note">目前 ${PLAYERS.length} 位玩家；之後才註冊的新玩家，在期限內登入也會收到。</p>`:`
+   <input id="gQ" placeholder="搜尋帳號或暱稱" value="${esc(G.q)}">
+   <div class="picks">${shown.map(p=>`<label><input type="checkbox" data-pk="${p.uid}" ${G.picks.has(p.uid)?'checked':''}> ${esc(p.name)} <small>${esc(p.code)}・Lv.${lvOf(p.exp||0)}</small></label>`).join('')||'<p class="empty">找不到玩家</p>'}</div>
+   <p class="note">已選 <b>${G.picks.size}</b> 位：${[...G.picks].map(u=>{const p=PLAYERS.find(x=>x.uid===u);return p?`<span class="tag">${esc(p.name)} <a href="#" data-un="${u}">✕</a></span>`:''}).join(' ')||'（還沒選）'}</p>`}
+  <h3>③ 內容</h3>
+  <label>標題<input id="gTitle" value="${esc(G.title)}" placeholder="${G.type==='box'?'例如：聖誕快樂！送你一個禮物盒':G.type==='gift'?'例如：系統維修補償':'例如：新節慶活動開始囉'}"></label>
+  <label>內文（可以不寫）<textarea id="gBody">${esc(G.body)}</textarea></label>
+  ${G.type==='gift'?`<div class="row seg">${G_ITEMS.map(([k,t])=>`<button class="btn ${G.item===k?'on':''}" data-gi="${k}">${t}</button>`).join('')}</div>
+   ${list?`<label>選哪一種<select id="gSub">${list.map(([k,v])=>`<option value="${k}" ${G.sub===k?'selected':''}>${k}（賣 ${v}）</option>`).join('')}</select></label>`:''}
+   <label>數量（每份最多 ${cap}）<input id="gN" type="number" min="1" max="${cap}" value="${G.n}"></label>
+   <p class="note" id="gWorth">${gWorth(gAtt())}</p>`:''}
+  ${G.type==='box'?`<div class="boxinfo"><b>預設獎品表</b>（一盒開一種，平均約值 300～350 星星糖）<br>星星糖 40%・經驗值 30%・花朵 15%・寵物禮物 10%・骰子券 5%<br>星星糖 88～1688、經驗值 100～1000，大獎 1%</div>
+   <details><summary>特別節日想大方一點：調高上限</summary><div class="nums"><label>星星糖大獎<input id="gSM" type="number" min="1688" value="${G.starMax}"></label><label>經驗值大獎<input id="gEM" type="number" min="1000" value="${G.expMax}"></label></div></details>`:''}
+  <label>幾天內要領取<input id="gDays" type="number" min="0" value="${G.days}"><small>0＝沒有期限（補償建議設 0）</small></label>
+  <button class="btn primary" id="gSend">④ 確認並寄出</button></div>
+  <div class="card"><h2>寄出紀錄</h2><div id="gList">讀取中…</div></div></div>`;
+  const keep=()=>{const v=id=>{const e=$('#'+id);return e?e.value:null};G.title=v('gTitle')??G.title;G.body=v('gBody')??G.body;G.days=v('gDays')??G.days;
+    if($('#gN'))G.n=v('gN');if($('#gSub'))G.sub=v('gSub');if($('#gSM'))G.starMax=v('gSM');if($('#gEM'))G.expMax=v('gEM');if($('#gQ'))G.q=v('gQ')};
+  m.querySelectorAll('[data-gt]').forEach(b=>b.onclick=()=>{keep();G.type=b.dataset.gt;bcView()});
+  m.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{keep();G.to=b.dataset.go;bcView()});
+  m.querySelectorAll('[data-gi]').forEach(b=>b.onclick=()=>{keep();G.item=b.dataset.gi;G.n=G.item==='candy'?100:G.item==='exp'?300:G.item==='dice'?2:3;bcView()});
+  m.querySelectorAll('[data-pk]').forEach(c=>c.onchange=()=>{keep();c.checked?G.picks.add(c.dataset.pk):G.picks.delete(c.dataset.pk);bcView()});
+  m.querySelectorAll('[data-un]').forEach(a=>a.onclick=e=>{e.preventDefault();keep();G.picks.delete(a.dataset.un);bcView()});
+  const q=$('#gQ');if(q){q.oninput=()=>{keep();clearTimeout(q._t);q._t=setTimeout(()=>{bcView();const n=$('#gQ');n.focus();n.setSelectionRange(n.value.length,n.value.length)},300)}}
+  ['gN','gSub'].forEach(id=>{const e=$('#'+id);if(e)e.oninput=e.onchange=()=>{keep();const w=$('#gWorth');if(w)w.textContent=gWorth(gAtt())}});
+  $('#gSend').onclick=()=>{keep();gSend()};
+  gList();
+}
+async function gSend(){
+  const G=GF,title=G.title.trim();if(!title)return toast('請寫標題');
+  const targets=G.to==='all'?null:[...G.picks];if(targets&&!targets.length)return toast('請選擇要寄給哪些玩家');
+  const days=Math.max(0,+G.days||0),kind=G.type==='notice'?'notice':G.type;
+  let att={};if(kind==='gift'){att=gAtt();const cap=G_ITEMS.find(x=>x[0]===G.item)[2];if((+G.n||0)>cap)toast(`數量超過上限，已改成 ${cap}`)}
+  if(kind==='box'){att={box:{v:1}};if((+G.starMax||0)>1688)att.box.starMax=Math.floor(+G.starMax);if((+G.expMax||0)>1000)att.box.expMax=Math.floor(+G.expMax)}
+  const who=targets?`${targets.length} 位指定玩家`:`全體玩家（目前 ${PLAYERS.length} 位）`;
+  const what=kind==='notice'?'公告（不附禮物）':kind==='box'?'🎲 隨機禮物盒 ×1（平均約值 300～350 星星糖'+(att.box.starMax||att.box.expMax?'，已調高上限':'')+'）':'🎁 '+gText(att)+'（'+gWorth(att)+'）';
+  let warn='';
+  if(targets&&targets.length<=30&&kind!=='notice'){try{const many=[];for(const u of targets){const s=await db.collection(`players/${u}/inbox`).where('claimed','==',false).get();
+      const n=s.docs.filter(d=>{const x=d.data();return x.kind==='gift'||x.kind==='box'}).length;if(n>=10){const p=PLAYERS.find(x=>x.uid===u);many.push(`${p?p.name:u}（${n} 份）`)}}
+    if(many.length)warn=`\n\n⚠ 這些玩家還有很多禮物沒領：${many.join('、')}`}catch(e){}}
+  if(!confirmBox(`確定寄出？\n\n類型：${what}\n對象：${who}\n標題：${title}\n期限：${days?days+' 天內要領取':'沒有期限'}${warn}`))return;
+  const base={title,body:G.body.trim(),kind,att,createdAt:FV.serverTimestamp(),expireAt:days?firebase.firestore.Timestamp.fromMillis(Date.now()+days*864e5):null};
+  try{
+    if(!targets){await db.collection('broadcasts').add(base);await log('送禮物',`全體玩家`,`${gIcon(kind)} ${title}・${gText(att)||'公告'}`)}
+    else{const ref=db.collection('sends').doc();await ref.set({...base,targets,count:targets.length});
+      for(let i=0;i<targets.length;i+=400){const b=db.batch();targets.slice(i,i+400).forEach(u=>b.set(db.doc(`players/${u}/inbox/${ref.id}`),{...base,read:false,claimed:false,sid:ref.id}));await b.commit()}
+      await log('送禮物',`${targets.length} 位玩家`,`${gIcon(kind)} ${title}・${gText(att)||'公告'}・${targets.map(u=>(PLAYERS.find(p=>p.uid===u)||{}).code||u).join(',')}`)}
+    toast('已寄出');GF.title='';GF.body='';bcView();
+  }catch(e){toast('寄出失敗：'+(e.code||e.message))}
+}
+async function gList(){
+  const el=$('#gList');if(!el)return;
+  try{const [b,s]=await Promise.all([db.collection('broadcasts').orderBy('createdAt','desc').limit(30).get(),db.collection('sends').orderBy('createdAt','desc').limit(30).get().catch(()=>({docs:[]}))]);
+    const rows=[...b.docs.map(d=>({id:d.id,all:true,...d.data()})),...s.docs.map(d=>({id:d.id,all:false,...d.data()}))].sort((x,y)=>(y.createdAt?.toMillis?.()||0)-(x.createdAt?.toMillis?.()||0));
+    el.innerHTML=rows.map(x=>`<div class="mail"><div><b>${gIcon(x.kind)} ${esc(x.title)}</b> <small>${x.all?'👥 全體':'👤 '+(x.count||(x.targets||[]).length)+' 位'}</small><br>
+      <small>${esc(gText(x.att)||'公告')}・${fmt(x.createdAt)}${x.expireAt?'・期限 '+fmt(x.expireAt):''}</small><div class="gst" id="gst-${x.id}"></div></div>
+      <div class="row"><button class="btn" data-gs="${x.id}" data-all="${x.all}">領取狀況</button><button class="btn danger" data-gr="${x.id}" data-all="${x.all}">收回未領</button></div></div>`).join('')||'<p class="empty">還沒有寄過</p>';
+    const tg=x=>x.all?PLAYERS.map(p=>p.uid):(x.targets||[]);
+    el.querySelectorAll('[data-gs]').forEach(bt=>bt.onclick=async()=>{const x=rows.find(r=>r.id===bt.dataset.gs),box=$('#gst-'+x.id);box.textContent='統計中…';
+      let got=0,claimed=0;for(const u of tg(x)){try{const d=await db.doc(`players/${u}/inbox/${x.id}`).get();if(d.exists){got++;if(d.data().claimed)claimed++}}catch(e){}}
+      box.innerHTML=`<small>收到 <b>${got}</b> 人・已領取 <b>${claimed}</b> 人${x.all?'（全體信要玩家登入後才會收到）':''}</small>`});
+    el.querySelectorAll('[data-gr]').forEach(bt=>bt.onclick=async()=>{const x=rows.find(r=>r.id===bt.dataset.gr);
+      if(!confirmBox(`收回「${x.title}」？\n還沒領的玩家會收不到；已經領走的不受影響。${x.all?'\n之後登入的玩家也不會再收到。':''}`))return;
+      let n=0;try{if(x.all)await db.doc('broadcasts/'+x.id).delete();
+        for(const u of tg(x)){try{const r=db.doc(`players/${u}/inbox/${x.id}`),d=await r.get();if(d.exists&&!d.data().claimed){await r.delete();n++}}catch(e){}}
+        if(!x.all)await db.doc('sends/'+x.id).update({recalled:true}).catch(()=>{});
+        await log('收回禮物',x.all?'全體玩家':`${tg(x).length} 位玩家`,`${x.title}・收回 ${n} 份`);toast(`已收回 ${n} 份`);bcView()}catch(e){toast('收回失敗：'+(e.code||e.message))}});
+  }catch(e){el.innerHTML=`<p class="empty">讀取失敗：${esc(e.code||e.message)}</p>`}
 }
 
 /* ---------- 操作紀錄 ---------- */

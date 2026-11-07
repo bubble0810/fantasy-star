@@ -1,5 +1,5 @@
 rules_version = '2';
-// 幻想智慧星：Firestore 安全規則
+// 幻想智慧星：Firestore 安全規則（v6 禮物系統）
 // 貼到 Firebase 後台 → Firestore Database → 規則，按「發布」。
 service cloud.firestore {
   match /databases/{db}/documents {
@@ -28,7 +28,8 @@ service cloud.firestore {
       );
       allow delete: if isAdmin();
 
-      // 信箱：玩家只能把信標成已讀、已領取；全體信可以複製一份進自己的信箱
+      // 信箱：玩家只能把信標成已讀、已領取（禮物盒會記下開出的結果）；全體信可以複製一份進自己的信箱
+      // 玩家可以刪掉自己「已領取」「已過期」「已讀公告」的信（自動整理用）；沒領、沒過期的禮物不能刪
       match /inbox/{mid} {
         allow read: if isMe(uid) || isAdmin();
         allow create: if isAdmin() || (
@@ -39,13 +40,19 @@ service cloud.firestore {
         );
         allow update: if isAdmin() || (
           isMe(uid)
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'claimed', 'claimedAt'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'claimed', 'claimedAt', 'result'])
         );
-        allow delete: if isAdmin();
+        allow delete: if isAdmin() || (
+          isMe(uid) && (
+            resource.data.get('claimed', false) == true
+            || (resource.data.get('expireAt', null) != null && resource.data.expireAt < request.time)
+            || (resource.data.get('read', false) == true && resource.data.get('kind', '') == 'notice')
+          )
+        );
       }
     }
 
-    // 圖案密碼的副本：只有管理員看得到
+    // 密碼的副本：只有管理員看得到
     match /private/{uid} {
       allow read: if isAdmin();
       allow create: if isMe(uid);
@@ -56,6 +63,11 @@ service cloud.firestore {
     match /broadcasts/{id} {
       allow read: if signedIn();
       allow write: if isAdmin();
+    }
+
+    // 寄給指定玩家的禮物紀錄（只有管理員）
+    match /sends/{id} {
+      allow read, write: if isAdmin();
     }
 
     // 管理員操作紀錄

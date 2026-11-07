@@ -1,7 +1,17 @@
 /* ===== 幻想智慧星：雲端模組（登入、雲端存檔、信箱） =====
    接在遊戲主程式後面載入，不改動遊戲本身的玩法。 */
 (function(){
-if(!window.CLOUD_GATE)return;           // 還沒設定 Firebase：維持原本的本機存檔
+if(!window.CLOUD_GATE){
+  // 已經填好設定碼、但 Firebase 程式沒載入（網路被擋或太慢）→ 擋住畫面，不讓玩家沒登入就玩
+  const cfg=window.FIREBASE_CONFIG||{};
+  if(cfg.apiKey&&!/請貼上/.test(cfg.apiKey)){
+    const m=document.createElement('div');
+    m.style.cssText='position:fixed;inset:0;z-index:9999;background:#f4ecfb;display:flex;align-items:center;justify-content:center;padding:16px';
+    m.innerHTML='<div style="background:#fff;border-radius:22px;padding:22px 18px;max-width:400px;width:100%;text-align:center;color:#3b2853;display:flex;flex-direction:column;gap:12px"><div style="font-size:28px;color:#c23258">幻想智慧星</div><p style="margin:0">連不上雲端，暫時不能登入。<br>請確認網路後再試一次。</p><button style="min-height:46px;border:0;border-radius:14px;background:#e2508f;color:#fff;font:inherit;font-size:17px" onclick="location.reload()">重新整理</button></div>';
+    document.body.appendChild(m);
+  }
+  return;
+}
 const fb=firebase.initializeApp(window.FIREBASE_CONFIG);
 const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue;
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);   // 同一台裝置記住登入
@@ -9,6 +19,16 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);   // 同一台裝置�
 /* ---------- 帳號密碼 ---------- */
 const pwStr=pin=>'fsp-'+pin+'-star';                 // 交給 Firebase 的密碼（Firebase 至少要 6 碼，玩家只要記 4 個數字）
 const emailOf=code=>code+'@fantasystar.game';       // 假信箱，不會寄信
+/* ---------- 自動登出 ----------
+   LOGIN_VER：大更新時改這個日期，所有裝置下次打開都要重新登入（進度在雲端，不會不見）
+   AWAY_MIN：關掉或離開遊戲超過幾分鐘，下次打開要重新登入（公用電腦用）
+   遊戲開著的時候不會自動登出。 */
+const LOGIN_VER='2026-11-07',AWAY_MIN=30;
+const K_VER='fs-login-ver',K_SEEN='fs-last-seen';
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let firstAuth=true,seenT=0,outMsg='';
+function seen(force){const n=Date.now();if(force||n-seenT>30000){seenT=n;lsSet(K_SEEN,String(n))}}
 const BAD=['笨蛋','白痴','智障','去死','幹','靠北','屁'];
 
 /* ---------- 樣式 ---------- */
@@ -46,7 +66,29 @@ const css=document.createElement('style');css.textContent=`
 .cl-mail.new{border-color:#e2508f;background:#fff5f9}
 .cl-mail h4{margin:0;font-size:15px}.cl-mail p{margin:0;font-size:14px;color:#5b4a70;white-space:pre-wrap}
 .cl-mail small{color:#7d6a94;font-size:12px}
-.cl-att{font-size:13px;font-weight:700;color:#b7811a}
+.cl-att{font-size:13px;font-weight:700;color:#b7811a;display:inline-flex;align-items:center;gap:6px}
+.cl-atts{display:flex;flex-wrap:wrap;gap:4px 12px}
+.cl-att .bagico{width:30px;height:30px}
+.cl-boxmini .cl-boxsvg{width:64px;height:64px}
+.cl-open{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.cl-stage{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center}
+.cl-stage .cl-boxsvg{width:190px;height:190px;transition:opacity .4s,transform .4s}
+.cl-open.shake .cl-boxsvg{animation:clShake .35s ease-in-out 3}
+@keyframes clShake{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+.cl-boxsvg{overflow:visible}.cl-boxsvg .lid{transition:transform .5s cubic-bezier(.3,1.6,.5,1);transform-box:fill-box;transform-origin:50% 100%}
+.cl-open.pop .lid{transform:translate(8px,-30px) rotate(-14deg)}
+.cl-open.done .cl-boxsvg{opacity:.18;transform:scale(.86)}
+.cl-prize{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;opacity:0;transform:scale(.4);transition:opacity .4s,transform .5s cubic-bezier(.3,1.6,.5,1)}
+.cl-open.done .cl-prize{opacity:1;transform:none}
+.cl-prize .bagico{width:96px;height:96px}
+.cl-prize b{font-size:22px;color:#c23258}
+.cl-prize em{font-style:normal;font-weight:700;color:#e39b00;font-size:18px}
+.cl-spark{position:absolute;inset:0;pointer-events:none}
+.cl-spark i{position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;background:#ffd166;opacity:0}
+.cl-open.big.done .cl-spark i{animation:clSpark 1.2s ease-out forwards}
+${[...Array(14)].map((_,i)=>`.cl-spark i:nth-child(${i+1}){--a:${i*360/14}deg;animation-delay:${(i%4)*.06}s!important;background:${['#ffd166','#ff8fb8','#9fd8ff','#c9a0ff'][i%4]}}`).join('')}
+@keyframes clSpark{0%{opacity:1;transform:translate(-50%,-50%) rotate(var(--a)) translateY(0)}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateY(-110px)}}
+@media (prefers-reduced-motion:reduce){.cl-open *{animation:none!important;transition:none!important}}
 .cl-list{display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto}
 `;document.head.appendChild(css);
 
@@ -56,17 +98,24 @@ document.body.appendChild(mask);
 const card=()=>document.getElementById('clCard');
 const $c=id=>document.getElementById(id);
 let lastCode='',justMade=null,newChar=null,pinMem=null;
+let loginMode='in';   // in＝登入現有帳號，new＝建立新帳號
 function loginView(){
+  const why=outMsg;outMsg='';setTimeout(()=>{if(why)err(why)},0);
+  const isNew=loginMode==='new';
   card().innerHTML=`<div class="cl-brand">幻想智慧星<small>答題闖關 · 收集造型 · 布置小屋</small></div>
+  <div class="cl-tabs" role="tablist"><button type="button" role="tab" id="clTIn" aria-selected="${!isNew}">登入</button><button type="button" role="tab" id="clTNew" aria-selected="${isNew}">建立新帳號</button></div>
   <form id="clForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="on">
-    <label>帳號<small>英文字母或數字，4～12 個字</small><input id="clCode" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="12" value="${lastCode}"></label>
-    <label>密碼<small>4 個數字</small><input id="clPin" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" maxlength="4"></label>
+    <label>帳號<small>${isNew?'自己取一個，英文字母或數字，4～12 個字':'英文字母或數字，4～12 個字'}</small><input id="clCode" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="12" value="${lastCode}"></label>
+    <label>密碼<small>${isNew?'自己設定 4 個數字':'4 個數字'}</small><input id="clPin" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="${isNew?'new-password':'current-password'}" maxlength="4"></label>
+    ${isNew?'<label>再輸入一次密碼<small>確認沒有打錯</small><input id="clPin2" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password" maxlength="4"></label>':''}
     <p class="cl-err" id="clErr" role="alert"></p>
-    <button class="cl-go" id="clGo">進入遊戲</button>
+    <button class="cl-go" id="clGo">${isNew?'建立帳號':'進入遊戲'}</button>
   </form>
-  <p class="cl-note">第一次玩？直接輸入你想用的帳號和密碼就可以建立新帳號。<br>帳號不要用真實姓名或學號喔！忘記密碼請找老師或管理員。</p>`;
+  <p class="cl-note">${isNew?'請記住你的帳號和 4 位數密碼，換電腦或手機時要用。<br>帳號不要用真實姓名或學號喔！':'第一次玩？請按上面的「建立新帳號」。<br>忘記密碼請找老師或管理員。在學校或公用電腦玩完，記得按「登出」。'}</p>`;
+  const sw=m=>{if(loginMode===m)return;lastCode=$c('clCode').value.trim();loginMode=m;loginView()};
+  $c('clTIn').onclick=()=>sw('in');$c('clTNew').onclick=()=>sw('new');
   $c('clCode').addEventListener('input',e=>{e.target.value=e.target.value.toLowerCase().replace(/[^a-z0-9]/g,'')});
-  $c('clPin').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)});
+  ['clPin','clPin2'].forEach(id=>{const f=$c(id);if(f)f.addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)})});
   $c('clForm').onsubmit=e=>{e.preventDefault();doLogin()};
   setTimeout(()=>{const f=$c(lastCode?'clPin':'clCode');if(f)f.focus()},50);
 }
@@ -74,16 +123,22 @@ const err=t=>{const e=$c('clErr');if(e)e.textContent=t};
 function busy(b,t){const g=$c('clGo');if(g){g.disabled=b;if(b)g.textContent='請稍候…';else if(t)g.textContent=t}}
 const netErr=e=>e.code==='auth/network-request-failed'?'網路好像斷了，請檢查網路':e.code==='auth/too-many-requests'?'錯太多次了，請休息一下再試':null;
 async function doLogin(){
+  const isNew=loginMode==='new',btn=isNew?'建立帳號':'進入遊戲';
   const code=$c('clCode').value.trim(),pin=$c('clPin').value.trim();
   if(!/^[a-z0-9]{4,12}$/.test(code))return err('帳號要用 4～12 個英文字母或數字');
   if(!/^\d{4}$/.test(pin))return err('密碼要輸入 4 個數字');
+  if(isNew&&$c('clPin2').value.trim()!==pin){$c('clPin2').value='';return err('兩次輸入的密碼不一樣，請再輸入一次')}
   lastCode=code;pinMem={code,pin};busy(true);err('');
-  try{await auth.signInWithEmailAndPassword(emailOf(code),pwStr(pin));return}
-  catch(e){const n=netErr(e);if(n){busy(false,'進入遊戲');$c('clPin').value='';return err(n)}}
-  // 登入失敗：可能是新帳號，也可能是密碼打錯 → 試著建立；帳號已存在就是密碼錯
+  if(!isNew){   // 登入：只登入，不會自動建立帳號
+    try{await auth.signInWithEmailAndPassword(emailOf(code),pwStr(pin))}
+    catch(e){busy(false,btn);$c('clPin').value='';
+      err(netErr(e)||'帳號或密碼不對，再檢查一次。第一次玩請按上面的「建立新帳號」')}
+    return}
+  // 建立新帳號：帳號有人用了就換一個
   try{justMade={code,pin};await auth.createUserWithEmailAndPassword(emailOf(code),pwStr(pin))}
-  catch(e){justMade=null;busy(false,'進入遊戲');$c('clPin').value='';
-    err(e.code==='auth/email-already-in-use'?'密碼不對喔，再試一次！':netErr(e)||'登入失敗，請再試一次（'+(e.code||e.message)+'）')}
+  catch(e){justMade=null;busy(false,btn);
+    if(e.code==='auth/email-already-in-use'){err('這個帳號已經有人用了，換一個吧！如果是你自己的帳號，請按「登入」');$c('clCode').focus()}
+    else{$c('clPin').value='';$c('clPin2').value='';err(netErr(e)||'建立失敗，請再試一次（'+(e.code||e.message)+'）')}}
 }
 /* 新玩家：確認 → 選角色 → 取暱稱 */
 function confirmNew(user){
@@ -100,6 +155,8 @@ function charName(k){try{return BASES[k].n}catch(e){return k==='f'?'女孩':'男
 function charView(user){
   card().innerHTML=`<div class="cl-brand">選一位角色<small>之後也可以在衣櫥切換</small></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${['f','m'].map(k=>`<button class="cl-sub" data-ck="${k}" style="border-radius:18px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:200px">${dollSvg(k)}<b>${charName(k)}</b></button>`).join('')}</div>`;
+  card().insertAdjacentHTML('beforeend','<button class="cl-sub" id="clBackA">帳號打錯了，回上一步</button>');
+  $c('clBackA').onclick=async()=>{justMade=null;loginMode='new';try{await user.delete()}catch(e){await auth.signOut()}};
   card().querySelectorAll('[data-ck]').forEach(b=>b.onclick=()=>{newChar=b.dataset.ck;nameView(user)});
 }
 function nameView(user){
@@ -151,7 +208,10 @@ function queue(){if(!ME||!ready)return;clearTimeout(timer);timer=setTimeout(push
 function foot(t){const f=document.getElementById('savefoot');if(f)f.textContent=`☁ ${t}（${new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）`}
 const _save=window.save;
 window.save=function(){try{ownCheck()}catch(e){}_save.apply(this,arguments);queue()};
-addEventListener('pagehide',()=>{if(timer)push()});
+addEventListener('pagehide',()=>{if(ME&&ready)seen(true);if(timer)push()});
+['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{if(ME&&ready)seen()},{passive:true}));
+document.addEventListener('visibilitychange',()=>{if(ME&&ready&&document.visibilityState==='hidden')seen(true)});
+setInterval(()=>{if(ME&&ready&&document.visibilityState==='visible')seen(true)},60000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&timer)push()});
 
 /* ---------- 統計（給管理後台看：玩了什麼、買了什麼、哪天有上線） ---------- */
@@ -175,12 +235,25 @@ function ownCheck(){if(!ME||!ready||!S)return;const now=ownSet();if(ownBase){for
 /* ---------- 登入後 ---------- */
 auth.onAuthStateChanged(async user=>{
   unsubs.forEach(f=>f());unsubs=[];ready=false;ME=user;
+  const restored=firstAuth;firstAuth=false;
   if(!user){mask.hidden=false;loginView();fab(false);return}
+  // 只接受玩家帳號（帳號@fantasystar.game）。舊的匿名登入、管理員信箱等 → 不能直接進遊戲
+  if(user.isAnonymous||!/@fantasystar\.game$/i.test(user.email||'')){
+    mask.hidden=false;fab(false);
+    card().innerHTML=`<div class="cl-brand">幻想智慧星</div><p style="text-align:center;margin:0">這台裝置記住的是舊的測試登入或管理員帳號，不能直接進遊戲。<br>請換成玩家帳號登入。</p><button class="cl-go" id="clOut">換成玩家帳號</button>`;
+    $c('clOut').onclick=async()=>{try{if(user.isAnonymous)await user.delete()}catch(e){}try{await auth.signOut()}catch(e){}};
+    return}
+  // 打開網頁時自動帶入的舊登入：遊戲大更新過、或離開超過 30 分鐘 → 請他重新登入
+  if(restored){const last=+lsGet(K_SEEN)||0,newVer=lsGet(K_VER)!==LOGIN_VER;
+    if(newVer||!last||Date.now()-last>AWAY_MIN*60000){
+      outMsg=newVer?'遊戲更新了，請重新輸入帳號和密碼':'離開超過 30 分鐘，已經自動登出，請重新登入';
+      ME=null;try{localStorage.removeItem(skey('u_'+user.uid))}catch(e){}
+      try{await auth.signOut()}catch(e){}return}}
   mask.hidden=false;
   card().innerHTML=`<div class="cl-brand">幻想智慧星<small>正在讀取你的進度…</small></div>`;
   try{
     const snap=await db.doc('players/'+user.uid).get();
-    if(!snap.exists){justMade?confirmNew(user):charView(user);return}   // 新玩家（或上次沒建完）
+    if(!snap.exists){charView(user);return}   // 新玩家（或上次沒建完）
     enter(user,snap.data()||{},false);
   }catch(e){card().innerHTML=`<div class="cl-brand">幻想智慧星</div><p class="cl-err">讀取進度失敗：${e.code||e.message}</p><button class="cl-go" onclick="location.reload()">重新整理</button>`;mask.hidden=false}
 });
@@ -191,73 +264,168 @@ function enter(user,d,isNew){
   adminRev=d.adminRev||0;ME.name=d.name||'玩家';ME.code=d.code||'';
   applyState(d.sj||'',ME.name);
   if(isNew&&d.char){S.char=d.char;try{_save()}catch(e){}stage(true);render()}
-  ready=true;ownBase=ownSet();markDay();mask.hidden=true;fab(true);
+  ready=true;lsSet(K_VER,LOGIN_VER);seen(true);ownBase=ownSet();markDay();mask.hidden=true;fab(true);
   if(!isNew)ref.update({lastLogin:FV.serverTimestamp()}).catch(()=>{});
   if(!S.char)pickChar(true);else toast(isNew?`歡迎來到幻想智慧星，${ME.name}！`:`歡迎回來，${ME.name}！`);
   if(!d.sj)push();
   // 管理員修改了資料 → 自動重新讀取
-  unsubs.push(ref.onSnapshot(s=>{const x=s.data();if(!x)return;
+  unsubs.push(ref.onSnapshot(s=>{const x=s.data();if(!x){if(ready){ready=false;outMsg='這個帳號已經被刪除，請找老師或管理員';auth.signOut()}return}
     if(x.disabled){auth.signOut();return}
     if((x.adminRev||0)>adminRev){adminRev=x.adminRev;ME.name=x.name||ME.name;applyState(x.sj||'',ME.name);ownBase=ownSet();toast('管理員更新了你的資料');fab(true)}}));
   // 信箱
-  unsubs.push(ref.collection('inbox').orderBy('createdAt','desc').limit(50).onSnapshot(s=>{MAIL=s.docs.map(x=>({id:x.id,...x.data()}));fab(true);popGift()}));
+  cleaned=false;popped=false;mailA=[];mailB=[];listenMail(ref);
   syncBroadcasts();
 }
 
-/* ---------- 右上角：信箱、帳號 ---------- */
-let MAIL=[],popped=false;
-const live=m=>!m.claimed&&!(m.expireAt&&m.expireAt.toMillis&&m.expireAt.toMillis()<Date.now());
+/* ---------- 右上角：信箱、帳號（v6 禮物系統） ---------- */
+let MAIL=[],popped=false,cleaned=false,mailA=[],mailB=[];
+const DAY=864e5;
+const tms=t=>t&&t.toMillis?t.toMillis():0;
+const expired=m=>!!(m.expireAt&&tms(m.expireAt)&&tms(m.expireAt)<Date.now());
+const isBox=m=>m.kind==='box'||!!(m.att&&m.att.box);
+const hasAtt=a=>!!a&&!!(a.box||a.candy||a.exp||a.dice||(a.bag&&Object.keys(a.bag).length)||(a.looks||[]).length||(a.homes||[]).length);
+const isGift=m=>isBox(m)||hasAtt(m.att);
+const live=m=>!m.claimed&&!expired(m);
+function mergeMail(){const seen=new Set();MAIL=[...mailA,...mailB].filter(m=>!seen.has(m.id)&&seen.add(m.id))
+  .sort((a,b)=>(live(b)&&isGift(b))-(live(a)&&isGift(a))||tms(b.createdAt)-tms(a.createdAt));fab(true);popGift();cleanMail()}
+function listenMail(ref){
+  unsubs.push(ref.collection('inbox').where('claimed','==',false).onSnapshot(s=>{mailA=s.docs.map(x=>({id:x.id,...x.data()}));mergeMail()}));
+  unsubs.push(ref.collection('inbox').orderBy('claimedAt','desc').limit(20).onSnapshot(s=>{mailB=s.docs.map(x=>({id:x.id,...x.data()}));mergeMail()},()=>{}));
+}
+/* 自動整理：已領取 30 天、已讀公告 30 天、過期禮物 → 刪掉。沒領、沒過期的禮物永遠不會刪 */
+function cleanMail(){
+  if(cleaned||!ME||!MAIL.length)return;cleaned=true;const now=Date.now();
+  MAIL.forEach(m=>{let del=false;
+    if(m.claimed&&tms(m.claimedAt)&&now-tms(m.claimedAt)>30*DAY)del=true;
+    else if(!isGift(m)&&m.read&&now-tms(m.createdAt)>30*DAY)del=true;
+    else if(isGift(m)&&!m.claimed&&expired(m))del=true;
+    if(del)db.doc(`players/${ME.uid}/inbox/${m.id}`).delete().catch(()=>{})});
+}
 const fabEl=document.createElement('div');fabEl.className='cl-fab';document.body.appendChild(fabEl);
 function fab(on){
   if(!on){fabEl.innerHTML='';return}
-  const n=MAIL.filter(m=>live(m)&&(!m.read||(m.att&&!m.claimed))).length;
+  const n=MAIL.filter(m=>live(m)&&(isGift(m)||!m.read)).length;
   fabEl.innerHTML=`<button id="clMailBtn" aria-label="信箱">✉${n?`<b class="dot">${n}</b>`:''}</button><button id="clMeBtn">👤 ${esc(ME&&ME.name||'')}</button>`;
   document.getElementById('clMailBtn').onclick=mailbox;
   document.getElementById('clMeBtn').onclick=meSheet;
 }
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function attText(a){if(!a)return '';const o=[];if(a.candy)o.push(`星星糖 +${a.candy}`);if(a.exp)o.push(`經驗值 +${a.exp}`);
-  (a.looks||[]).forEach(id=>{const it=ITEMS.find(i=>i.id==='L-'+id);o.push('造型：'+(it?it.n:id))});
-  (a.homes||[]).forEach(id=>{const h=HOMES.find(x=>x.id===id);o.push('小屋：'+(h?h.n:id))});return o.join('・')}
-const hasAtt=a=>a&&(a.candy||a.exp||(a.looks||[]).length||(a.homes||[]).length);
-function mailbox(){
-  const list=MAIL.filter(m=>!(m.expireAt&&m.expireAt.toMillis&&m.expireAt.toMillis()<Date.now()&&!m.claimed));
-  openSheet(head('✉ 信箱')+`<div class="cl-list">${list.length?list.map(m=>{const att=hasAtt(m.att);
-    return `<div class="cl-mail ${live(m)&&(!m.read||att)?'new':''}"><h4>${m.kind==='gift'?'🎁':m.kind==='system'?'🔔':'📢'} ${esc(m.title||'')}</h4>
-    ${m.body?`<p>${esc(m.body)}</p>`:''}${att?`<span class="cl-att">${esc(attText(m.att))}</span>`:''}
-    <small>${m.createdAt&&m.createdAt.toDate?m.createdAt.toDate().toLocaleDateString('zh-TW'):''}${m.expireAt&&m.expireAt.toDate&&!m.claimed?' ・ '+m.expireAt.toDate().toLocaleDateString('zh-TW')+' 前要領取':''}</small>
-    ${att?(m.claimed?'<small>✓ 已經收下了</small>':`<button class="act buy" data-claim="${m.id}">收下</button>`):''}</div>`}).join(''):'<p class="hint">信箱是空的。</p>'}</div>`);
-  document.querySelectorAll('[data-claim]').forEach(b=>b.onclick=()=>claim(b.dataset.claim));
-  list.filter(m=>!m.read&&!hasAtt(m.att)).forEach(m=>db.doc(`players/${ME.uid}/inbox/${m.id}`).update({read:true}).catch(()=>{}));
+const ico=n=>{try{return bagIco(n)}catch(e){return ''}};
+const STAR_I=`<svg class="bagico" viewBox="0 0 100 100" aria-hidden="true"><path d="${typeof star==='function'?star(50,50,40):''}" fill="#ffc93c" stroke="#e39b00" stroke-width="4"/><circle cx="38" cy="38" r="6" fill="#fff" opacity=".8"/></svg>`;
+const EXP_I=`<svg class="bagico" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="40" fill="#e2508f"/><text x="50" y="62" text-anchor="middle" font-size="34" font-weight="700" fill="#fff" font-family="sans-serif">EXP</text></svg>`;
+const DICE_I=`<svg class="bagico" viewBox="0 0 100 100" aria-hidden="true"><rect x="12" y="12" width="76" height="76" rx="18" fill="#fff" stroke="#c9a0ff" stroke-width="5"/><circle cx="32" cy="32" r="8" fill="#3b2853"/><circle cx="50" cy="50" r="8" fill="#e2335b"/><circle cx="68" cy="68" r="8" fill="#3b2853"/></svg>`;
+/* 附件 → [圖示, 文字] */
+function attParts(a){const o=[];if(!a)return o;
+  if(a.candy)o.push([STAR_I,`星星糖 ×${a.candy}`]);if(a.exp)o.push([EXP_I,`經驗值 ×${a.exp}`]);
+  if(a.bag)Object.entries(a.bag).forEach(([k,n])=>o.push([ico(k),`${k} ×${n}`]));
+  if(a.dice)o.push([DICE_I,`骰子加碼券 ×${a.dice}`]);
+  (a.looks||[]).forEach(id=>{const it=ITEMS.find(i=>i.id==='L-'+id);o.push(['','造型：'+(it?it.n:id)])});
+  (a.homes||[]).forEach(id=>{const h=HOMES.find(x=>x.id===id);o.push(['','小屋：'+(h?h.n:id)])});return o}
+const attText=a=>attParts(a).map(x=>x[1]).join('・');
+const attHtml=a=>attParts(a).map(([i,t])=>`<span class="cl-att">${i}${esc(t)}</span>`).join('');
+function applyAtt(a){
+  if(a.candy)S.candy+=a.candy|0;if(a.exp)S.exp+=a.exp|0;
+  if(a.bag)Object.entries(a.bag).forEach(([k,n])=>{S.bag=S.bag||{};S.bag[k]=(S.bag[k]||0)+(n|0)});
+  if(a.dice)S.diceBonus=(S.diceBonus||0)+(a.dice|0);
+  (a.looks||[]).forEach(x=>{const k='L-'+x;if(!S.items.includes(k))S.items.push(k)});
+  (a.homes||[]).forEach(x=>{if(!S.homes.includes(x))S.homes.push(x)});
 }
-async function claim(id){
-  const m=MAIL.find(x=>x.id===id);if(!m||m.claimed||!live(m))return;
+const mIcon=m=>isBox(m)?'🎲':isGift(m)?'🎁':m.kind==='system'?'🔔':'📢';
+const dstr=t=>t&&t.toDate?t.toDate().toLocaleDateString('zh-TW'):'';
+function mailCard(m){const g=isGift(m),box=isBox(m);
+  let act='';
+  if(g){if(m.claimed)act=`<small>✓ 已經收下了${box&&m.result?'：'+esc(attText(m.result)):''}</small>`;
+    else act=box?`<button class="act buy" data-open="${m.id}">🎁 打開禮物盒</button>`:`<button class="act buy" data-claim="${m.id}">收下</button>`}
+  return `<div class="cl-mail ${live(m)&&(g||!m.read)?'new':''}"><h4>${mIcon(m)} ${esc(m.title||'')}</h4>
+    ${m.body?`<p>${esc(m.body)}</p>`:''}${g&&!box?`<div class="cl-atts">${attHtml(m.att)}</div>`:''}${box&&!m.claimed?`<div class="cl-boxmini">${BOX_SVG}</div>`:''}
+    <small>${dstr(m.createdAt)}${m.expireAt&&!m.claimed?' ・ '+dstr(m.expireAt)+' 前要領取':''}</small>${act}</div>`}
+function bindMail(){
+  document.querySelectorAll('[data-claim]').forEach(b=>b.onclick=()=>claim(b.dataset.claim));
+  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openBox(b.dataset.open));
+  const ca=document.getElementById('clClaimAll');if(ca)ca.onclick=claimAll;
+}
+function mailbox(){
+  const list=MAIL.filter(m=>!(isGift(m)&&!m.claimed&&expired(m)));
+  const fixed=list.filter(m=>live(m)&&isGift(m)&&!isBox(m)).length;
+  openSheet(head('✉ 信箱')+`${fixed>1?`<button class="big" id="clClaimAll" style="width:100%">全部收下（${fixed} 份禮物）</button>`:''}
+  <div class="cl-list">${list.length?list.map(mailCard).join(''):'<p class="hint">信箱是空的。</p>'}</div>`);
+  bindMail();
+  list.filter(m=>!m.read&&!isGift(m)).forEach(m=>db.doc(`players/${ME.uid}/inbox/${m.id}`).update({read:true}).catch(()=>{}));
+}
+async function claim(id,quiet){
+  const m=MAIL.find(x=>x.id===id);if(!m||m.claimed||!live(m)||isBox(m))return false;
   const a=m.att||{};
   try{
     await db.doc(`players/${ME.uid}/inbox/${id}`).update({claimed:true,read:true,claimedAt:FV.serverTimestamp()});
-    if(a.candy)S.candy+=a.candy;if(a.exp)S.exp+=a.exp;
-    (a.looks||[]).forEach(x=>{const k='L-'+x;if(!S.items.includes(k))S.items.push(k)});
-    (a.homes||[]).forEach(x=>{if(!S.homes.includes(x))S.homes.push(x)});
-    ownBase=ownSet();save();push();stage(true);render();toast('收下了：'+attText(a));mailbox();
-  }catch(e){toast('領取失敗，請稍後再試')}
+    m.claimed=true;applyAtt(a);
+    if(!quiet){ownBase=ownSet();save();push();stage(true);render();toast('收下了：'+attText(a));try{SND.play('coin')}catch(e){}mailbox()}
+    return true;
+  }catch(e){if(!quiet)toast('領取失敗，請稍後再試');return false}
+}
+async function claimAll(){
+  const ids=MAIL.filter(m=>live(m)&&isGift(m)&&!isBox(m)).map(m=>m.id);let n=0;
+  for(const id of ids)if(await claim(id,true))n++;
+  ownBase=ownSet();save();push();stage(true);render();toast(`收下了 ${n} 份禮物！`);try{SND.play('coin')}catch(e){}mailbox();
+}
+
+/* ===== 🎲 隨機禮物盒 ===== */
+const GIFT_FLOWERS=[['小雛菊',30],['鬱金香',25],['向日葵',18],['玫瑰',12],['繡球花',8],['粉蓮花',5],['星光百合',2]];
+const GIFT_PETS=[['幸運草',30],['古錢幣',25],['葉子護身符',18],['幸運珍珠',14],['彩虹寶石',9],['星晶碎片',4]];
+const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const wpick=list=>{let t=list.reduce((s,x)=>s+x[1],0),r=Math.random()*t;for(const x of list){if((r-=x[1])<0)return x}return list[list.length-1]};
+function tier(max,rows){const r=wpick(rows);return r[0]==='max'?{n:max,big:true}:{n:Math.min(max,rint(r[0][0],r[0][1])),big:false}}
+function rollBox(cfg){
+  cfg=cfg||{};const sMax=Math.max(1688,cfg.starMax|0),eMax=Math.max(1000,cfg.expMax|0);
+  const kind=wpick([['candy',40],['exp',30],['flower',15],['pet',10],['dice',5]])[0];
+  if(kind==='candy'){const t=tier(sMax,[[[88,300],60],[[301,800],30],[[801,1288],9],['max',1]]);return {att:{candy:t.n},big:t.big}}
+  if(kind==='exp'){const t=tier(eMax,[[[100,250],60],[[251,600],30],[[601,900],9],['max',1]]);return {att:{exp:t.n},big:t.big}}
+  if(kind==='flower'){const f=wpick(GIFT_FLOWERS);return {att:{bag:{[f[0]]:rint(2,8)}},big:f[0]==='星光百合'}}
+  if(kind==='pet'){const f=wpick(GIFT_PETS);return {att:{bag:{[f[0]]:rint(2,6)}},big:f[0]==='星晶碎片'}}
+  return {att:{dice:rint(1,3)},big:false};
+}
+const BOX_SVG=`<svg viewBox="0 0 120 120" class="cl-boxsvg" aria-hidden="true"><g class="lid"><rect x="16" y="30" width="88" height="22" rx="6" fill="#ff7fb0" stroke="#c23258" stroke-width="3"/><rect x="52" y="30" width="16" height="22" fill="#ffd166"/><path d="M60,30C44,8 30,16 40,28ZM60,30C76,8 90,16 80,28Z" fill="#ffd166" stroke="#e39b00" stroke-width="3"/></g><rect x="22" y="52" width="76" height="56" rx="6" fill="#ff9fc6" stroke="#c23258" stroke-width="3"/><rect x="52" y="52" width="16" height="56" fill="#ffd166"/></svg>`;
+async function openBox(id){
+  const m=MAIL.find(x=>x.id===id);if(!m||m.claimed||!live(m)||!isBox(m))return;
+  const r=rollBox(m.att&&m.att.box);
+  try{  // 先存結果再播動畫：中途關掉也不能重抽
+    await db.doc(`players/${ME.uid}/inbox/${id}`).update({claimed:true,read:true,claimedAt:FV.serverTimestamp(),result:r.att});
+  }catch(e){toast('打開失敗，請稍後再試');return}
+  m.claimed=true;m.result=r.att;applyAtt(r.att);ownBase=ownSet();save();push();
+  const [ic,tx]=attParts(r.att)[0]||['',''];
+  openSheet(head('🎲 '+esc(m.title||'禮物盒'))+`<div class="cl-open ${r.big?'big':''}" id="clOpen">
+    <div class="cl-stage">${BOX_SVG}<div class="cl-prize">${ic}<b>${esc(tx)}</b>${r.big?'<em>🌟 大獎！</em>':''}</div><div class="cl-spark">${'<i></i>'.repeat(14)}</div></div>
+    <p class="hint" id="clTap">點一下可以跳過</p></div>
+    <button class="big" id="clTake" style="width:100%;visibility:hidden">收下</button>`);
+  const box=document.getElementById('clOpen'),take=document.getElementById('clTake');
+  let done=false;const finish=()=>{if(done)return;done=true;box.classList.add('done');take.style.visibility='visible';document.getElementById('clTap').textContent='';
+    try{SND.play(r.big?'win':'coin')}catch(e){}};
+  try{SND.play('open')}catch(e){}
+  box.classList.add('shake');setTimeout(()=>box.classList.add('pop'),1100);setTimeout(finish,2300);
+  box.onclick=finish;
+  take.onclick=()=>{stage(true);render();toast('收下了：'+tx);mailbox()};
 }
 function popGift(){
-  if(popped)return;const g=MAIL.find(m=>live(m)&&hasAtt(m.att));if(!g)return;popped=true;
-  setTimeout(()=>{if(document.getElementById('modal').hidden)openSheet(head('🎁 你收到禮物了！')+`<div class="cl-mail new"><h4>${esc(g.title||'')}</h4>${g.body?`<p>${esc(g.body)}</p>`:''}<span class="cl-att">${esc(attText(g.att))}</span><button class="act buy" data-claim="${g.id}">收下</button></div><button class="ghost" id="clAllMail" style="width:100%">打開信箱</button>`),
-    document.querySelectorAll('[data-claim]').forEach(b=>b.onclick=()=>claim(b.dataset.claim)),document.getElementById('clAllMail').onclick=mailbox},1200);
+  if(popped)return;const g=MAIL.find(m=>live(m)&&isGift(m));if(!g)return;popped=true;
+  setTimeout(()=>{if(!document.getElementById('modal').hidden)return;
+    openSheet(head('🎁 你收到禮物了！')+`<div class="cl-list">${mailCard(g)}</div><button class="ghost" id="clAllMail" style="width:100%">打開信箱</button>`);
+    bindMail();document.getElementById('clAllMail').onclick=mailbox},1200);
 }
-/* 給全部玩家的信：第一次看到時複製一份到自己的信箱 */
+/* 給全部玩家的信：只抓上次之後新寄的（不限封數），第一次看到時複製一份到自己的信箱 */
 async function syncBroadcasts(){
-  try{const bs=await db.collection('broadcasts').orderBy('createdAt','desc').limit(20).get();
-    for(const b of bs.docs){const ref=db.doc(`players/${ME.uid}/inbox/${b.id}`);const ex=await ref.get();
-      if(!ex.exists){const d=b.data();if(d.expireAt&&d.expireAt.toMillis()<Date.now())continue;
-        await ref.set({title:d.title||'',body:d.body||'',kind:d.kind||'notice',att:d.att||{},createdAt:d.createdAt,expireAt:d.expireAt||null,read:false,claimed:false,bc:true})}}}
+  try{const since=S.bcT|0;let q=db.collection('broadcasts').orderBy('createdAt');
+    if(since)q=q.where('createdAt','>',firebase.firestore.Timestamp.fromMillis(since));
+    const bs=await q.get();let maxT=since;
+    for(const b of bs.docs){const d=b.data();maxT=Math.max(maxT,tms(d.createdAt));
+      if(expired(d))continue;
+      const ref=db.doc(`players/${ME.uid}/inbox/${b.id}`);const ex=await ref.get();
+      if(!ex.exists)await ref.set({title:d.title||'',body:d.body||'',kind:d.kind||'notice',att:d.att||{},createdAt:d.createdAt,expireAt:d.expireAt||null,read:false,claimed:false,bc:true})}
+    if(maxT>since){S.bcT=maxT;try{_save()}catch(e){}queue()}}
   catch(e){}
 }
 function meSheet(){
   openSheet(head('👤 我的帳號')+`<p>暱稱：<b>${esc(ME.name)}</b></p><p>帳號：<b>${esc(ME.code)}</b></p>
   <p class="hint">進度會自動存到雲端。在學校或別人的電腦玩完，記得按登出。</p>
   <button class="big" id="clLogout" style="width:100%">登出</button>`);
-  document.getElementById('clLogout').onclick=async()=>{await push();try{localStorage.removeItem(skey(PL.cur))}catch(e){}closeQuiz();await auth.signOut()};
+  document.getElementById('clLogout').onclick=async()=>{await push();try{localStorage.removeItem(skey(PL.cur))}catch(e){}closeQuiz();try{localStorage.removeItem(K_SEEN)}catch(e){}await auth.signOut()};
 }
 })();

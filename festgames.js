@@ -7,6 +7,10 @@ window.GAMEF={
   newyear:  {n:'春節',title:'趕年獸・搶紅包',cur:'紅包',ic:'🧧',runs:3,look:320,room:400,url:'fest/newyear/index.html',home:'SP03',lk:'SP03'}
 };
 const FG_RATE=3;   // 1 個節慶貨幣 = 3 顆星星糖
+const TRIAL_PRICE=50;   // 星宮體驗館：每個遊戲每天體驗 1 次的價格（星星糖）
+const TRIAL_COVER={   // 體驗館卡片圖：直接用各節慶遊戲的場景圖裁一段（第二個值＝從上往下的位置）
+  halloween:['fest/halloween/img/scene1.webp','5%'],xmas:['fest/xmas/img/bg_slope.webp','0%'],newyear:['fest/newyear/img/scene1.webp','62%']};
+const TRIAL_SOON=[['children','兒童節','🎈'],['dragon','端午節','🐉'],['qixi','七夕','💞'],['moon','中秋節','🥮'],['national','國慶日','🎆']];   // 還沒做好的節慶遊戲
 (function(){
 const css=document.createElement('style');css.textContent=`
 .fg-hero{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:3/2;background:#2a1d4a}
@@ -22,6 +26,18 @@ const css=document.createElement('style');css.textContent=`
 .fg-item.room img{width:100%;height:70px;object-fit:cover;border-radius:8px}
 .fg-item b{font-size:.9rem}.fg-item small{color:var(--muted);font-size:.75rem}
 #fgFrame{position:fixed;inset:0;z-index:5000;background:#000}
+.tp-entry{display:flex;align-items:center;gap:12px;border:2px solid #d9c6f2;border-radius:16px;padding:10px 12px;background:linear-gradient(120deg,#efe4ff,#ffe9f4);width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;margin-bottom:12px}
+.tp-entry .ic{font-size:2rem;line-height:1}
+.tp-entry b{font-family:var(--display);font-weight:400;font-size:1.15rem;color:#6b3fa0;display:block}
+.tp-entry small{color:var(--muted);font-size:.78rem}
+.tp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tp-card{border:2px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;background:#fff}
+.tp-card .pic{aspect-ratio:3/2;background:#efe4ff center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:2.4rem}
+.tp-card .tx{padding:8px;display:flex;flex-direction:column;gap:3px;flex:1}
+.tp-card b{font-size:.95rem}.tp-card small{color:var(--muted);font-size:.74rem}
+.tp-card .tagx{align-self:flex-start;font-size:.68rem;background:#efe4ff;color:#6b3fa0;border-radius:99px;padding:1px 8px}
+.tp-card.soon{opacity:.6}
+.tp-card .act{margin-top:auto}
 #fgFrame iframe{width:100%;height:100%;border:0;display:block}
 `;document.head.appendChild(css);
 
@@ -75,18 +91,37 @@ window.festMenu=function(k){
 
 /* 開啟節慶遊戲 */
 let cur=null;
-function launch(k){
-  const f=FS(k);if(f.left<=0)return;f.left--;window.FSTAT&&FSTAT('f:'+k);save();
-  closeQuiz();try{SND.pause()}catch(e){}
+function launch(k,trial){
+  if(!trial){const f=FS(k);if(f.left<=0)return;f.left--;window.FSTAT&&FSTAT('f:'+k);save()}
+  closeQuiz();try{SND.pause()}catch(e){}try{if(trial)SND.setTheme(k)}catch(e){}
   const box=document.createElement('div');box.id='fgFrame';
-  box.innerHTML=`<iframe src="${GAMEF[k].url}?embed=1&char=${S.char||'f'}" title="${GAMEF[k].title}" allow="autoplay"></iframe>`;
-  document.body.appendChild(box);cur={k,frame:box.querySelector('iframe'),got:false};
+  box.innerHTML=`<iframe src="${GAMEF[k].url}?embed=1&char=${S.char||'f'}${trial?'&trial=1':''}" title="${GAMEF[k].title}" allow="autoplay"></iframe>`;
+  document.body.appendChild(box);cur={k,frame:box.querySelector('iframe'),got:false,trial:!!trial};
 }
+
+/* ===== 🏰 星宮體驗館：每個節慶遊戲每天花星星糖體驗 1 次，沒有任何獎勵，不影響節慶活動 ===== */
+function TS(){const d=new Date().toDateString();if(!S.trial||S.trial.day!==d)S.trial={day:d,used:{}};S.trial.used=S.trial.used||{};return S.trial}
+window.starPalace=function(){
+  const t=TS();
+  const cards=Object.keys(GAMEF).map(k=>{const g=GAMEF[k],home=HOMES.find(h=>h.id===g.home),used=!!t.used[k];
+    const cv=TRIAL_COVER[k]||(home&&home.img?[home.img,'50%']:null);
+    return `<div class="tp-card"><div class="pic" style="${cv?`background-image:url('${cv[0]}');background-position:50% ${cv[1]}`:''}">${cv?'':g.ic}</div><div class="tx">
+      <b>${g.ic} ${g.n}・${g.title}</b><span class="tagx">體驗模式・沒有獎勵</span>
+      ${used?'<button class="act" disabled>今天已體驗</button>':`<button class="act buy" data-tp="${k}" ${S.candy<TRIAL_PRICE?'disabled':''}>⭐ ${TRIAL_PRICE} 體驗一次</button>`}</div></div>`}).join('')
+   +TRIAL_SOON.map(([k,n,ic])=>`<div class="tp-card soon"><div class="pic">${ic}</div><div class="tx"><b>${ic} ${n}</b><span class="tagx">敬請期待</span><button class="act" disabled>還沒開放</button></div></div>`).join('');
+  openSheet(head('🏰 星宮體驗館')+`<p class="hint">八大節慶的小遊戲都可以在這裡體驗！每個遊戲每天可以體驗 1 次，每次 ${TRIAL_PRICE} 顆星星糖。<br>體驗模式<b>沒有任何獎勵</b>，也不會用掉節慶活動的次數。</p>
+    <div class="fg-bal">⭐ 我的星星糖<span>${S.candy}</span></div><div class="tp-grid">${cards}</div>`);
+  document.querySelectorAll('[data-tp]').forEach(b=>b.onclick=()=>{const k=b.dataset.tp,g=GAMEF[k],t=TS();
+    if(t.used[k]||S.candy<TRIAL_PRICE)return;
+    if(!confirm(`花 ${TRIAL_PRICE} 顆星星糖體驗「${g.title}」一次？\n體驗模式沒有任何獎勵喔！`))return;
+    S.candy-=TRIAL_PRICE;t.used[k]=1;window.FSTAT&&FSTAT('t:'+k);save();render();launch(k,true)});
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-tpgo]');if(b){e.preventDefault();starPalace()}});
 addEventListener('message',e=>{
   if(!cur||e.source!==cur.frame.contentWindow)return;const d=e.data||{};
-  if(d.fsGame&&!cur.got){cur.got=true;const n=Math.max(0,Math.min(500,d.earned|0)),f=FS(cur.k);f.c+=n;window.FSTAT&&FSTAT('fc:'+cur.k,n);save();}
-  if(d.fsClose){const k=cur.k,n=cur.got;document.getElementById('fgFrame')?.remove();cur=null;try{SND.resume()}catch(e){}
-    render();stage();festMenu(k)}
+  if(d.fsGame&&!cur.got){cur.got=true;if(cur.trial)return;const n=Math.max(0,Math.min(500,d.earned|0)),f=FS(cur.k);f.c+=n;window.FSTAT&&FSTAT('fc:'+cur.k,n);save();}
+  if(d.fsClose){const k=cur.k,n=cur.got,cur0trial=cur.trial;document.getElementById('fgFrame')?.remove();cur=null;try{SND.resume()}catch(e){}
+    render();stage();if(cur0trial)starPalace();else festMenu(k)}
 });
 
 /* 活動結束：剩下的貨幣自動換成星星糖 */
@@ -100,6 +135,9 @@ function convert(){
   checking=false;
 }
 const _render=window.render;
-window.render=function(){const r=_render.apply(this,arguments);try{convert()}catch(e){}return r};
+window.render=function(){const r=_render.apply(this,arguments);try{convert()}catch(e){}
+  try{if(typeof tab!=='undefined'&&tab==='home'){const p=document.getElementById('panel');if(p&&!p.querySelector('.tp-entry'))p.insertAdjacentHTML('afterbegin',
+    `<button class="tp-entry" data-tpgo><span class="ic">🏰</span><span><b>星宮體驗館</b><small>八大節慶小遊戲隨時體驗・每個遊戲每天 1 次・⭐ ${TRIAL_PRICE}</small></span></button>`)}}catch(e){}
+  return r};
 setTimeout(()=>{try{convert();stage()}catch(e){}},500);
 })();
