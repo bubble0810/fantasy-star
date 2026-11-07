@@ -25,7 +25,7 @@ const css=document.createElement('style');css.textContent=`
 .fg-item img{height:84px;max-width:100%;object-fit:contain}
 .fg-item.room img{width:100%;height:70px;object-fit:cover;border-radius:8px}
 .fg-item b{font-size:.9rem}.fg-item small{color:var(--muted);font-size:.75rem}
-#fgFrame{position:fixed;inset:0;z-index:5000;background:#000}
+#fgFrame{position:fixed;top:0;bottom:0;left:var(--fl,0);right:var(--fl,0);z-index:5000;background:#000}
 .tp-entry{display:flex;align-items:center;gap:12px;border:2px solid #d9c6f2;border-radius:16px;padding:10px 12px;background:linear-gradient(120deg,#efe4ff,#ffe9f4);width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;margin-bottom:12px}
 .tp-entry .ic{font-size:2rem;line-height:1}
 .tp-entry b{font-family:var(--display);font-weight:400;font-size:1.15rem;color:#6b3fa0;display:block}
@@ -53,7 +53,7 @@ const lookId=k=>'L-'+(S.char==='m'?'M':'F')+GAMEF[k].lk;
 
 /* 舞台上的節慶徽章 */
 window.stBadge=function(){try{return Object.keys(GAMEF).filter(onNow).map(k=>{const g=GAMEF[k],f=FS(k);
-  return `<button class="stbadge" data-fgo="${k}">${g.ic} ${g.n}・${g.title}<small>剩 ${f.left} 次</small></button>`}).join('')}catch(e){return ''}};
+  return `<button class="stbadge" data-fgo="${k}" aria-label="${g.n}・${g.title}，今天剩 ${f.left} 次">${g.ic} ${g.n}<small>剩${f.left}</small></button>`}).join('')}catch(e){return ''}};
 window.hwMenu=()=>festMenu('halloween');
 document.addEventListener('click',e=>{const b=e.target.closest('[data-fgo]');if(b){e.preventDefault();e.stopPropagation();festMenu(b.dataset.fgo)}},true);
 
@@ -136,8 +136,6 @@ function convert(){
 }
 const _render=window.render;
 window.render=function(){const r=_render.apply(this,arguments);try{convert()}catch(e){}
-  try{if(typeof tab!=='undefined'&&tab==='home'){const p=document.getElementById('panel');if(p&&!p.querySelector('.tp-entry'))p.insertAdjacentHTML('afterbegin',
-    `<button class="tp-entry" data-tpgo><span class="ic">🏰</span><span><b>星宮體驗館</b><small>八大節慶小遊戲隨時體驗・每個遊戲每天 1 次・⭐ ${TRIAL_PRICE}</small></span></button>`)}}catch(e){}
   return r};
 setTimeout(()=>{try{convert();stage()}catch(e){}},500);
 })();

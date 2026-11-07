@@ -1,3 +1,39 @@
+Claude
+此回應未能載入。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Cloud · JS
 /* ===== 幻想智慧星：雲端模組（登入、雲端存檔、信箱） =====
    接在遊戲主程式後面載入，不改動遊戲本身的玩法。 */
 (function(){
@@ -15,7 +51,7 @@ if(!window.CLOUD_GATE){
 const fb=firebase.initializeApp(window.FIREBASE_CONFIG);
 const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue;
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);   // 同一台裝置記住登入
-
+ 
 /* ---------- 帳號密碼 ---------- */
 const pwStr=pin=>'fsp-'+pin+'-star';                 // 交給 Firebase 的密碼（Firebase 至少要 6 碼，玩家只要記 4 個數字）
 const emailOf=code=>code+'@fantasystar.game';       // 假信箱，不會寄信
@@ -30,7 +66,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 let firstAuth=true,seenT=0,outMsg='';
 function seen(force){const n=Date.now();if(force||n-seenT>30000){seenT=n;lsSet(K_SEEN,String(n))}}
 const BAD=['笨蛋','白痴','智障','去死','幹','靠北','屁'];
-
+ 
 /* ---------- 樣式 ---------- */
 const css=document.createElement('style');css.textContent=`
 #saveicon,#saveboard,#swbtn,#rstlink,#pkrestore,#pbtn{display:none!important}
@@ -61,7 +97,6 @@ const css=document.createElement('style');css.textContent=`
 .cl-note{font-size:12px;color:#7d6a94;text-align:center;margin:0;line-height:1.5}
 .cl-fab{position:fixed;z-index:900;top:10px;right:calc(var(--fl,0px) + 10px);display:flex;gap:6px}
 .cl-fab button{position:relative;min-width:44px;height:44px;border-radius:999px;border:2px solid #e5d8f2;background:#fff;color:#3b2853;font:inherit;font-size:14px;font-weight:700;padding:0 12px;cursor:pointer;box-shadow:0 2px 8px #0001}
-body:has(.modal.full:not([hidden])) .cl-fab{display:none}
 .cl-fab b.dot{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:999px;background:#e2508f;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0 5px}
 .cl-mail{border:2px solid #e5d8f2;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
 .cl-mail.new{border-color:#e2508f;background:#fff5f9}
@@ -92,7 +127,7 @@ ${[...Array(14)].map((_,i)=>`.cl-spark i:nth-child(${i+1}){--a:${i*360/14}deg;an
 @media (prefers-reduced-motion:reduce){.cl-open *{animation:none!important;transition:none!important}}
 .cl-list{display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto}
 `;document.head.appendChild(css);
-
+ 
 /* ---------- 登入畫面 ---------- */
 const mask=document.createElement('div');mask.className='cl-mask';mask.innerHTML=`<div class="cl-card" id="clCard"><div class="cl-brand">幻想智慧星<small>正在連線中…</small></div></div>`;
 document.body.appendChild(mask);
@@ -184,7 +219,7 @@ function nameView(user){
     }catch(e){busy(false,'開始玩！');err('建立失敗，請再試一次（'+(e.code||e.message)+'）')}
   };
 }
-
+ 
 /* ---------- 雲端存檔 ---------- */
 let ME=null,adminRev=0,timer=0,ready=false,unsubs=[];
 function applyState(sj,name){
@@ -214,7 +249,7 @@ addEventListener('pagehide',()=>{if(ME&&ready)seen(true);if(timer)push()});
 document.addEventListener('visibilitychange',()=>{if(ME&&ready&&document.visibilityState==='hidden')seen(true)});
 setInterval(()=>{if(ME&&ready&&document.visibilityState==='visible')seen(true)},60000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&timer)push()});
-
+ 
 /* ---------- 統計（給管理後台看：玩了什麼、買了什麼、哪天有上線） ---------- */
 const dk=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 function stS(){if(!S.st||typeof S.st!=='object')S.st={t:{},d:{}};S.st.t=S.st.t||{};S.st.d=S.st.d||{};return S.st}
@@ -232,7 +267,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 let ownBase=null;
 function ownSet(){const o=new Set();(S.items||[]).forEach(x=>{if(String(x).startsWith('L-'))o.add('b:'+x)});(S.homes||[]).forEach(x=>o.add('b:'+x));(S.pets||[]).forEach(x=>x&&x.k&&o.add('b:pet-'+x.k));return o}
 function ownCheck(){if(!ME||!ready||!S)return;const now=ownSet();if(ownBase){for(const k of now)if(!ownBase.has(k))stAdd(k)}ownBase=now}
-
+ 
 /* ---------- 登入後 ---------- */
 auth.onAuthStateChanged(async user=>{
   unsubs.forEach(f=>f());unsubs=[];ready=false;ME=user;
@@ -277,7 +312,7 @@ function enter(user,d,isNew){
   cleaned=false;popped=false;mailA=[];mailB=[];listenMail(ref);
   syncBroadcasts();
 }
-
+ 
 /* ---------- 右上角：信箱、帳號（v6 禮物系統） ---------- */
 let MAIL=[],popped=false,cleaned=false,mailA=[],mailB=[];
 const DAY=864e5;
@@ -368,7 +403,7 @@ async function claimAll(){
   for(const id of ids)if(await claim(id,true))n++;
   ownBase=ownSet();save();push();stage(true);render();toast(`收下了 ${n} 份禮物！`);try{SND.play('coin')}catch(e){}mailbox();
 }
-
+ 
 /* ===== 🎲 隨機禮物盒 ===== */
 const GIFT_FLOWERS=[['小雛菊',30],['鬱金香',25],['向日葵',18],['玫瑰',12],['繡球花',8],['粉蓮花',5],['星光百合',2]];
 const GIFT_PETS=[['幸運草',30],['古錢幣',25],['葉子護身符',18],['幸運珍珠',14],['彩虹寶石',9],['星晶碎片',4]];
@@ -430,3 +465,4 @@ function meSheet(){
   document.getElementById('clLogout').onclick=async()=>{await push();try{localStorage.removeItem(skey(PL.cur))}catch(e){}closeQuiz();try{localStorage.removeItem(K_SEEN)}catch(e){}await auth.signOut()};
 }
 })();
+ 
