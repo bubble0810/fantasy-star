@@ -75,7 +75,7 @@ window.festMenu=function(k){
     <div class="fg-bal">${g.ic} 我的${g.cur}<span>${f.c}</span></div>
     <button class="big" id="fgGo" style="width:100%" ${f.left<=0?'disabled':''}>${f.left>0?`出發！（今天還剩 ${f.left} 次）`:'今天的次數用完了，明天再來！'}</button>
     <h3 style="margin:14px 0 0">${g.cur}兌換所</h3>
-    <p class="hint">${g.cur}只能在活動期間使用，${fmtMD(st.end)} 活動結束後，剩下的會自動換成星星糖（1 個 = ${FG_RATE} 顆）。</p>
+    <p class="hint mobile-compact">${g.cur}只能在活動期間使用，${fmtMD(st.end)} 活動結束後，剩下的會自動換成星星糖（1 個 = ${FG_RATE} 顆）。</p>
     <div class="fg-shop">${shop.map(x=>`<div class="fg-item ${x.cls}">${x.img?`<img src="${x.img}" alt="">`:`<div style="font-size:42px;line-height:84px">${x.id==='stars'?'⭐':'🎲'}</div>`}
       <b>${x.n}</b><small>${x.d}</small>
       ${x.own?'<button class="act" disabled>已擁有</button>':`<button class="act buy" data-fx="${x.id}" ${f.c<x.c?'disabled':''}>${g.ic} ${x.c}</button>`}</div>`).join('')}</div>`);
@@ -109,7 +109,7 @@ window.starPalace=function(){
       <b>${g.ic} ${g.n}・${g.title}</b><span class="tagx">體驗模式・沒有獎勵</span>
       ${used?'<button class="act" disabled>今天已體驗</button>':`<button class="act buy" data-tp="${k}" ${S.candy<TRIAL_PRICE?'disabled':''}>⭐ ${TRIAL_PRICE} 體驗一次</button>`}</div></div>`}).join('')
    +TRIAL_SOON.map(([k,n,ic])=>`<div class="tp-card soon"><div class="pic">${ic}</div><div class="tx"><b>${ic} ${n}</b><span class="tagx">敬請期待</span><button class="act" disabled>還沒開放</button></div></div>`).join('');
-  openSheet(head('🏰 星宮體驗館')+`<p class="hint">八大節慶的小遊戲都可以在這裡體驗！每個遊戲每天可以體驗 1 次，每次 ${TRIAL_PRICE} 顆星星糖。<br>體驗模式<b>沒有任何獎勵</b>，也不會用掉節慶活動的次數。</p>
+  openSheet(head('🏰 星宮體驗館')+`<p class="hint mobile-compact">八大節慶的小遊戲都可以在這裡體驗！每個遊戲每天可以體驗 1 次，每次 ${TRIAL_PRICE} 顆星星糖。<br>體驗模式<b>沒有任何獎勵</b>，也不會用掉節慶活動的次數。</p>
     <div class="fg-bal">⭐ 我的星星糖<span>${S.candy}</span></div><div class="tp-grid">${cards}</div>`);
   document.querySelectorAll('[data-tp]').forEach(b=>b.onclick=()=>{const k=b.dataset.tp,g=GAMEF[k],t=TS();
     if(t.used[k]||S.candy<TRIAL_PRICE)return;
