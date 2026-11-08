@@ -6,15 +6,23 @@
 <title>萬聖節找小幽靈</title>
 <script>
 /* 嵌在幻想智慧星裡執行時：回報結果、隱藏試玩版文字、提供離開鍵 */
-(()=>{const q=new URLSearchParams(location.search);if(!q.get('embed'))return;window.FS_EMBED=true;window.FS_CHAR=q.get('char')||'f';
- window.fsReport=n=>{try{parent.postMessage({fsGame:'halloween',earned:n|0},'*')}catch(e){}};
- window.fsClose=()=>{try{parent.postMessage({fsClose:true},'*')}catch(e){}};
- window.fsResult=(again,home)=>{const a=document.getElementById(again),h=document.getElementById(home);if(a)a.style.display='none';if(h){h.textContent='回到活動頁';h.onclick=e=>{e.stopPropagation();fsClose()}}};
+(()=>{
+ const q=new URLSearchParams(location.search), embed=!!q.get('embed');
+ if(embed){
+  window.FS_EMBED=true;window.FS_CHAR=q.get('char')||'f';
+  window.fsReport=n=>{try{parent.postMessage({fsGame:'halloween',earned:n|0},'*')}catch(e){}};
+  window.fsClose=()=>{try{parent.postMessage({fsClose:true},'*')}catch(e){}};
+  window.fsResult=(again,home)=>{const a=document.getElementById(again),h=document.getElementById(home);if(a)a.style.display='none';if(h){h.textContent='回到活動頁';h.onclick=e=>{e.stopPropagation();fsClose()}}};
+ }
  document.addEventListener('DOMContentLoaded',()=>{
-  const st=document.createElement('style');st.textContent='.tag,.note,#pace,#rPace{display:none!important}#fsX{position:fixed;left:8px;bottom:8px;z-index:99;min-width:44px;height:44px;border-radius:999px;border:0;background:#ffffffd9;color:#3b2853;font:700 14px sans-serif;padding:0 12px;cursor:pointer}';document.head.appendChild(st);
-  const x=document.createElement('button');x.id='fsX';x.textContent='✕ 離開';let arm=0;
-  x.onclick=e=>{e.stopPropagation();if(arm){fsClose();return}arm=1;x.textContent='再按一次離開（這次沒有獎勵）';setTimeout(()=>{arm=0;x.textContent='✕ 離開'},2500)};
-  document.body.appendChild(x);});
+  const st=document.createElement('style');st.textContent='.tag,.note,#pace,#rPace{display:none!important}#fsX{position:static;justify-self:start;pointer-events:auto;z-index:99;background:linear-gradient(#ef6372,#b8233a);border:3px solid #fff9;box-shadow:0 5px 12px #0018;color:white;border-radius:17px;padding:9px 12px;font:900 clamp(14px,3.5vw,21px) "Microsoft JhengHei",sans-serif;cursor:pointer}#fsQuit{position:fixed;inset:0;z-index:10000;display:none;place-items:center;background:#0008}#fsQuit.show{display:grid}#fsQuit>div{width:min(86vw,420px);background:#fff;border-radius:22px;padding:22px;text-align:center;color:#26334f;font-family:"Microsoft JhengHei",sans-serif}#fsQuit button{width:100%;margin-top:10px;padding:11px 14px;border:3px solid #fff9;border-radius:17px;box-shadow:0 5px 12px #0018;color:#fff;font:900 18px "Microsoft JhengHei",sans-serif}#fsStay{background:linear-gradient(#2679dc,#164c9e)}#fsLeave{background:linear-gradient(#ef6372,#b8233a)}';document.head.appendChild(st);
+  const x=document.createElement('button');x.id='fsX';x.textContent='× 離開';
+  const quit=document.createElement('div');quit.id='fsQuit';quit.innerHTML='<div><h2>要離開嗎？</h2><button id="fsStay">繼續遊戲</button><button id="fsLeave">確定離開</button></div>';
+  x.onclick=e=>{e.stopPropagation();quit.classList.add('show')};
+  quit.querySelector('#fsStay').onclick=e=>{e.stopPropagation();quit.classList.remove('show')};
+  quit.querySelector('#fsLeave').onclick=e=>{e.stopPropagation();if(embed&&window.fsClose){fsClose()}else if(history.length>1){history.back()}else{location.href='../../index.html'}};
+  (document.querySelector('.hud')||document.body).appendChild(x);document.body.appendChild(quit);
+ });
 })();
 </script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
@@ -24,10 +32,10 @@
 html,body{margin:0;min-height:100%;background:#1e1536;color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;-webkit-user-select:none;user-select:none}
 .disp{font-family:Huninn,"Noto Sans TC",sans-serif;font-weight:400}
 .app{max-width:560px;margin:0 auto;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:100vh}
-.hud{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.hud{position:absolute;z-index:50;top:calc(env(safe-area-inset-top,0px) + 10px);left:10px;right:10px;display:grid;grid-template-columns:1fr 1.1fr 1fr;align-items:start;gap:8px;pointer-events:none}
 .chip{background:#ffffffeb;border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px}
 .chip svg{width:18px;height:18px}
-.hudR{display:flex;gap:6px;align-items:center}
+.hudR{display:flex;gap:6px;align-items:center;justify-self:end}
 .icon{width:44px;height:44px;border-radius:50%;border:0;background:#ffffffeb;color:var(--ink);font-size:16px;font-weight:700;cursor:pointer}
 .scene{position:relative;width:min(100%,calc((100vh - 140px)*2/3));margin:0 auto;aspect-ratio:2/3;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px #0008;background:#2a1d4a;touch-action:manipulation}
 .scene>img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
@@ -92,8 +100,8 @@ html,body{margin:0;min-height:100%;background:#1e1536;color:var(--ink);font-fami
 <body>
 <div class="app">
   <div class="hud">
-    <div class="chip disp" id="lvChip">第 1 關</div>
-    <div class="hudR">
+    <div class="chip disp" id="lvChip" style="grid-column:2">第 1 關</div>
+    <div class="hudR" style="grid-column:3">
       <div class="chip"><span id="candySvg"></span><span id="cTotal">0</span></div>
       <div class="chip disp" id="timeChip">0 秒</div>
       <button class="icon" id="musBtn" aria-label="音樂開關">♪</button>
@@ -171,7 +179,7 @@ const CANDY=[
  c=>`<svg viewBox="0 0 40 40"><path d="M4 12l8 8-8 8zM36 12l-8 8 8 8z" fill="${c}"/><ellipse cx="20" cy="20" rx="10" ry="8" fill="${c}"/><path d="M14 16q6 8 12 0" stroke="#fff" stroke-width="2" fill="none" opacity=".8"/></svg>`,
  ()=>`<svg viewBox="0 0 40 40"><path d="M20 3L36 35Q20 39 4 35z" fill="#ffffff"/><path d="M12.5 20L27.5 20L36 35Q20 39 4 35z" fill="#ff9a1f"/><path d="M8 28L32 28L36 35Q20 39 4 35z" fill="#ffd23a"/></svg>`];
 const CANDY_COLORS=['#ff7a1a','#8a4fd1','#3fb36a','#e2508f'];
-const candyIcon=()=>CANDY[0]('#ff7a1a');
+const candyIcon=()=>CANDY[1]('#ff7a1a');
 $('candySvg').innerHTML=candyIcon();
 
 /* ---------- 遊戲狀態 ---------- */

@@ -6,15 +6,27 @@
 <title>聖誕滑雪橇</title>
 <script>
 /* 嵌在幻想智慧星裡執行時：回報結果、隱藏試玩版文字、提供離開鍵 */
-(()=>{const q=new URLSearchParams(location.search);if(!q.get('embed'))return;window.FS_EMBED=true;window.FS_CHAR=q.get('char')||'f';
- window.fsReport=n=>{try{parent.postMessage({fsGame:'xmas',earned:n|0},'*')}catch(e){}};
- window.fsClose=()=>{try{parent.postMessage({fsClose:true},'*')}catch(e){}};
- window.fsResult=(again,home)=>{const a=document.getElementById(again),h=document.getElementById(home);if(a)a.style.display='none';if(h){h.textContent='回到活動頁';h.onclick=e=>{e.stopPropagation();fsClose()}}};
+(()=>{
+ const q=new URLSearchParams(location.search),embed=!!q.get('embed');
+ if(embed){
+  window.FS_EMBED=true;window.FS_CHAR=q.get('char')||'f';
+  window.fsReport=n=>{try{parent.postMessage({fsGame:'xmas',earned:n|0},'*')}catch(e){}};
+  window.fsClose=()=>{try{parent.postMessage({fsClose:true},'*')}catch(e){}};
+  window.fsResult=(again,home)=>{const a=document.getElementById(again),h=document.getElementById(home);if(a)a.style.display='none';if(h){h.textContent='回到活動頁';h.onclick=e=>{e.stopPropagation();fsClose()}}};
+ }
  document.addEventListener('DOMContentLoaded',()=>{
-  const st=document.createElement('style');st.textContent='.tag,.note,#pace,#rPace{display:none!important}#fsX{position:fixed;left:8px;bottom:8px;z-index:99;min-width:44px;height:44px;border-radius:999px;border:0;background:#ffffffd9;color:#3b2853;font:700 14px sans-serif;padding:0 12px;cursor:pointer}';document.head.appendChild(st);
-  const x=document.createElement('button');x.id='fsX';x.textContent='✕ 離開';let arm=0;
-  x.onclick=e=>{e.stopPropagation();if(arm){fsClose();return}arm=1;x.textContent='再按一次離開（這次沒有獎勵）';setTimeout(()=>{arm=0;x.textContent='✕ 離開'},2500)};
-  document.body.appendChild(x);});
+  const st=document.createElement('style');
+  st.textContent='#fsExit{pointer-events:auto;justify-self:start;background:linear-gradient(#ef6372,#b8233a);border:3px solid #fff9;box-shadow:0 5px 12px #0018;color:white;border-radius:17px;padding:9px 12px;font:900 clamp(14px,3.5vw,21px) "Microsoft JhengHei",sans-serif;cursor:pointer}#fsQuit{position:fixed;inset:0;z-index:10000;display:none;place-items:center;background:#0008;padding:22px}#fsQuit.show{display:grid}#fsQuit>div{width:min(86vw,420px);background:#fff;border-radius:22px;padding:22px;text-align:center;color:#26334f;font-family:"Microsoft JhengHei",sans-serif}#fsQuit button{width:100%;margin-top:10px;padding:11px 14px;border:3px solid #fff9;border-radius:17px;box-shadow:0 5px 12px #0018;color:#fff;font:900 18px "Microsoft JhengHei",sans-serif;cursor:pointer}#fsStay{background:linear-gradient(#2679dc,#164c9e)}#fsLeave{background:linear-gradient(#ef6372,#b8233a)}';
+  document.head.appendChild(st);
+  const hud=document.getElementById('hud');
+  const x=document.createElement('button');x.id='fsExit';x.type='button';x.textContent='× 離開';
+  const quit=document.createElement('div');quit.id='fsQuit';quit.innerHTML='<div><h2>要離開嗎？</h2><button type="button" id="fsStay">繼續遊戲</button><button type="button" id="fsLeave">確定離開</button></div>';
+  if(hud)hud.insertBefore(x,hud.firstChild);else document.body.appendChild(x);
+  document.body.appendChild(quit);
+  x.onclick=e=>{e.stopPropagation();quit.classList.add('show')};
+  quit.querySelector('#fsStay').onclick=e=>{e.stopPropagation();quit.classList.remove('show')};
+  quit.querySelector('#fsLeave').onclick=e=>{e.stopPropagation();if(embed&&window.fsClose){fsClose()}else if(history.length>1){history.back()}else{location.href='../../index.html'}};
+ });
 })();
 </script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
@@ -26,7 +38,7 @@ html,body{margin:0;height:100%;background:#cfe0f5;color:var(--ink);font-family:"
 #stage{position:relative;width:min(100vw,66.667dvh);height:min(150vw,100dvh);overflow:hidden;background:#eaf2fc;box-shadow:0 10px 40px -10px #2a4a7a66}
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .disp{font-family:Huninn,"Noto Sans TC",sans-serif}
-.hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;pointer-events:none}
+.hud{position:absolute;z-index:50;top:calc(env(safe-area-inset-top,0px) + 10px);left:10px;right:10px;display:grid;grid-template-columns:1fr 1.1fr 1fr;align-items:start;gap:8px;pointer-events:none}
 .chip{background:#ffffffe6;border-radius:999px;padding:5px 12px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;box-shadow:0 2px 6px #0002}
 .chip img{width:20px;height:20px;object-fit:contain}
 .hudR{display:flex;gap:6px}
@@ -81,8 +93,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <canvas id="cv"></canvas>
   <div class="hud" id="hud" hidden>
     <div class="chip disp" id="timeChip">0:60</div>
-    <div class="hudR">
-      <div class="chip"><img src="img/gift_s.webp" alt="小禮物"><span id="cS">0</span></div>
+    <div class="hudR" style="grid-column:3;justify-self:end">
+      <div class="chip" style="grid-column:2;justify-self:center"><img src="img/gift_s.webp" alt="小禮物"><span id="cS">0</span></div>
       <div class="chip"><img src="img/gift_m.webp" alt="中禮物"><span id="cM">0</span></div>
       <div class="chip"><img src="img/gift_gold.webp" alt="金色大禮物"><span id="cG">0</span></div>
       <button class="pause" id="musBtn" aria-label="音樂開關">♪</button>
