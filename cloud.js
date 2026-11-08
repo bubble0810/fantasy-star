@@ -17,13 +17,13 @@ const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldVa
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);   // 同一台裝置記住登入
 
 /* ---------- 帳號密碼 ---------- */
-const pwStr=pin=>'fsp-'+pin+'-star';                 // 交給 Firebase 的密碼（Firebase 至少要 6 碼，玩家只要記 4 個數字）
+const pwStr=pin=>'fsp-'+pin+'-star';                 // 交給 Firebase 的密碼；玩家使用 1 位英文＋6 位數字
 const emailOf=code=>code+'@fantasystar.game';       // 假信箱，不會寄信
 /* ---------- 自動登出 ----------
    LOGIN_VER：大更新時改這個日期，所有裝置下次打開都要重新登入（進度在雲端，不會不見）
    AWAY_MIN：關掉或離開遊戲超過幾分鐘，下次打開要重新登入（公用電腦用）
    遊戲開著的時候不會自動登出。 */
-const LOGIN_VER='2026-11-07',AWAY_MIN=30;
+const LOGIN_VER='2026-11-08',AWAY_MIN=30;
 const K_VER='fs-login-ver',K_SEEN='fs-last-seen';
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
@@ -98,25 +98,25 @@ const mask=document.createElement('div');mask.className='cl-mask';mask.innerHTML
 document.body.appendChild(mask);
 const card=()=>document.getElementById('clCard');
 const $c=id=>document.getElementById(id);
-let lastCode='',justMade=null,newChar=null,pinMem=null;
+let lastCode='',justMade=null,newChar=null,pinMem=null,regDraft=null,regCreating=false;
 let loginMode='in';   // in＝登入現有帳號，new＝建立新帳號
 function loginView(){
   const why=outMsg;outMsg='';setTimeout(()=>{if(why)err(why)},0);
   const isNew=loginMode==='new';
   card().innerHTML=`<div class="cl-brand">幻想智慧星<small>答題闖關 · 收集造型 · 布置小屋</small></div>
   <div class="cl-tabs" role="tablist"><button type="button" role="tab" id="clTIn" aria-selected="${!isNew}">登入</button><button type="button" role="tab" id="clTNew" aria-selected="${isNew}">建立新帳號</button></div>
-  <form id="clForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="on">
+  <form id="clForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="${isNew?'off':'on'}">
     <label>帳號<small>${isNew?'自己取一個，英文字母或數字，4～12 個字':'英文字母或數字，4～12 個字'}</small><input id="clCode" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="12" value="${lastCode}"></label>
-    <label>密碼<small>${isNew?'自己設定 4 個數字':'4 個數字'}</small><input id="clPin" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="${isNew?'new-password':'current-password'}" maxlength="4"></label>
-    ${isNew?'<label>再輸入一次密碼<small>確認沒有打錯</small><input id="clPin2" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password" maxlength="4"></label>':''}
+    <label>密碼<small>${isNew?'1 個英文字母＋6 個數字，例如 K381427':'1 個英文字母＋6 個數字'}</small><input id="clPin" type="password" inputmode="text" pattern="[A-Za-z][0-9]{6}" autocomplete="${isNew?'new-password':'current-password'}" maxlength="7"></label>
+    ${isNew?'<label>再輸入一次密碼<small>確認沒有打錯</small><input id="clPin2" type="password" inputmode="text" pattern="[A-Za-z][0-9]{6}" autocomplete="new-password" maxlength="7"></label>':''}
     <p class="cl-err" id="clErr" role="alert"></p>
-    <button class="cl-go" id="clGo">${isNew?'建立帳號':'進入遊戲'}</button>
+    <button class="cl-go" id="clGo">${isNew?'下一步':'進入遊戲'}</button>
   </form>
-  <p class="cl-note">${isNew?'請記住你的帳號和 4 位數密碼，換電腦或手機時要用。<br>帳號不要用真實姓名或學號喔！':'第一次玩？請按上面的「建立新帳號」。<br>忘記密碼請找老師或管理員。在學校或公用電腦玩完，記得按「登出」。'}</p>`;
+  <p class="cl-note">${isNew?'請記住你的帳號和 7 碼密碼，換電腦或手機時要用。<br>帳號不要用真實姓名或學號喔！':'第一次玩？請按上面的「建立新帳號」。<br>忘記密碼請找老師或管理員。在學校或公用電腦玩完，記得按「登出」。'}</p>`;
   const sw=m=>{if(loginMode===m)return;lastCode=$c('clCode').value.trim();loginMode=m;loginView()};
   $c('clTIn').onclick=()=>sw('in');$c('clTNew').onclick=()=>sw('new');
   $c('clCode').addEventListener('input',e=>{e.target.value=e.target.value.toLowerCase().replace(/[^a-z0-9]/g,'')});
-  ['clPin','clPin2'].forEach(id=>{const f=$c(id);if(f)f.addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)})});
+  ['clPin','clPin2'].forEach(id=>{const f=$c(id);if(f)f.addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,7)})});
   $c('clForm').onsubmit=e=>{e.preventDefault();doLogin()};
   setTimeout(()=>{const f=$c(lastCode?'clPin':'clCode');if(f)f.focus()},50);
 }
@@ -124,29 +124,78 @@ const err=t=>{const e=$c('clErr');if(e)e.textContent=t};
 function busy(b,t){const g=$c('clGo');if(g){g.disabled=b;if(b)g.textContent='請稍候…';else if(t)g.textContent=t}}
 const netErr=e=>e.code==='auth/network-request-failed'?'網路好像斷了，請檢查網路':e.code==='auth/too-many-requests'?'錯太多次了，請休息一下再試':null;
 async function doLogin(){
-  const isNew=loginMode==='new',btn=isNew?'建立帳號':'進入遊戲';
-  const code=$c('clCode').value.trim(),pin=$c('clPin').value.trim();
+  const isNew=loginMode==='new',btn=isNew?'下一步':'進入遊戲';
+  const code=$c('clCode').value.trim(),pin=$c('clPin').value.trim().toUpperCase();
   if(!/^[a-z0-9]{4,12}$/.test(code))return err('帳號要用 4～12 個英文字母或數字');
-  if(!/^\d{4}$/.test(pin))return err('密碼要輸入 4 個數字');
-  if(isNew&&$c('clPin2').value.trim()!==pin){$c('clPin2').value='';return err('兩次輸入的密碼不一樣，請再輸入一次')}
-  lastCode=code;pinMem={code,pin};busy(true);err('');
-  if(!isNew){   // 登入：只登入，不會自動建立帳號
+  if(!/^[A-Z][0-9]{6}$/.test(pin))return err('密碼要用 1 個英文字母＋6 個數字，例如 K381427');
+  if(isNew&&$c('clPin2').value.trim().toUpperCase()!==pin){$c('clPin2').value='';return err('兩次輸入的密碼不一樣，請再輸入一次')}
+  lastCode=code;pinMem={code,pin};err('');
+  if(!isNew){
+    busy(true);
     try{await auth.signInWithEmailAndPassword(emailOf(code),pwStr(pin))}
     catch(e){busy(false,btn);$c('clPin').value='';
       err(netErr(e)||'帳號或密碼不對，再檢查一次。第一次玩請按上面的「建立新帳號」')}
     return}
-  // 建立新帳號：帳號有人用了就換一個
-  try{justMade={code,pin};await auth.createUserWithEmailAndPassword(emailOf(code),pwStr(pin))}
-  catch(e){justMade=null;busy(false,btn);
-    if(e.code==='auth/email-already-in-use'){err('這個帳號已經有人用了，換一個吧！如果是你自己的帳號，請按「登入」');$c('clCode').focus()}
-    else{$c('clPin').value='';$c('clPin2').value='';err(netErr(e)||'建立失敗，請再試一次（'+(e.code||e.message)+'）')}}
+  // 註冊資料先只放在本機記憶體；此時不建立 Firebase 帳號。
+  regDraft={code,pin,char:null,name:''};newChar=null;regCharView();
 }
 /* 新玩家：確認 → 選角色 → 取暱稱 */
+/* 新版註冊：填資料 → 選角色 → 暱稱 → 最後確認 → 才建立 Firebase 帳號 */
+function regCharView(){
+  card().innerHTML=`<div class="cl-brand">選一位角色<small>之後也可以在衣櫥切換</small></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${['f','m'].map(k=>`<button class="cl-sub" data-rck="${k}" style="border-radius:18px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:200px">${dollSvg(k)}<b>${charName(k)}</b></button>`).join('')}</div>
+  <button class="cl-sub" id="clRegBack">返回修改帳號與密碼</button>`;
+  $c('clRegBack').onclick=()=>{loginMode='new';lastCode=regDraft&&regDraft.code||lastCode;loginView()};
+  card().querySelectorAll('[data-rck]').forEach(b=>b.onclick=()=>{newChar=b.dataset.rck;regDraft.char=newChar;regNameView()});
+}
+function regNameView(){
+  card().innerHTML=`<div class="cl-brand">取一個暱稱<small>遊戲裡大家看到的名字</small></div>
+  <form id="clRNF" style="display:flex;flex-direction:column;gap:12px">
+    <label>暱稱<small>可以用中文，最多 8 個字</small><input id="clRName" maxlength="8" value="${esc(regDraft.name||'')}"></label>
+    <p class="cl-err" id="clErr" role="alert"></p>
+    <button class="cl-go">下一步</button><button type="button" class="cl-sub" id="clRegCharBack">重新選角色</button>
+  </form>`;
+  $c('clRegCharBack').onclick=regCharView;setTimeout(()=>$c('clRName').focus(),50);
+  $c('clRNF').onsubmit=e=>{e.preventDefault();const name=$c('clRName').value.trim();if(!name)return err('請取一個暱稱');if(BAD.some(w=>name.includes(w)))return err('這個暱稱不太適合，換一個吧');regDraft.name=name;regConfirmView()};
+}
+function regConfirmView(msg=''){
+  card().innerHTML=`<div class="cl-brand">確認建立帳號<small>確認後才會正式建立並進入遊戲</small></div>
+  <div style="background:#f7f3fb;border-radius:14px;padding:12px;line-height:1.8"><div>帳號：<b>${esc(regDraft.code)}</b></div><div>密碼：<b>•••••••</b></div><div>角色：<b>${esc(charName(regDraft.char))}</b></div><div>暱稱：<b>${esc(regDraft.name)}</b></div></div>
+  <p class="cl-err" id="clErr" role="alert">${esc(msg)}</p>
+  <button class="cl-go" id="clRegCreate">建立帳號並進入遊戲</button>
+  <button class="cl-sub" id="clRegEdit">返回修改</button>`;
+  $c('clRegEdit').onclick=regNameView;$c('clRegCreate').onclick=finishRegistration;
+}
+function regAccountFix(){
+  card().innerHTML=`<div class="cl-brand">重新設定帳號<small>角色與暱稱會保留</small></div>
+  <form id="clRAF" style="display:flex;flex-direction:column;gap:12px">
+    <label>帳號<small>英文字母或數字，4～12 個字</small><input id="clRCode" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="12" value="${esc(regDraft.code)}"></label>
+    <p class="cl-err" id="clErr" role="alert">這個帳號已經有人使用了，請換一個。</p>
+    <button class="cl-go">重新確認</button><button type="button" class="cl-sub" id="clRABack">返回確認頁</button>
+  </form>`;
+  const f=$c('clRCode');f.addEventListener('input',e=>{e.target.value=e.target.value.toLowerCase().replace(/[^a-z0-9]/g,'')});$c('clRABack').onclick=()=>regConfirmView();
+  $c('clRAF').onsubmit=e=>{e.preventDefault();const code=f.value.trim();if(!/^[a-z0-9]{4,12}$/.test(code))return err('帳號要用 4～12 個英文字母或數字');regDraft.code=code;pinMem={code,pin:regDraft.pin};lastCode=code;regConfirmView()};
+}
+async function finishRegistration(){
+  if(regCreating)return;regCreating=true;let createdUser=null;const b=$c('clRegCreate');if(b){b.disabled=true;b.textContent='建立中…'}err('');
+  try{
+    const cred=await auth.createUserWithEmailAndPassword(emailOf(regDraft.code),pwStr(regDraft.pin)),user=cred.user;createdUser=user;
+    const uid=user.uid,now=FV.serverTimestamp(),d={code:regDraft.code,name:regDraft.name,createdAt:now,lastLogin:now,updatedAt:now,adminRev:0,disabled:false,sj:'',exp:0,candy:0,char:regDraft.char,maxLv:0,looks:0,homes:1};
+    await db.doc('players/'+uid).set(d);await db.doc('private/'+uid).set({pw:regDraft.pin,at:now});
+    ME=user;justMade=null;newChar=regDraft.char;pinMem={code:regDraft.code,pin:regDraft.pin};regDraft=null;regCreating=false;enter(user,d,true);
+  }catch(e){
+    if(createdUser){try{await db.doc('players/'+createdUser.uid).delete()}catch(_){}try{await db.doc('private/'+createdUser.uid).delete()}catch(_){}try{await createdUser.delete()}catch(_){try{await auth.signOut()}catch(__){}}}
+    regCreating=false;
+    if(e.code==='auth/email-already-in-use')return regAccountFix();
+    const b=$c('clRegCreate');if(b){b.disabled=false;b.textContent='建立帳號並進入遊戲'}err(netErr(e)||'建立失敗，未完成的帳號已撤銷，請再試一次（'+(e.code||e.message)+'）')
+  }
+}
+/* 舊版未完成帳號的相容流程 */
 function confirmNew(user){
   const code=justMade?justMade.code:(user.email||'').split('@')[0];
   card().innerHTML=`<div class="cl-brand">歡迎新玩家！</div>
   <p style="text-align:center;margin:0;font-size:16px">帳號 <b style="color:#c23258">${esc(code)}</b> 還沒有人用過，<br>要用這個帳號開始玩嗎？</p>
-  <p class="cl-note">請記住你的帳號和 4 位數密碼，換電腦或手機時要用。</p>
+  <p class="cl-note">請記住你的帳號和 7 碼密碼，換電腦或手機時要用。</p>
   <button class="cl-go" id="clYes">好，建立新帳號</button><button class="cl-sub" id="clNo">我打錯了，重新輸入</button>`;
   $c('clYes').onclick=()=>charView(user);
   $c('clNo').onclick=async()=>{justMade=null;try{await user.delete()}catch(e){await auth.signOut()}};
@@ -235,6 +284,7 @@ function ownCheck(){if(!ME||!ready||!S)return;const now=ownSet();if(ownBase){for
 
 /* ---------- 登入後 ---------- */
 auth.onAuthStateChanged(async user=>{
+  if(regCreating)return;
   unsubs.forEach(f=>f());unsubs=[];ready=false;ME=user;
   const restored=firstAuth;firstAuth=false;
   if(!user){mask.hidden=false;loginView();fab(false);return}
