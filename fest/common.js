@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const q = new URLSearchParams(location.search);
-  const key = location.pathname.split('/').slice(-2)[0];
+  const key = document.documentElement.dataset.gameKey || location.pathname.split('/').slice(-2)[0];
   const embedded = q.get('embed') === '1' && parent !== window;
   const session = q.get('session');
   const trial = q.get('trial') === '1';
@@ -109,7 +109,7 @@
         return;
       }
       if (['goBtn','go'].includes(b.id) && !released) {
-        e.preventDefault(); e.stopImmediatePropagation(); if (phase !== 'ready') return;
+        e.preventDefault(); e.stopImmediatePropagation(); if (phase !== 'ready' || window.fsQuestionsReady === false) return;
         startButton = b;
         if (embedded) { phase = 'starting'; b.disabled = true; send('fsGameStart'); }
         else { phase = 'playing'; released = true; b.click(); released = false; }
