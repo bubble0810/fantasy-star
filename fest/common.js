@@ -6,6 +6,7 @@
   const embedded = q.get('embed') === '1' && parent !== window;
   const session = q.get('session');
   const trial = q.get('trial') === '1';
+  const trialPrice = Number(q.get('trialPrice')) || 50;
   let phase = 'ready', released = false, startButton, sent = false;
   let muted = false;
   try { muted = localStorage.getItem('fs-festival-muted') === '1'; } catch {}
@@ -85,7 +86,7 @@
     const result = document.querySelector('#resP .card,#result .modal');
     const footer = document.createElement('p'); footer.id = 'fsResultFooter'; footer.hidden = true; footer.innerHTML = '<span id="fsStatus"></span>'; result.append(footer);
     const title = result.querySelector('h1'); title.textContent = '本局結算';
-    document.querySelectorAll('#againBtn,#again').forEach(b => { b.textContent = trial ? '再體驗一次（50 星星糖）' : '再玩一次'; });
+    document.querySelectorAll('#againBtn,#again').forEach(b => { b.textContent = trial ? `再體驗一次（${trialPrice} 星星糖）` : '再玩一次'; });
     document.querySelectorAll('#homeBtn,#out').forEach(b => b.textContent = trial ? '返回星宮體驗館' : '返回活動頁');
     const intro = document.querySelector('#startP .card,#intro .modal');
     const note = document.createElement('p'); note.className = 'fs-rule'; note.textContent = `${trial ? '星宮體驗・不發正式獎勵。' : '完成遊戲才發獎。'}開始後無法暫停，中途離開不發獎。`; intro.append(note);
@@ -122,5 +123,6 @@
     };
     updateTimer();
     const observer = new MutationObserver(updateTimer); observer.observe(time, { childList: true, subtree: true, characterData: true });
+    if(embedded)send('fsGameReady');
   });
 })();
