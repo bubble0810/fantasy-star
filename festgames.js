@@ -42,6 +42,19 @@ window.GAMEF={
     lk:'SP03'
   },
 
+  duanwu:{
+    n:'端午節',
+    title:'粽力龍舟賽',
+    cur:'香包',
+    ic:'<img src="fest/dragonboat/img/sachet.svg" alt="香包" style="width:24px;height:28px;vertical-align:middle;object-fit:contain">',
+    runs:3,
+    look:240,
+    room:300,
+    url:'fest/dragonboat/index.html',
+    home:'SP05',
+    lk:'SP05'
+  },
+
   children:{
     n:'兒童節',
     title:'氣球射擊',
@@ -74,6 +87,7 @@ const TRIAL_DAILY=3;
 /* ===== 星宮卡片圖片 ===== */
 
 const TRIAL_COVER={
+  duanwu:['fest/dragonboat/img/river.png','58%'],
   halloween:[
     'fest/halloween/img/scene1.webp',
     '5%'
@@ -105,7 +119,6 @@ const TRIAL_COVER={
 */
 
 const TRIAL_SOON=[
-  ['dragonboat','端午節','🐉'],
   ['seven','七夕','💞'],
   ['moon','中秋節','🥮'],
   ['doubleten','國慶日','🎆']
