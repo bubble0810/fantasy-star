@@ -2,31 +2,7 @@
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>春節趕年獸搶紅包（試玩版）</title>
-<script>
-/* 嵌在幻想智慧星裡執行時：回報結果、隱藏試玩版文字、提供離開鍵 */
-(()=>{
- const q=new URLSearchParams(location.search),embed=!!q.get('embed');
- if(embed){
-  window.FS_EMBED=true;window.FS_CHAR=q.get('char')||'f';
-  window.fsReport=n=>{try{parent.postMessage({fsGame:'newyear',earned:n|0},'*')}catch(e){}};
-  window.fsClose=()=>{try{parent.postMessage({fsClose:true},'*')}catch(e){}};
-  window.fsResult=(again,home)=>{const a=document.getElementById(again),h=document.getElementById(home);if(a)a.style.display='none';if(h){h.textContent='回到活動頁';h.onclick=e=>{e.stopPropagation();fsClose()}}};
- }
- document.addEventListener('DOMContentLoaded',()=>{
-  const st=document.createElement('style');
-  st.textContent='#fsExit{pointer-events:auto;justify-self:start;background:linear-gradient(#ef6372,#b8233a);border:3px solid #fff9;box-shadow:0 5px 12px #0018;color:white;border-radius:17px;padding:9px 12px;font:900 clamp(14px,3.5vw,21px) "Microsoft JhengHei",sans-serif;cursor:pointer}#fsQuit{position:fixed;inset:0;z-index:10000;display:none;place-items:center;background:#0008;padding:22px}#fsQuit.show{display:grid}#fsQuit>div{width:min(86vw,420px);background:#fff;border-radius:22px;padding:22px;text-align:center;color:#26334f;font-family:"Microsoft JhengHei",sans-serif}#fsQuit button{width:100%;margin-top:10px;padding:11px 14px;border:3px solid #fff9;border-radius:17px;box-shadow:0 5px 12px #0018;color:#fff;font:900 18px "Microsoft JhengHei",sans-serif;cursor:pointer}#fsStay{background:linear-gradient(#2679dc,#164c9e)}#fsLeave{background:linear-gradient(#ef6372,#b8233a)}';
-  document.head.appendChild(st);
-  const hud=document.getElementById('hud');
-  const x=document.createElement('button');x.id='fsExit';x.type='button';x.textContent='× 離開';
-  const quit=document.createElement('div');quit.id='fsQuit';quit.innerHTML='<div><h2>要離開嗎？</h2><button type="button" id="fsStay">繼續遊戲</button><button type="button" id="fsLeave">確定離開</button></div>';
-  if(hud)hud.insertBefore(x,hud.firstChild);else document.body.appendChild(x);
-  document.body.appendChild(quit);
-  x.onclick=e=>{e.stopPropagation();quit.classList.add('show')};
-  quit.querySelector('#fsStay').onclick=e=>{e.stopPropagation();quit.classList.remove('show')};
-  quit.querySelector('#fsLeave').onclick=e=>{e.stopPropagation();if(embed&&window.fsClose){fsClose()}else if(history.length>1){history.back()}else{location.href='../../index.html'}};
- });
-})();
-</script>
+<script src="../common.js"></script><link rel="stylesheet" href="../common.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
 *{box-sizing:border-box}
@@ -60,11 +36,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%}
 .big{display:flex;justify-content:center;gap:14px;align-items:flex-end}.big img{height:90px;width:auto}
 </style></head><body>
 <div class="wrap"><div id="stage"><canvas id="cv"></canvas>
-<div class="hud" id="hud" hidden><div class="chip disp" id="timeN" style="grid-column:2;justify-self:center">30 秒</div><div class="hr" style="grid-column:3;justify-self:end"><div class="chip"><img src="img/envelope.webp" alt="紅包"><span id="envN">0</span></div><button class="icon" id="musBtn" aria-label="音樂開關">♫</button></div></div>
+<div class="hud" id="hud" hidden><div class="chip disp" id="timeN" style="grid-column:2;justify-self:center">20 秒</div><div class="hr" style="grid-column:3;justify-self:end"><div class="chip"><img src="img/envelope.webp" alt="紅包"><span id="envN">0</span></div><button class="icon" id="musBtn" aria-label="音樂開關">♫</button></div></div>
 <div class="toast disp" id="toast"></div>
 <div class="panel" id="startP"><div class="card"><span class="tag">試玩版・只有你看得到</span><h1 class="disp">趕年獸・搶紅包</h1>
-<p>過年囉！先在新春老街<b>點燃冒出來的鞭炮和煙火</b>，搶紅包（煙火給 2 個）。接著<b>丟鞭炮趕跑年獸</b>：3 隻小年獸各炸 5 下就跑掉，每炸一下掉 1 個紅包；最後大年獸出現，炸跑牠會噴出一大堆紅包！</p>
-<div class="steps"><div><img src="img/scene1.webp" alt=""><b>第 1 關</b>放鞭炮・30 秒</div><div><img src="img/scene2.webp" alt=""><b>第 2 關</b>炸年獸</div></div>
+<p>過年囉！先在新春老街<b>點燃冒出來的鞭炮和煙火</b>，搶紅包（煙火給 2 個）。接著<b>丟鞭炮趕跑年獸</b>：3 隻小年獸各炸 5 下就跑掉，每炸一下掉 1 個紅包；最後大年獸要命中 20 下才能擊退！第二關不限時，全部擊退後結算。</p>
+<div class="steps"><div><img src="img/scene1.webp" alt=""><b>第 1 關</b>放鞭炮・20 秒</div><div><img src="img/scene2.webp" alt=""><b>第 2 關</b>炸年獸</div></div>
 <button class="go disp" id="goBtn">出發！</button><p class="note">測試版不會存檔，可以無限次重玩。有音樂和音效，右上角 ♪ 可以關掉音樂。</p></div></div>
 <div class="panel" id="lvP" hidden><div class="card"><h1 class="disp">年獸來了！</h1><div class="big"><img src="img/nian_small.webp" alt=""><img src="img/nian_big.webp" alt=""></div>
 <p style="text-align:center;font-size:15px">年獸會從街道遠方跑過來！<br>點年獸就會丟出鞭炮，炸跑 3 隻小年獸後，大年獸就會出現！</p><button class="go disp" id="lvGo">丟鞭炮！</button></div></div>
@@ -76,12 +52,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%}
 <script>
 const SND=(()=>{
   let ctx=null,master=null,sfxBus=null,bgmBus=null,timer=0,nextT=0,step=0,theme='main',started=false;
-  let cfg={sfx:1,bgm:1};try{Object.assign(cfg,JSON.parse(localStorage.getItem('fz-audio')||'{}'))}catch(e){}
+  const cfg={sfx:1,bgm:1}; // Shared festival mute is applied to every output bus.
   const keep=()=>{try{localStorage.setItem('fz-audio',JSON.stringify(cfg))}catch(e){}};
   const hz=n=>440*Math.pow(2,(n-69)/12);
   function init(){if(ctx)return true;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;
-    ctx=new AC();master=ctx.createGain();master.gain.value=.9;master.connect(ctx.destination);
-    sfxBus=ctx.createGain();sfxBus.gain.value=.55;sfxBus.connect(master);bgmBus=ctx.createGain();bgmBus.gain.value=0;bgmBus.connect(master);return true}
+    ctx=new AC();master=ctx.createGain();master.gain.value=.55;master.connect(FSGame.output(ctx));
+    sfxBus=ctx.createGain();sfxBus.gain.value=.4;sfxBus.connect(master);bgmBus=ctx.createGain();bgmBus.gain.value=0;bgmBus.connect(master);return true}
   function note(bus,f,t,dur,{type='sine',vol=.3,a=.005,slide=0,dec=null}={}){
     const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f*slide),t+dur);
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+a);g.gain.exponentialRampToValueAtTime(.0008,t+(dec||dur));o.connect(g);g.connect(bus);o.start(t);o.stop(t+(dec||dur)+.05)}
@@ -207,12 +183,11 @@ const SND=(()=>{
   function stopBgm(){if(!timer)return;clearInterval(timer);timer=0;if(ctx){bgmBus.gain.cancelScheduledValues(ctx.currentTime);bgmBus.gain.setValueAtTime(0,ctx.currentTime)}}
   function setTheme(t){if(t===theme)return;theme=t;step=0;if(ctx)nextT=Math.max(nextT,ctx.currentTime+.05)}
   function first(){if(started)return;started=true;init();if(cfg.bgm)startBgm()}
-  document.addEventListener('pointerdown',first,{capture:true});document.addEventListener('keydown',first,{capture:true});
   document.addEventListener('visibilitychange',()=>{if(!ctx)return;if(document.hidden)ctx.suspend();else if(started)ctx.resume()});
   document.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.disabled&&!b.matches('[data-buy],[data-hbuy],[data-wear],.opt,.mc,.hwg,.hwbone,#roll,.sndbtn'))play('tap')},true);
   function toggle(k){cfg[k]=cfg[k]?0:1;keep();if(k==='bgm'){started=true;cfg.bgm?startBgm():stopBgm()}else if(cfg.sfx)play('tap');paint()}
   function paint(){const a=document.getElementById('sndBgm'),b=document.getElementById('sndSfx');if(a){a.classList.toggle('off',!cfg.bgm);a.title=cfg.bgm?'關閉音樂':'開啟音樂'}if(b){b.classList.toggle('off',!cfg.sfx);b.title=cfg.sfx?'關閉音效':'開啟音效'}}
-  return {play,toggle,paint,setTheme,cfg,get theme(){return theme}};
+  return {play,toggle,paint,setTheme,start:first,stop:stopBgm,cfg,get theme(){return theme}};
 })();
 (()=>{
 const $=id=>document.getElementById(id);
@@ -225,7 +200,7 @@ addEventListener('resize',resize);resize();
 const rnd=(a,b)=>a+Math.random()*(b-a),rint=(a,b)=>Math.floor(rnd(a,b+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
 
 /* ---------- 設定 ---------- */
-const L1_TIME=30, PRICE={look:320,room:400}, RUNS_PER_DAY=3;
+const L1_TIME=20, PRICE={look:280,room:380}, RUNS_PER_DAY=3;
 // 第 1 關鞭炮出現的位置（x、y 為畫面比例，s 為寬度比例）
 const SLOTS=[
  {x:.10,y:.40,s:.09,k:'hang'},{x:.27,y:.52,s:.08,k:'hang'},{x:.88,y:.40,s:.09,k:'hang'},{x:.73,y:.55,s:.08,k:'hang'},
@@ -238,9 +213,9 @@ let AC=null,SFXON=true;
 function ac(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state!=='running')AC.resume();return AC}catch(e){return null}}
 let NB=null;function nbuf(a){if(!NB){NB=a.createBuffer(1,a.sampleRate,a.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}return NB}
 function burst(t,dur,v,type,f,q){const a=AC,s=a.createBufferSource(),fl=a.createBiquadFilter(),g=a.createGain();s.buffer=nbuf(a);fl.type=type;fl.frequency.value=f;fl.Q.value=q||1;
-  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0005,t+dur);s.connect(fl).connect(g).connect(a.destination);s.start(t,Math.random()*.8);s.stop(t+dur+.02)}
+  g.gain.setValueAtTime(v*.4,t);g.gain.exponentialRampToValueAtTime(.0005,t+dur);s.connect(fl).connect(g).connect(FSGame.output(a));s.start(t,Math.random()*.8);s.stop(t+dur+.02)}
 function tone(t,f1,f2,dur,v,type){const a=AC,o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(Math.max(30,f2),t+dur);
-  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0005,t+dur);o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.02)}
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0005,t+dur);o.connect(g).connect(FSGame.output(a));o.start(t);o.stop(t+dur+.02)}
 const SFX={
  crackle(n=14,len=.7){const a=ac();if(!a||!SFXON)return;const t=a.currentTime;for(let i=0;i<n;i++){const d=Math.random()*len;burst(t+d,.03,.25,'bandpass',rnd(1500,4200),.9);if(Math.random()<.35)tone(t+d,180,60,.06,.12)}},
  whistle(){const a=ac();if(!a||!SFXON)return;const t=a.currentTime;tone(t,700,2300,.75,.05);burst(t,.7,.03,'highpass',5000)},
@@ -252,7 +227,7 @@ const SFX={
 
 /* ---------- 狀態 ---------- */
 let G=null;
-function newGame(){G={lv:0,t:0,env:0,env1:0,env2:0,items:[],P:[],rockets:[],proj:[],nians:[],queue:['small','small','small','big'],shake:0,next:0.6,over:false,paused:false,nianWait:1,smallDone:0,bigBonus:0,flys:[]};$('envN').textContent='0'}
+function newGame(){G={startedAt:performance.now(),lv:0,t:0,env:0,env1:0,env2:0,items:[],P:[],rockets:[],proj:[],nians:[],queue:['small','small','small','big'],shake:0,next:0.6,over:false,paused:false,nianWait:1,smallDone:0,bigBonus:0,flys:[]};$('envN').textContent='0'}
 function toast(t,c){const e=$('toast');e.textContent=t;e.style.color=c||'#fff';e.classList.add('show');clearTimeout(e._h);e._h=setTimeout(()=>e.classList.remove('show'),1100)}
 function gain(n,x,y){G.env+=n;if(G.lv===0)G.env1+=n;else G.env2+=n;$('envN').textContent=G.env;
   for(let i=0;i<Math.min(n,8);i++)G.flys.push({x,y,t:-i*.07,d:.7});SFX.ding()}
@@ -272,7 +247,7 @@ function l1Update(dt){
       if(!it.fw&&Math.random()<.6)spark(it);
       if(it.fw&&!it.launched&&it.litT>.45){it.launched=true;const s=SLOTS[it.slot];G.rockets.push({x:s.x*W,y:(s.y-.05)*H,tx:rnd(.15,.85)*W,ty:rnd(.07,.28)*H,t:0,d:.8,c:pick(['#ffd23a','#ff5d8f','#7ee0ff','#b48bff','#7dff9b'])});SFX.whistle()}}}
   G.items=G.items.filter(it=>it.lit?it.litT<(it.fw?.9:.75):it.age<it.life);
-  if(left<=0&&!G.items.some(i=>i.lit)&&!G.rockets.length){G.lv=-1;setTimeout(()=>{$('lvP').hidden=false},500)}
+  if(left<=0){G.lv=1;G.t=0;G.P=[];G.items=[];G.rockets=[];toast('年獸來了！小年獸 5 下，大年獸 20 下','#ffd23a')}
 }
 function spark(it){const s=SLOTS[it.slot],b=it.bb||{x:s.x*W-10,y:s.y*H-10,w:20,h:20};
   const x=b.x+Math.random()*b.w,y=b.y+Math.random()*b.h;
@@ -281,7 +256,7 @@ function spark(it){const s=SLOTS[it.slot],b=it.bb||{x:s.x*W-10,y:s.y*H-10,w:20,h
 function l1Click(x,y){
   for(let i=G.items.length-1;i>=0;i--){const it=G.items[i];if(it.lit||!it.bb)continue;const b=it.bb,p=Math.max(14,b.w*.18);
     if(x>b.x-p&&x<b.x+b.w+p&&y>b.y-p&&y<b.y+b.h+p){it.lit=true;
-      if(it.fw){for(let k=0;k<6;k++)spark(it);setTimeout(()=>gain(2,x,y),450)}else{SFX.crackle(16,.7);gain(1,x,y)}return true}}
+      if(it.fw){for(let k=0;k<6;k++)spark(it);gain(2,x,y)}else{SFX.crackle(16,.7);gain(1,x,y)}return true}}
   return false}
 function l1Draw(){
   for(const it of G.items){const s=SLOTS[it.slot],img=IM[it.img];
@@ -299,10 +274,10 @@ function l1Draw(){
 const HOR=.66,NEAR=.93;
 function nianPos(n){const z=n.z,y=(HOR+(NEAR-HOR)*Math.pow(z,1.25))*H;const k=.18+.82*z;
   const x=(.5+(n.lane+.12*Math.sin(G.t*1.6+n.ph))*k)*W;const w=(n.kind==='big'?1.45:1)*(.11+.33*z)*W;return{x,y,w}}
-function spawnNian(kind){const n={kind,z:0,lane:rnd(-.32,.32),ph:rnd(0,6),hp:kind==='big'?12:5,max:kind==='big'?12:5,st:'run',hitT:0,img:kind==='big'?IM.nian_big:IM.nian_small,flip:Math.random()<.5};
+function spawnNian(kind){const n={kind,z:0,lane:rnd(-.32,.32),ph:rnd(0,6),hp:kind==='big'?20:5,max:kind==='big'?20:5,st:'run',hitT:0,img:kind==='big'?IM.nian_big:IM.nian_small,flip:Math.random()<.5};
   G.nians.push(n);if(kind==='big'){toast('大年獸出現了！','#ffd23a');SFX.roar();G.shake=.5}}
 function l2Update(dt){
-  $('timeN').textContent=(G.smallDone<3?`小年獸 ${G.smallDone}/3`:'大年獸！');
+  const current=G.nians.find(n=>n.st==='run');$('timeN').textContent=current?`${current.kind==='big'?'大':'小'}年獸 ${current.max-current.hp}/${current.max}`:`小年獸 ${G.smallDone}/3`;
   if(!G.nians.some(n=>n.st!=='gone')&&G.queue.length){G.nianWait-=dt;if(G.nianWait<=0){spawnNian(G.queue.shift());G.nianWait=.9}}
   for(const n of G.nians){
     if(n.st==='run'){if(n.hitT>0)n.hitT-=dt;else n.z+=dt/(n.kind==='big'?9:6.5);
@@ -327,7 +302,7 @@ function explode(x,y){
   if(!hit){return}
   hit.hp--;hit.hitT=.3;G.shake=Math.max(G.shake,.12);
   const c=hit.bb;const gx=c.x+c.w/2,gy=c.y+c.h*.3;
-  if(hit.kind==='small')gain(1,gx,gy);else{const n=rint(0,2);if(n)gain(n,gx,gy)}
+  if(hit.kind==='small')gain(1,gx,gy);else{const n=rint(0,1);if(n)gain(n,gx,gy)}
   if(hit.hp<=0){hit.st='flee';hit.flip=!hit.flip;
     if(hit.kind==='small'){G.smallDone++;toast('小年獸跑掉了！','#ffd23a')}
     else{const b=rint(5,10);G.bigBonus=b;setTimeout(()=>{gain(b,gx,gy);SFX.bonus();toast(`大年獸被趕跑了！紅包 +${b}`,'#ffd23a');for(let i=0;i<10;i++)G.P.push({x:gx,y:gy,vx:rnd(-200,200),vy:rnd(-320,-120),g:480,life:1.2,t:0,r:W*.045,k:'img',img:pick([IM.envelope,IM.ingot,IM.bag]),rot:rnd(-1,1)})},250)}}
@@ -371,7 +346,7 @@ function fxDraw(){
 /* ---------- 主迴圈 ---------- */
 let last=0;
 function loop(ts){const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
-  if(G&&!G.paused&&!G.over){G.t+=dt;if(G.shake>0)G.shake-=dt;if(G.lv===0)l1Update(dt);else if(G.lv===1)l2Update(dt);fxUpdate(dt)}
+  if(G&&!G.paused&&!G.over){G.t=G.lv===0?(performance.now()-G.startedAt)/1000:G.t+dt;if(G.shake>0)G.shake-=dt;if(G.lv===0)l1Update(dt);else if(G.lv===1)l2Update(dt);fxUpdate(dt)}
   ctx.clearRect(0,0,W,H);ctx.save();if(G&&G.shake>0)ctx.translate(rnd(-6,6),rnd(-4,4));
   const bg=G&&G.lv===1?IM.scene2:IM.scene1;if(bg.complete&&bg.naturalWidth)ctx.drawImage(bg,0,0,W,H);
   if(G){if(G.lv===0||G.lv===-1)l1Draw();if(G.lv===1)l2Draw();fxDraw()}
@@ -387,8 +362,8 @@ $('lvGo').onclick=()=>{G.lv=1;G.t=0;G.P=[];G.items=[];show(null);toast('丟鞭�
 $('againBtn').onclick=$('goBtn').onclick;
 $('homeBtn').onclick=()=>{G=null;show('startP')};
 $('musBtn').onclick=()=>{SND.toggle('bgm');$('musBtn').style.opacity=SND.cfg.bgm?1:.45};
-function startMusic(){SND.setTheme('newyeargame');if(!SND.cfg.bgm)SND.toggle('bgm')}
-function endGame(){if(G.over)return;G.over=true;
+function startMusic(){SND.setTheme('newyeargame');SND.start()}
+function endGame(){if(G.over)return;G.over=true;SND.stop();
   $('rEnv').textContent=G.env;$('r1').textContent=G.env1;$('r2').textContent=G.env2;
   const all=PRICE.look+PRICE.room;$('rPace').innerHTML=`照這一趟的速度，換齊新年套裝＋新春小屋（${all} 個）大約要 <b>${Math.ceil(all/G.env)} 趟</b>，每天 ${RUNS_PER_DAY} 趟約 <b>${Math.ceil(all/G.env/RUNS_PER_DAY)} 天</b>`;
   show('resP');SFX.bonus();if(window.FS_EMBED){fsReport(G.env);fsResult('againBtn','homeBtn')}}

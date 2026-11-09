@@ -4,27 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>萬聖節找小幽靈</title>
-<script>
-/* 嵌在幻想智慧星裡執行時：回報結果、隱藏試玩版文字、提供離開鍵 */
-(()=>{
- const q=new URLSearchParams(location.search), embed=!!q.get('embed');
- if(embed){
-  window.FS_EMBED=true;window.FS_CHAR=q.get('char')||'f';
-  window.fsReport=n=>{try{parent.postMessage({fsGame:'halloween',earned:n|0},'*')}catch(e){}};
-  window.fsClose=()=>{try{parent.postMessage({fsClose:true},'*')}catch(e){}};
-  window.fsResult=(again,home)=>{const a=document.getElementById(again),h=document.getElementById(home);if(a)a.style.display='none';if(h){h.textContent='回到活動頁';h.onclick=e=>{e.stopPropagation();fsClose()}}};
- }
- document.addEventListener('DOMContentLoaded',()=>{
-  const st=document.createElement('style');st.textContent='.tag,.note,#pace,#rPace{display:none!important}#fsX{position:static;justify-self:start;pointer-events:auto;z-index:99;background:linear-gradient(#ef6372,#b8233a);border:3px solid #fff9;box-shadow:0 5px 12px #0018;color:white;border-radius:17px;padding:9px 12px;font:900 clamp(14px,3.5vw,21px) "Microsoft JhengHei",sans-serif;cursor:pointer}#fsQuit{position:fixed;inset:0;z-index:10000;display:none;place-items:center;background:#0008}#fsQuit.show{display:grid}#fsQuit>div{width:min(86vw,420px);background:#fff;border-radius:22px;padding:22px;text-align:center;color:#26334f;font-family:"Microsoft JhengHei",sans-serif}#fsQuit button{width:100%;margin-top:10px;padding:11px 14px;border:3px solid #fff9;border-radius:17px;box-shadow:0 5px 12px #0018;color:#fff;font:900 18px "Microsoft JhengHei",sans-serif}#fsStay{background:linear-gradient(#2679dc,#164c9e)}#fsLeave{background:linear-gradient(#ef6372,#b8233a)}';document.head.appendChild(st);
-  const x=document.createElement('button');x.id='fsX';x.textContent='× 離開';
-  const quit=document.createElement('div');quit.id='fsQuit';quit.innerHTML='<div><h2>要離開嗎？</h2><button id="fsStay">繼續遊戲</button><button id="fsLeave">確定離開</button></div>';
-  x.onclick=e=>{e.stopPropagation();quit.classList.add('show')};
-  quit.querySelector('#fsStay').onclick=e=>{e.stopPropagation();quit.classList.remove('show')};
-  quit.querySelector('#fsLeave').onclick=e=>{e.stopPropagation();if(embed&&window.fsClose){fsClose()}else if(history.length>1){history.back()}else{location.href='../../index.html'}};
-  (document.querySelector('.hud')||document.body).appendChild(x);document.body.appendChild(quit);
- });
-})();
-</script>
+<script src="../common.js"></script><link rel="stylesheet" href="../common.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
 :root{--ink:#3b2853;--muted:#6b5b7d;--rose:#e2508f;--orange:#c8580f;--purple:#5b3a9a;--line:#e5d8f2}
@@ -51,17 +31,13 @@ html,body{margin:0;min-height:100%;background:#1e1536;color:var(--ink);font-fami
 .spot{position:absolute;aspect-ratio:1;transform:translate(-50%,-50%);border:0;background:none;border-radius:50%;cursor:pointer;padding:0}
 .spot.teach{box-shadow:0 0 0 2px #ffffffcc;background:#ffffff22;animation:teach 1.6s ease-in-out}
 @keyframes teach{0%,100%{opacity:0}30%,70%{opacity:1}}
-.spot.hint{box-shadow:0 0 0 3px #ffe27a,0 0 22px 10px #ffe27a99;animation:none}
 .spot.searched{pointer-events:none}
 .empty{position:absolute;pointer-events:none;transform:translate(-50%,-50%);color:#e8e0f5;font-size:clamp(13px,2.4vw,18px);text-shadow:0 2px 0 #0008;white-space:nowrap}
 .puff{position:absolute;width:1.4%;aspect-ratio:1;border-radius:50%;background:#fff;pointer-events:none;opacity:.85}
 .ghost.reveal img{animation:none}
 .ghost.gold img{filter:drop-shadow(0 0 8px #ffe27a)}
-.ghost.hint img{animation:hint .45s ease-in-out 4;filter:drop-shadow(0 0 12px #ffe27a) drop-shadow(0 0 4px #fff)}
-.ghost.hint{opacity:1}
 .ghost.found{pointer-events:none;animation:popout .45s ease-out forwards}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6%)}}
-@keyframes hint{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-12deg) scale(1.15)}75%{transform:rotate(12deg) scale(1.15)}}
 @keyframes popout{0%{transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-50%,-50%) scale(1.4);opacity:1}100%{transform:translate(-50%,-50%) scale(.2);opacity:0}}
 .pt{position:absolute;pointer-events:none;width:7%;aspect-ratio:1;transform:translate(-50%,-50%)}
 .pt svg{width:100%;height:100%}
@@ -72,8 +48,6 @@ html,body{margin:0;min-height:100%;background:#1e1536;color:var(--ink);font-fami
 .dots i.on{background:#ffffffee;border:2px solid #fff}
 .dots i img{width:24px;height:24px;object-fit:contain;opacity:0}
 .dots i.on img{opacity:1}
-.hintb{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:#ffb547;color:#3b2050;font-weight:700;font-size:15px;cursor:pointer}
-.hintb:disabled{opacity:.45;cursor:default}
 .lvtitle{color:#fff;font-size:15px}
 .panel{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:#120c22cc;z-index:10;overflow-y:auto}
 .panel[hidden]{display:none}
@@ -113,7 +87,6 @@ html,body{margin:0;min-height:100%;background:#1e1536;color:var(--ink);font-fami
       <div class="lvtitle disp" id="lvName">南瓜田</div>
       <div class="dots" id="dots"></div>
     </div>
-    <button class="hintb" id="hintBtn" disabled>提示</button>
   </div>
 </div>
 
@@ -122,11 +95,11 @@ html,body{margin:0;min-height:100%;background:#1e1536;color:var(--ink);font-fami
   <div class="card">
     <span class="tag">試玩版・只有你看得到</span>
     <h1 class="disp">萬聖節找小幽靈</h1>
-    <p>小幽靈躲在三個地方，每個地方找出 <b>5 隻</b>！點到小幽靈會噴出 <b>1～5 顆萬聖糖果</b>。運氣好還會遇到<b>金色小幽靈</b>，點到給 10 顆。找不到的話，等一下可以按「提示」。</p>
+    <p>三關限時依序為 <b>10 秒、10 秒、20 秒</b>。每關找齊 <b>5 隻普通小幽靈</b>或時間到，就自動換關；第三關完成後結算，剩餘秒數不帶到下一關。普通小幽靈給 <b>1～5 顆萬聖糖果</b>，金色小幽靈給 10 顆、不列入過關條件，想拿獎勵要先點牠！第三關注意冒煙與沙沙聲，找出藏起來的小幽靈。</p>
     <div class="lvls">
-      <div><img src="img/scene1.webp" alt=""><b>第 1 關</b>南瓜田<br>練習：看到就點</div>
-      <div><img src="img/scene2.webp" alt=""><b>第 2 關</b>鬼屋書房<br>變小、會飄動</div>
-      <div><img src="img/scene3.webp" alt=""><b>第 3 關</b>月光墓園<br>躲在東西後面</div>
+      <div><img src="img/scene1.webp" alt=""><b>第 1 關</b>南瓜田<br>10 秒・看到就點</div>
+      <div><img src="img/scene2.webp" alt=""><b>第 2 關</b>鬼屋書房<br>10 秒・變小、會飄動</div>
+      <div><img src="img/scene3.webp" alt=""><b>第 3 關</b>月光墓園<br>20 秒・躲在東西後面</div>
     </div>
     <button class="go disp" id="goBtn">出發！</button>
     <p class="note">有背景音樂，右上角 ♪ 可以關掉。</p>
@@ -169,7 +142,7 @@ const LEVELS=[
   {name:'月光墓園',img:'img/scene3.webp',cls:'l3',text:'小幽靈躲起來了！點點看南瓜、墓碑、長椅、雕像……有的地方是空的，再找別的地方吧！聽到沙沙聲、看到冒煙的地方要特別注意喔。'}];
 // 第 3 關可以點的躲藏點（x%, y%, 大小%）—— 依月光墓園圖片位置
 const SPOTS3=[[13,24,15],[44,27,13],[78,30,13],[12,38,11],[45,42,11],[33,44,10],[74,47,11],[86,41,13],[15,57,17],[40,65,14],[83,62,15],[22,69,12],[90,72,11],[39,76,9],[30,84,16]];
-const PER_LEVEL=5, GOLD_CHANCE=0.6, GOLD_CANDY=10, HINT_AFTER=12;
+const PER_LEVEL=5, GOLD_CHANCE=0.6, GOLD_CANDY=10;
 const PRICE={look:240,room:300}, RUNS_PER_DAY=3;
 const FRONT=['00','01','02','10','11','12','20','21','22'], BACK=['30','31','32'];
 
@@ -186,16 +159,17 @@ $('candySvg').innerHTML=candyIcon();
 let R=null;   // 一輪
 const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
+const LEVEL_TIMES=[10,10,20];
 function newRound(){
-  R={lv:0,candy:0,found:0,gold:0,goldLv:Math.random()<GOLD_CHANCE?rint(0,2):-1,t:0,levelT:0,lastFind:0,ghosts:[],running:false};
+  R={lv:0,candy:0,found:0,gold:0,goldLv:Math.random()<GOLD_CHANCE?rint(0,2):-1,t:0,levelT:0,ghosts:[],running:false};
   $('cTotal').textContent='0';
 }
 function placePoints(n){
   const pts=[];let tries=0;
   while(pts.length<n&&tries<800){tries++;
-    const p={x:rnd(8,92),y:rnd(14,88)};
+    const p={x:rnd(8,92),y:rnd(25,88)};
     if(pts.every(q=>Math.hypot(q.x-p.x,(q.y-p.y)*1.5)>20))pts.push(p);}
-  while(pts.length<n)pts.push({x:rnd(8,92),y:rnd(14,88)});
+  while(pts.length<n)pts.push({x:rnd(8,92),y:rnd(25,88)});
   return pts;
 }
 function rnd(a,b){return a+Math.random()*(b-a)}
@@ -205,7 +179,7 @@ function buildLevel(){
   $('bg').src=L.img;$('lvChip').textContent=`第 ${R.lv+1} 關 / 3`;$('lvName').textContent=L.name;
   const hasGold=R.goldLv===R.lv;
   $('dots').innerHTML=Array.from({length:PER_LEVEL},()=>`<i><img src="img/g_w00.webp" alt=""></i>`).join('');
-  R.levelFound=0;R.levelT=0;R.lastFind=0;R.rustle=2.5;$('hintBtn').disabled=true;
+  R.levelFound=0;R.levelT=0;R.levelStart=performance.now();$('timeChip').textContent=LEVEL_TIMES[R.lv]+' 秒';R.rustle=2.5;
   MUSIC.tempo(R.lv===2?112:R.lv===1?124:116);
   if(L.cls==='l3'){buildHide(hasGold);return}
   const pts=placePoints(PER_LEVEL+(hasGold?1:0));
@@ -229,17 +203,17 @@ function buildHide(hasGold){
   const n=PER_LEVEL+(hasGold?1:0),hide=new Set(order.slice(0,n));
   R.ghosts=[];
   SPOTS3.forEach(([x,y,w],i)=>{
-    const b=document.createElement('button');b.className='spot teach';b.style.left=x+'%';b.style.top=y+'%';b.style.width=w+'%';
+    const b=document.createElement('button');b.className='spot teach';b.style.left=x+'%';b.style.top=Math.max(25,y)+'%';b.style.width=w+'%';
     b.setAttribute('aria-label','找找看這裡');
     let g=null;
     if(hide.has(i)){g={spot:b,gold:hasGold&&order.indexOf(i)===n-1,front:pick(FRONT),x,y,found:false,el:null};R.ghosts.push(g)}
     b.addEventListener('click',e=>{e.stopPropagation();if(!R.running||b.classList.contains('searched'))return;
-      b.classList.add('searched');b.classList.remove('hint','teach');R.searched=(R.searched||0)+1;
+      b.classList.add('searched');b.classList.remove('teach');R.searched=(R.searched||0)+1;
       if(g){ // 跳出小幽靈
         const gb=document.createElement('button');gb.className='ghost l3 reveal'+(g.gold?' gold':'');gb.innerHTML=`<img src="img/g_${g.gold?'g':'w'}${g.front}.webp" alt="">`;
         gb.style.left=x+'%';gb.style.top=(y-4)+'%';scene.appendChild(gb);g.el=gb;g.y=y-4;
         gb.animate([{transform:'translate(-50%,-10%) scale(.2)',opacity:0},{transform:'translate(-50%,-70%) scale(1.15)',opacity:1}],{duration:320,easing:'ease-out',fill:'forwards'});
-        sfx('boo');setTimeout(()=>catchGhost(g),420);
+        sfx('boo');const run=R,lv=R.lv;setTimeout(()=>{if(R===run&&R.lv===lv)catchGhost(g)},420);
       }else{ // 空的
         const t=document.createElement('div');t.className='empty disp';t.textContent=pick(['空的～','沒有耶','不在這裡']);t.style.left=x+'%';t.style.top=y+'%';scene.appendChild(t);
         t.animate([{opacity:0,transform:'translate(-50%,-30%)'},{opacity:1,transform:'translate(-50%,-80%)',offset:.3},{opacity:0,transform:'translate(-50%,-140%)'}],{duration:900}).onfinish=()=>t.remove();
@@ -258,16 +232,18 @@ function rustle(){
     p.animate([{transform:'scale(.4)',opacity:.9},{transform:`translate(${rnd(-20,20)}px,${rnd(-30,-12)}px) scale(1.4)`,opacity:0}],{duration:900,delay:i*60}).onfinish=()=>p.remove()}
 }
 function catchGhost(g){
-  if(g.found||!R.running)return;
-  g.found=true;g.el.classList.remove('hint');g.el.classList.add('found');const tip=$('tip');if(tip)tip.remove();
+  if(g.found||!R.running||(performance.now()-R.levelStart)/1000>=LEVEL_TIMES[R.lv])return;
+  g.found=true;if(!g.gold)R.found++;g.el.classList.add('found');const tip=$('tip');if(tip)tip.remove();
   const n=g.gold?GOLD_CANDY:rint(1,5);
   R.candy+=n;$('cTotal').textContent=R.candy;
   burst(g.x,g.y,n,g.gold);
   if(g.gold){R.gold++;sfx('gold')}else{R.levelFound++;sfx('pop');
     const d=$('dots').children[R.levelFound-1];if(d){d.classList.add('on');d.querySelector('img').src=g.el.querySelector('img').src}}
-  R.lastFind=R.levelT;$('hintBtn').disabled=true;
   setTimeout(()=>g.el.remove(),500);
-  if(R.levelFound>=PER_LEVEL){R.running=false;setTimeout(levelDone,900)}
+  if(R.levelFound>=PER_LEVEL){
+    R.t+=Math.min(LEVEL_TIMES[R.lv],(performance.now()-R.levelStart)/1000);
+    levelDone();
+  }
 }
 /* 噴出糖果和星星 */
 function burst(x,y,n,gold){
@@ -289,38 +265,31 @@ function burst(x,y,n,gold){
 }
 function levelDone(){
   sfx('clear');
-  const leftGold=R.ghosts.find(g=>g.gold&&!g.found);
-  if(leftGold&&leftGold.el){leftGold.el.classList.add('found');}
-  if(R.lv<2){
-    R.lv++;const L=LEVELS[R.lv];
-    $('lvpTitle').textContent=`找齊了！下一關：第 ${R.lv+1} 關 ${L.name}`;$('lvpImg').src=L.img;$('lvpText').textContent=L.text;
-    show('lvP');
-  }else endRound();
+  if(R.lv<2){R.lv++;buildLevel();R.running=true;}else endRound();
 }
 function endRound(){
-  MUSIC.stop();sfx('end');
+  R.running=false;$('timeChip').textContent='0 秒';MUSIC.stop();sfx('end');
   $('rCandy').textContent=R.candy;$('rTime').textContent=Math.round(R.t)+' 秒';
-  $('rLine').textContent=`找到小幽靈 ${PER_LEVEL*3} 隻（第 3 關翻了 ${R.searched||0} 個地方）`+(R.goldLv>=0?`・金色小幽靈 ${R.gold ? '找到了！' : '這次沒找到'}`:'・這一輪沒有金色小幽靈');
+  $('rLine').textContent=`找到小幽靈 ${R.found} 隻（第 3 關翻了 ${R.searched||0} 個地方）`+(R.goldLv>=0?`・金色小幽靈 ${R.gold ? '找到了！' : '這次沒找到'}`:'・這一輪沒有金色小幽靈');
   const all=PRICE.look+PRICE.room;
   $('rPace').innerHTML=`照這一輪的速度，換齊萬聖造型＋小屋（${all} 顆）大約要 <b>${Math.ceil(all/R.candy)} 輪</b>，每天 ${RUNS_PER_DAY} 輪約 <b>${Math.ceil(all/R.candy/RUNS_PER_DAY)} 天</b>`;
   show('resP');
   if(window.FS_EMBED){fsReport(R.candy);fsResult('againBtn','homeBtn')}
 }
-/* 提示：讓一隻還沒找到的小幽靈發光搖一搖 */
-$('hintBtn').addEventListener('click',()=>{
-  const left=R.ghosts.filter(g=>!g.found&&!g.gold);if(!left.length)return;
-  const g=pick(left),el=g.spot||g.el;if(g.spot&&g.spot.classList.contains('searched'))return;
-  el.classList.remove('hint');void el.offsetWidth;el.classList.add('hint');
-  setTimeout(()=>el.classList.remove('hint'),g.spot?3000:1900);R.lastFind=R.levelT;$('hintBtn').disabled=true;sfx('hint');
-});
 
 /* ---------- 每一格畫面更新：計時、第 3 關飄動 ---------- */
 let last=0;
 function loop(ts){
   const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
   if(R&&R.running){
-    R.t+=dt;R.levelT+=dt;$('timeChip').textContent=Math.floor(R.t)+' 秒';
-    if(R.levelT-R.lastFind>HINT_AFTER)$('hintBtn').disabled=false;
+    R.levelT=(ts-R.levelStart)/1000;
+    while(R.running&&R.levelT>=LEVEL_TIMES[R.lv]){
+      const elapsed=R.levelT-LEVEL_TIMES[R.lv];
+      R.t+=LEVEL_TIMES[R.lv];levelDone();
+      if(R.running){R.levelStart=ts-elapsed*1000;R.levelT=elapsed;}
+    }
+    if(!R.running){requestAnimationFrame(loop);return}
+    $('timeChip').textContent=Math.max(0,Math.ceil(LEVEL_TIMES[R.lv]-R.levelT))+' 秒';
     if(LEVELS[R.lv].cls==='l3'){R.rustle-=dt;if(R.rustle<=0){R.rustle=rnd(3.5,5.5);rustle()}}
     if(LEVELS[R.lv].cls==='l2'){
       for(const g of R.ghosts){if(g.found)continue;
@@ -360,7 +329,7 @@ const MUSIC=(()=>{
   const Am=[0,3,7],F=[-4,0,3],Dm=[5,8,12],E=[7,11,14],C=[3,7,10],G=[-2,2,5];
   const CH=[Am,F,Dm,E,Am,F,E,Am, C,G,Am,E,F,G,E,Am];
   function init(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();
-    const comp=ac.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;comp.connect(ac.destination);
+    const comp=ac.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;comp.connect(FSGame.output(ac));
     out=ac.createGain();out.gain.value=.55;out.connect(comp);dry=ac.createGain();dry.connect(out);
     rev=ac.createConvolver();const len=ac.sampleRate*2,ir=ac.createBuffer(2,len,ac.sampleRate);
     for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.5)}
@@ -398,7 +367,6 @@ const MUSIC=(()=>{
     else if(kind==='gold'){[0,4,7,12,16,19,24].forEach((x,i)=>celesta(81+x,t+i*.06,.1,i%2?.3:-.3))}
     else if(kind==='clear'){[0,3,7,12].forEach((x,i)=>celesta(81+x,t+i*.1,.12,0))}
     else if(kind==='end'){[12,7,3,0,-5,0,12].forEach((x,i)=>pizz(69+x,t+i*.11,.2,0));celesta(93,t+.8,.12,0)}
-    else if(kind==='hint'){celesta(86,t,.08,0);celesta(86,t+.15,.06,0)}
     else if(kind==='boo'){[0,5,9].forEach((x,i)=>pizz(81+x,t+i*.05,.16,0))}
     else if(kind==='empty'){pizz(57,t,.12,0);pizz(55,t+.08,.1,0)}
     else if(kind==='rustle'){noise(t,.25,.05,2500,.7,0);noise(t+.12,.2,.04,3500,.7,0)}
