@@ -9,6 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="festival-config.js?v=20261109-integration1"></script>
 <style>
 :root{--ink:#2e2340;--muted:#6b5b7d;--line:#e3d9ef;--bg:#f6f2fb;--accent:#c23258;--ok:#1f7a45;--warn:#b42318}
 *{box-sizing:border-box}
@@ -101,9 +102,9 @@ async function loadCatalog(){
     const pb=t.slice(t.indexOf('const PETS=['),t.indexOf('];',t.indexOf('const PETS=['))+2);
     PETS=[...pb.matchAll(/\{k:'(\w+)',n:'([^']+)',lv:(\d+),cost:(\d+)[^}]*?(hide:1)?[^}]*\}/g)].filter(x=>!/hide:1/.test(x[0])).map(x=>({k:x[1],n:x[2],cost:+x[4],img:(x[0].match(/img:'([^']+)'/)||[])[1]||''}));
     const cm=t.match(/const CATS=\[([\s\S]*?)\];/);if(cm)CATS=[...cm[1].matchAll(/k:'(\w+)',n:'([^']+)'/g)].map(x=>({k:x[1],n:x[2]}));
-    try{const g=await (await fetch('festgames.js',{cache:'no-store'})).text();
-      GAMEF=[...g.matchAll(/(\w+):\s*\{n:'([^']+)',title:'([^']+)',cur:'([^']+)',ic:'([^']+)'.*?home:'(\w+)',lk:'(\w+)'/g)].map(x=>({k:x[1],n:x[2],title:x[3],cur:x[4],ic:x[5],home:x[6],lk:x[7]}))}catch(e){}
-  }catch(e){toast('讀不到遊戲的造型清單（請確認 admin.html 和 index.html 放在同一個資料夾）')}
+    if(!window.FESTIVAL_CATALOG)throw new Error('節慶設定未載入');
+    GAMEF=Object.entries(window.FESTIVAL_CATALOG).filter(([,g])=>g.status==='ready').map(([k,g])=>({k,...g}));
+  }catch(e){toast('讀不到遊戲清單，請確認 index.html 與 festival-config.js 已一起上傳')}
 }
 const fmt=ts=>ts&&ts.toDate?ts.toDate().toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
 const lvOf=exp=>{let l=1,t=0;while(true){const need=Math.min(100*l,600);if(exp<t+need)return l;t+=need;l++}};

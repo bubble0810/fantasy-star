@@ -551,7 +551,7 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 .spc small{font-size:.68rem!important;line-height:1.35}
 .spc .act{font-size:.78rem;padding:5px 4px}
 .spc .lockbadge{font-size:.68rem;padding:2px 7px;bottom:6px}
-@media (min-width:600px){.sprow{grid-template-columns:repeat(4,minmax(0,1fr))!important}.spc .silwrap{height:170px}}
+@media (min-width:600px){.spc .silwrap{height:150px}}
 .spc b .code{display:block;width:max-content;margin:0 0 2px}
 .mkhint{font-style:normal;font-weight:400;font-size:.62rem;opacity:.7;margin-left:3px}
 
@@ -607,6 +607,15 @@ body{padding:0!important;background:transparent!important;background-image:none!
   .rotmask .ph{width:46px;height:76px;border:4px solid #c23258;border-radius:10px;animation:rotph 1.8s ease-in-out infinite}
   @keyframes rotph{0%,25%{transform:rotate(-90deg)}60%,100%{transform:rotate(0)}}
 }
+/* 主頁操作區：保留原功能，避免窄畫面互相覆蓋。 */
+.stagewrap .hud{max-width:calc(100% - 152px);align-items:flex-start}
+.stagewrap>.cl-fab button{min-width:44px;min-height:44px}
+.stagewrap>.cl-fab #clMeBtn{max-width:82px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stagewrap .stbar{position:relative;left:auto;right:auto;bottom:auto;margin:6px 6px 0;padding-bottom:6px}
+.stbar .fests{justify-content:flex-start;overflow-x:auto;scrollbar-width:thin;padding:3px 2px}
+.stbar .stbadge,.stbtn,.tabs button,.spc .act{min-height:44px}
+.stagewrap .hud .exptxt{font-size:.7rem}
+@media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
@@ -642,6 +651,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="festival-config.js?v=20261109-integration1"></script>
 <script>
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -3235,7 +3245,7 @@ stage();render();
 if(!window.CLOUD_GATE){if(!checkHashRestore()&&!S.char)pickChar(true)}
 if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造型已下架，已退回 350 星星糖'),800)}
 </script>
-<script src="festgames.js"></script>
-<script src="cloud.js"></script>
+<script src="festgames.js?v=20261109-integration1"></script>
+<script src="cloud.js?v=20261109-integration1"></script>
 </body></html>
 </body></html>

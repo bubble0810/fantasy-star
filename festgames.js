@@ -2,75 +2,8 @@
    每個節慶遊戲是 fest/ 資料夾裡的獨立網頁，在遊戲上方開啟；
    玩完回報拿到的節慶貨幣，這裡負責：每日次數、貨幣、兌換商店、活動結束自動換星星糖。 */
 
-window.GAMEF={
-  halloween:{
-    n:'萬聖節',
-    title:'找小幽靈',
-    cur:'萬聖糖果',
-    ic:'🍬',
-    runs:3,
-    look:240,
-    room:300,
-    url:'fest/halloween/index.html',
-    home:'SP01',
-    lk:'SP01'
-  },
-
-  xmas:{
-    n:'聖誕節',
-    title:'聖誕滑雪橇',
-    cur:'聖誕襪',
-    ic:'🧦',
-    runs:5,
-    look:200,
-    room:300,
-    url:'fest/xmas/index.html',
-    home:'SP02',
-    lk:'SP02'
-  },
-
-  newyear:{
-    n:'春節',
-    title:'趕年獸・搶紅包',
-    cur:'紅包',
-    ic:'🧧',
-    runs:3,
-    look:280,
-    room:380,
-    url:'fest/newyear/index.html',
-    home:'SP03',
-    lk:'SP03'
-  },
-
-  duanwu:{
-    n:'端午節',
-    title:'粽力龍舟賽',
-    cur:'香包',
-    ic:'<img src="fest/dragonboat/img/sachet.svg" alt="香包" style="width:24px;height:28px;vertical-align:middle;object-fit:contain">',
-    runs:3,
-    look:240,
-    room:300,
-    url:'fest/dragonboat/index.html',
-    home:'SP05',
-    lk:'SP05'
-  },
-
-  children:{
-    n:'兒童節',
-    title:'氣球射擊',
-    cur:'彩票',
-    ic:'🎟️',
-    runs:3,
-
-    look:220,
-    room:320,
-
-    url:'fest/children/index.html',
-    home:'SP04',
-    lk:'SP04'
-  }
-};
-
+// 活動資料由 festival-config.js 提供；未載入時不啟動遊戲。
+window.GAMEF = window.GAMEF || {};
 
 /* ===== 共用節慶設定 ===== */
 
@@ -118,11 +51,8 @@ const TRIAL_COVER={
    doubleten  = 國慶
 */
 
-const TRIAL_SOON=[
-  ['seven','七夕','💞'],
-  ['moon','中秋節','🥮'],
-  ['doubleten','國慶日','🎆']
-];
+const TRIAL_SOON=Object.entries(window.FESTIVAL_CATALOG||{})
+  .filter(([,g])=>g.status!=='ready').map(([k,g])=>[k,g.n,g.ic]);
 
 
 (function(){
@@ -341,8 +271,11 @@ css.textContent=`
 }
 
 .tp-card.soon{
-  opacity:.6
+  opacity:.8
 }
+.fg-loading{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:var(--bg,#f4ecfb);padding:24px;color:var(--ink,#3b2853);text-align:center}
+.fg-loading>div{max-width:340px}
+.fg-loading button{width:100%;min-height:44px}
 
 .tp-card .act{
   margin-top:auto
@@ -399,7 +332,7 @@ const FE=k=>
 
 const onNow=k=>{
   try{
-    return festState(FE(k)).on
+    return GAMEF[k]?.status==='ready' && festState(FE(k)).on
   }catch(e){
     return false
   }
@@ -481,7 +414,14 @@ document.addEventListener(
    節慶活動頁
 ========================================================= */
 
+function comingSoon(k){
+  const g=window.FESTIVAL_CATALOG?.[k];if(!g||g.status==='ready')return;
+  openSheet(head(g.n)+`<div class="result"><h2>COMING SOON</h2><p>${g.n}小遊戲開發中，完成後就能在這裡遊玩。</p><p class="hint">目前不會扣除挑戰次數或星星糖。節慶商品仍依原有販售設定開放。</p><button class="big" id="fsSoonBack">返回星宮體驗館</button></div>`);
+  document.getElementById('fsSoonBack').onclick=()=>starPalace();
+}
+
 window.festMenu=function(k){
+  if(window.FESTIVAL_CATALOG?.[k]?.status!=='ready'){comingSoon(k);return;}
 
   const g=GAMEF[k];
   const F=FE(k);
@@ -700,13 +640,16 @@ window.festMenu=function(k){
         const x=
           shop.find(s=>s.id===b.dataset.fx);
 
+        if(!onNow(k)){toast('活動已結束，現在無法兌換。');closeQuiz();return;}
         const f=FS(k);
 
         if(
           !x||
           x.c==null||
           f.c<x.c||
-          x.own
+          x.own||
+          (x.id==='look'&&S.items.includes(lookId(k)))||
+          (x.id==='room'&&(S.homes||[]).includes(g.home))
         )return;
 
 
@@ -773,15 +716,26 @@ let cur=null;
 
 
 function launch(k,trial){
-  if(cur)return;
+  if(cur||window.CLOUD_GATE&&!window.FS_CLOUD_READY)return;
+  if(!GAMEF[k]||GAMEF[k].status!=='ready'){comingSoon(k);return;}
   if(!trial&&(!onNow(k)||FS(k).left<=0))return;
   if(trial&&((TS().used[k]|0)>=TRIAL_DAILY||S.candy<TRIAL_PRICE))return;
   closeQuiz();try{SND.pause()}catch(e){}
   const session=crypto.randomUUID();
   const box=document.createElement('div');box.id='fgFrame';
-  box.innerHTML=`<iframe src="${GAMEF[k].url}?embed=1&char=${S.char||'f'}&session=${session}${trial?'&trial=1':''}" title="${GAMEF[k].title}" allow="autoplay"></iframe>`;
+  box.innerHTML=`<iframe src="${GAMEF[k].url}?embed=1&char=${S.char||'f'}&session=${session}&trialPrice=${TRIAL_PRICE}${trial?'&trial=1':''}" title="${GAMEF[k].title}" allow="autoplay"></iframe><div class="fg-loading" id="fgLoading"><div><p id="fgLoadText" role="status">正在載入遊戲，尚未扣除次數或星星糖…</p><button class="big" id="fgLoadBack">${trial?'返回星宮體驗館':'返回活動頁'}</button></div></div>`;
   document.body.appendChild(box);
-  cur={k,frame:box.querySelector('iframe'),session,got:false,started:false,trial:!!trial};
+  cur={k,frame:box.querySelector('iframe'),session,got:false,started:false,ready:false,trial:!!trial};
+  cur.loadTimer=setTimeout(()=>{const text=document.getElementById('fgLoadText');if(text)text.textContent='遊戲載入較久或素材無法取得，尚未扣次。可以先返回再試一次。';},12000);
+  document.getElementById('fgLoadBack').onclick=closeCurrentGame;
+}
+
+function closeCurrentGame(){
+  if(!cur)return;
+  const {k,trial,loadTimer}=cur;clearTimeout(loadTimer);
+  document.getElementById('fgFrame')?.remove();cur=null;
+  try{SND.resume()}catch(e){}render();stage();
+  if(trial)starPalace();else if(onNow(k))festMenu(k);else{closeQuiz();toast('活動已結束，可從星宮繼續體驗。');}
 }
 
 /* =========================================================
@@ -940,14 +894,14 @@ window.starPalace=function(){
             </b>
 
             <span class="tagx">
-              敬請期待
+              COMING SOON｜開發中
             </span>
 
             <button
               class="act"
-              disabled
+              data-fsoon="${k}"
             >
-              還沒開放
+              查看開發狀態
             </button>
 
           </div>
@@ -968,7 +922,7 @@ window.starPalace=function(){
 
     <p class="hint mobile-compact">
 
-      八大節慶的小遊戲都可以在這裡體驗！
+      已完成的節慶小遊戲可在這裡體驗；標示 COMING SOON 的遊戲尚在開發。
 
       每個遊戲每天可以體驗
 
@@ -1004,6 +958,8 @@ window.starPalace=function(){
 
   `);
 
+
+  document.querySelectorAll('[data-fsoon]').forEach(b=>b.onclick=()=>comingSoon(b.dataset.fsoon));
 
   document
     .querySelectorAll('[data-tp]')
@@ -1070,16 +1026,17 @@ document.addEventListener(
 ========================================================= */
 
 addEventListener('message',e=>{
+  if(window.CLOUD_GATE&&!window.FS_CLOUD_READY)return;
   if(!cur||e.source!==cur.frame.contentWindow||e.origin!==location.origin)return;
   const d=e.data||{};
   if(d.session!==cur.session||d.fsGame!==cur.k)return;
   const reply=(type,extra={})=>cur.frame.contentWindow.postMessage({type,session:cur.session,...extra},location.origin==='null'?'*':location.origin);
-  const close=()=>{
-    const {k,trial}=cur;document.getElementById('fgFrame')?.remove();cur=null;
-    try{SND.resume()}catch(e){}render();stage();
-    if(trial)starPalace();else festMenu(k);
-  };
+  const close=closeCurrentGame;
+  if(d.type==='fsGameReady'){
+    cur.ready=true;clearTimeout(cur.loadTimer);document.getElementById('fgLoading')?.remove();return;
+  }
   if(d.type==='fsGameStart'){
+    if(!cur.ready||GAMEF[cur.k]?.status!=='ready'){reply('fsGameStarted',{ok:false,message:'遊戲尚未準備完成，請返回後再試。'});return;}
     if(cur.started){reply('fsGameStarted',{ok:true});return}
     const k=cur.k;
     if(cur.trial){
@@ -1114,13 +1071,22 @@ addEventListener('message',e=>{
    剩餘節慶貨幣自動換星星糖
 ========================================================= */
 
-let checking=false;
+let checking=false,conversionNotices=[],noticeTimer=0;
+function showConversionNotice(){
+  clearTimeout(noticeTimer);noticeTimer=0;
+  if(!conversionNotices.length||cur)return;
+  const modal=document.getElementById('modal');if(modal&&!modal.hidden)return;
+  const done=conversionNotices.splice(0);
+  openSheet(head('🔔 節慶活動結束了')+`<p class="qtext">剩餘節慶貨幣已自動換成星星糖：</p><ul>${done.map(x=>`<li>${x}</li>`).join('')}</ul><button class="big" onclick="closeQuiz()">好的</button>`);
+}
 
 
 function convert(){
 
   if(
     checking||
+    (window.CLOUD_GATE&&!window.FS_CLOUD_READY)||
+    cur||
     !S||
     !S.fest
   )return;
@@ -1169,53 +1135,8 @@ function convert(){
     save();
 
 
-    setTimeout(
-      ()=>{
-
-        openSheet(
-
-          head('🔔 節慶活動結束了')
-
-          +`
-
-          <p class="qtext">
-            活動結束了，
-            剩下的節慶貨幣
-            已經自動換成星星糖：
-          </p>
-
-          <ul>
-
-            ${
-              done
-              .map(
-                x=>`<li>${x}</li>`
-              )
-              .join('')
-            }
-
-          </ul>
-
-          <button
-            class="big"
-            style="width:100%"
-            onclick="closeQuiz()"
-          >
-            好的
-          </button>
-
-        `
-
-        );
-
-
-        render();
-
-      },
-
-      900
-
-    );
+    conversionNotices.push(...done);
+    noticeTimer=setTimeout(showConversionNotice,900);
 
   }
 
@@ -1243,7 +1164,7 @@ window.render=function(){
 
 
   try{
-    convert()
+    convert();if(conversionNotices.length&&!noticeTimer)noticeTimer=setTimeout(showConversionNotice,900);
   }catch(e){}
 
 
@@ -1273,5 +1194,16 @@ setTimeout(
 
 );
 
+
+// Account changes invalidate the old round and pending notices before loading new progress.
+addEventListener('fs-player-changing',()=>{
+  if(cur){clearTimeout(cur.loadTimer);document.getElementById('fgFrame')?.remove();cur=null;try{SND.resume()}catch(e){}}
+  clearTimeout(noticeTimer);noticeTimer=0;conversionNotices=[];
+});
+addEventListener('fs-player-ready',()=>{convert();stage();});
+
+// Refresh calendar-driven entries after returning from a background tab.
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!cur){convert();stage();showConversionNotice();}});
+setInterval(()=>{if(!document.hidden&&!cur){convert();stage();showConversionNotice();}},60000);
 
 })();

@@ -237,6 +237,7 @@ function nameView(user){
 /* ---------- 雲端存檔 ---------- */
 let ME=null,adminRev=0,timer=0,ready=false,unsubs=[];
 function applyState(sj,name){
+  dispatchEvent(new Event('fs-player-changing'));
   const id='u_'+ME.uid;
   PL.list=[{id,name}];PL.cur=id;savePL();
   try{if(sj)localStorage.setItem(skey(id),sj);else localStorage.removeItem(skey(id))}catch(e){}
@@ -255,6 +256,7 @@ async function push(){
   catch(e){foot('雲端存檔失敗，網路恢復後會再試')}
 }
 function queue(){if(!ME||!ready)return;clearTimeout(timer);timer=setTimeout(push,2500)}
+addEventListener('online',()=>{if(ME&&ready)queue()});
 function foot(t){const f=document.getElementById('savefoot');if(f)f.textContent=`☁ ${t}（${new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）`}
 const _save=window.save;
 window.save=function(){try{ownCheck()}catch(e){}_save.apply(this,arguments);queue()};
@@ -285,7 +287,8 @@ function ownCheck(){if(!ME||!ready||!S)return;const now=ownSet();if(ownBase){for
 /* ---------- 登入後 ---------- */
 auth.onAuthStateChanged(async user=>{
   if(regCreating)return;
-  unsubs.forEach(f=>f());unsubs=[];ready=false;ME=user;
+  window.FS_CLOUD_READY=false;dispatchEvent(new Event('fs-player-changing'));
+  unsubs.forEach(f=>f());unsubs=[];ready=false;clearTimeout(timer);timer=0;ME=user;
   const restored=firstAuth;firstAuth=false;
   if(!user){mask.hidden=false;loginView();fab(false);return}
   // 只接受玩家帳號（帳號@fantasystar.game）。舊的匿名登入、管理員信箱等 → 不能直接進遊戲
@@ -315,10 +318,11 @@ function enter(user,d,isNew){
   adminRev=d.adminRev||0;ME.name=d.name||'玩家';ME.code=d.code||'';
   applyState(d.sj||'',ME.name);
   if(isNew&&d.char){S.char=d.char;try{_save()}catch(e){}stage(true);render()}
-  ready=true;lsSet(K_VER,LOGIN_VER);seen(true);ownBase=ownSet();markDay();mask.hidden=true;fab(true);
+  ready=true;window.FS_CLOUD_READY=true;lsSet(K_VER,LOGIN_VER);seen(true);ownBase=ownSet();markDay();mask.hidden=true;fab(true);
   if(!isNew)ref.update({lastLogin:FV.serverTimestamp()}).catch(()=>{});
   if(!S.char)pickChar(true);else toast(isNew?`歡迎來到幻想智慧星，${ME.name}！`:`歡迎回來，${ME.name}！`);
   if(!d.sj)push();
+  dispatchEvent(new Event('fs-player-ready'));
   // 管理員修改了資料 → 自動重新讀取
   unsubs.push(ref.onSnapshot(s=>{const x=s.data();if(!x){if(ready){ready=false;outMsg='這個帳號已經被刪除，請找老師或管理員';auth.signOut()}return}
     if(x.disabled){auth.signOut();return}
@@ -356,7 +360,7 @@ const fabEl=document.createElement('div');fabEl.className='cl-fab';document.body
 function fab(on){
   if(!on){fabEl.innerHTML='';return}
   const n=MAIL.filter(m=>live(m)&&(isGift(m)||!m.read)).length;
-  fabEl.innerHTML=`<button id="clMailBtn" aria-label="信箱">✉${n?`<b class="dot">${n}</b>`:''}</button><button id="clMeBtn">👤 ${esc(ME&&ME.name||'')}</button>`;
+  fabEl.innerHTML=`<button id="clMailBtn" aria-label="信箱">✉${n?`<b class="dot">${n}</b>`:''}</button><button id="clMeBtn" title="${esc(ME&&ME.name||'')}" aria-label="我的帳號：${esc(ME&&ME.name||'')}">👤 ${esc(ME&&ME.name||'')}</button>`;
   document.getElementById('clMailBtn').onclick=mailbox;
   document.getElementById('clMeBtn').onclick=meSheet;
 }
