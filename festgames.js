@@ -22,8 +22,8 @@ window.GAMEF={
     cur:'聖誕襪',
     ic:'🧦',
     runs:5,
-    look:180,
-    room:220,
+    look:200,
+    room:300,
     url:'fest/xmas/index.html',
     home:'SP02',
     lk:'SP02'
@@ -35,8 +35,8 @@ window.GAMEF={
     cur:'紅包',
     ic:'🧧',
     runs:3,
-    look:320,
-    room:400,
+    look:280,
+    room:380,
     url:'fest/newyear/index.html',
     home:'SP03',
     lk:'SP03'
@@ -49,9 +49,8 @@ window.GAMEF={
     ic:'🎟️',
     runs:3,
 
-    /* SP04 正式價格尚未定案，先禁止誤買 */
-    look:null,
-    room:null,
+    look:220,
+    room:320,
 
     url:'fest/children/index.html',
     home:'SP04',
@@ -761,68 +760,16 @@ let cur=null;
 
 
 function launch(k,trial){
-
-  if(!trial){
-
-    const f=FS(k);
-
-    if(f.left<=0)return;
-
-    f.left--;
-
-    window.FSTAT&&
-      FSTAT('f:'+k);
-
-    save();
-
-  }
-
-
-  closeQuiz();
-
-
-  try{
-    SND.pause()
-  }catch(e){}
-
-
-  try{
-
-    if(trial)
-      SND.setTheme(k);
-
-  }catch(e){}
-
-
-  const box=
-    document.createElement('div');
-
-  box.id='fgFrame';
-
-
-  box.innerHTML=`
-
-    <iframe
-      src="${GAMEF[k].url}?embed=1&char=${S.char||'f'}${trial?'&trial=1':''}"
-      title="${GAMEF[k].title}"
-      allow="autoplay"
-    ></iframe>
-
-  `;
-
-
+  if(cur)return;
+  if(!trial&&(!onNow(k)||FS(k).left<=0))return;
+  if(trial&&((TS().used[k]|0)>=TRIAL_DAILY||S.candy<TRIAL_PRICE))return;
+  closeQuiz();try{SND.pause()}catch(e){}
+  const session=crypto.randomUUID();
+  const box=document.createElement('div');box.id='fgFrame';
+  box.innerHTML=`<iframe src="${GAMEF[k].url}?embed=1&char=${S.char||'f'}&session=${session}${trial?'&trial=1':''}" title="${GAMEF[k].title}" allow="autoplay"></iframe>`;
   document.body.appendChild(box);
-
-
-  cur={
-    k,
-    frame:box.querySelector('iframe'),
-    got:false,
-    trial:!!trial
-  };
-
+  cur={k,frame:box.querySelector('iframe'),session,got:false,started:false,trial:!!trial};
 }
-
 
 /* =========================================================
    🏰 星宮體驗館
@@ -1075,20 +1022,6 @@ window.starPalace=function(){
         )return;
 
 
-        S.candy-=TRIAL_PRICE;
-
-        t.used[k]=
-          (t.used[k]|0)+1;
-
-
-        window.FSTAT&&
-          FSTAT('t:'+k);
-
-
-        save();
-
-        render();
-
         launch(k,true);
 
       }
@@ -1123,116 +1056,45 @@ document.addEventListener(
    接收節慶小遊戲訊息
 ========================================================= */
 
-addEventListener(
-  'message',
-  e=>{
-
-    if(
-      !cur||
-      e.source!==cur.frame.contentWindow
-    )return;
-
-
-    const d=
-      e.data||{};
-
-
-    /* ===== 遊戲結果 =====
-       舊遊戲使用 earned
-       兒童節目前使用 tickets
-       兩種都相容
-    */
-
-    if(
-      d.fsGame===cur.k
-      &&
-      !cur.got
-    ){
-
-      cur.got=true;
-
-
-      /* 星宮 Trial 不發正式獎勵 */
-
-      if(cur.trial)return;
-
-
-      const raw=
-        d.earned
-        ??
-        d.tickets
-        ??
-        0;
-
-
-      const n=
-        Math.max(
-          0,
-          Math.min(
-            500,
-            raw|0
-          )
-        );
-
-
-      const f=
-        FS(cur.k);
-
-
-      f.c+=n;
-
-
-      window.FSTAT&&
-        FSTAT(
-          'fc:'+cur.k,
-          n
-        );
-
-
-      save();
-
+addEventListener('message',e=>{
+  if(!cur||e.source!==cur.frame.contentWindow||e.origin!==location.origin)return;
+  const d=e.data||{};
+  if(d.session!==cur.session||d.fsGame!==cur.k)return;
+  const reply=(type,extra={})=>cur.frame.contentWindow.postMessage({type,session:cur.session,...extra},location.origin==='null'?'*':location.origin);
+  const close=()=>{
+    const {k,trial}=cur;document.getElementById('fgFrame')?.remove();cur=null;
+    try{SND.resume()}catch(e){}render();stage();
+    if(trial)starPalace();else festMenu(k);
+  };
+  if(d.type==='fsGameStart'){
+    if(cur.started){reply('fsGameStarted',{ok:true});return}
+    const k=cur.k;
+    if(cur.trial){
+      const t=TS();
+      if((t.used[k]|0)>=TRIAL_DAILY||S.candy<TRIAL_PRICE){reply('fsGameStarted',{ok:false,message:'體驗次數或星星糖不足，請返回體驗館。'});return}
+      S.candy-=TRIAL_PRICE;t.used[k]=(t.used[k]|0)+1;window.FSTAT&&FSTAT('t:'+k);
+    }else{
+      if(!onNow(k)||FS(k).left<=0){reply('fsGameStarted',{ok:false,message:'活動未開放或今日次數已用完，請返回活動頁。'});return}
+      FS(k).left--;window.FSTAT&&FSTAT('f:'+k);
     }
-
-
-    /* ===== 離開小遊戲 ===== */
-
-    if(d.fsClose){
-
-      const k=
-        cur.k;
-
-      const cur0trial=
-        cur.trial;
-
-
-      document
-        .getElementById('fgFrame')
-        ?.remove();
-
-
-      cur=null;
-
-
-      try{
-        SND.resume()
-      }catch(e){}
-
-
-      render();
-
-      stage();
-
-
-      if(cur0trial)
-        starPalace();
-      else
-        festMenu(k);
-
-    }
-
+    cur.started=true;save();reply('fsGameStarted',{ok:true});return;
   }
-);
-
+  if(d.type==='fsGameResult'){
+    if(!cur.started||d.completed!==true||!Number.isInteger(d.earned)||d.earned<0)return;
+    if(!cur.got){
+      cur.got=true;cur.earned=Math.min(500,d.earned);
+      if(!cur.trial){FS(cur.k).c+=cur.earned;window.FSTAT&&FSTAT('fc:'+cur.k,cur.earned);save()}
+    }
+    reply('fsGameSettled',{trial:cur.trial,earned:cur.trial?0:cur.earned});return;
+  }
+  if(d.type==='fsGameReplay'&&cur.got){
+    const {k,trial}=cur;
+    const can=trial?(TS().used[k]|0)<TRIAL_DAILY&&S.candy>=TRIAL_PRICE:onNow(k)&&FS(k).left>0;
+    close();if(can)launch(k,trial);else toast(trial?'今日體驗次數已用完或星星糖不足':'今天的活動次數已用完，或活動已結束');
+    return;
+  }
+  if(d.type==='fsGameClose')close();
+});
 
 /* =========================================================
    活動結束：
