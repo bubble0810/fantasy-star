@@ -81,9 +81,13 @@
   },
   "moon": {
     "n": "中秋節",
-    "title": "開發中",
+    "title": "中秋月華祭",
+    "cur": "月餅",
     "ic": "🥮",
-    "status": "coming-soon",
+    "runs": 3,
+    "look": 240,
+    "room": 300,
+    "status": "ready",
     "url": "fest/moon/index.html",
     "home": "SP07",
     "lk": "SP07"

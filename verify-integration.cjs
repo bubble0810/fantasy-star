@@ -6,8 +6,8 @@ const output=path.join(root,'artifacts/integration');fs.mkdirSync(output,{recurs
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const config={window:{}};vm.runInNewContext(read('festival-config.js'),config);
 const catalog=config.window.FESTIVAL_CATALOG;
-assert.equal(Object.keys(catalog).length,8);assert.equal(Object.keys(config.window.GAMEF).length,5);
-const expected={halloween:[3,240,300],xmas:[5,200,300],newyear:[3,280,380],children:[3,220,320],duanwu:[3,240,300]};
+assert.equal(Object.keys(catalog).length,8);assert.equal(Object.keys(config.window.GAMEF).length,6);
+const expected={halloween:[3,240,300],xmas:[5,200,300],newyear:[3,280,380],children:[3,220,320],duanwu:[3,240,300],moon:[3,240,300]};
 for(const [k,values] of Object.entries(expected)){
  const g=catalog[k];assert.deepEqual([g.runs,g.look,g.room],values,'preserve '+k+' settings');
  assert(fs.existsSync(path.join(root,g.url)),g.url);
@@ -59,14 +59,20 @@ window.firebase={initializeApp:()=>({}),auth,firestore};
     assert.match(await p.locator('#panel').textContent(),/心心相印/);
     assert.equal(await p.locator('#start').isVisible(),true);
     assert.equal(await p.evaluate(()=>typeof QixiMusic.start),'function');
+   }else if(k==='moon'){
+    assert.equal(await p.locator('html').getAttribute('data-game-key'),'moon');
+    await p.waitForFunction(()=>window.fsQuestionsReady===true);
+    assert.match(await p.locator('#intro').textContent(),/中秋月華祭/);
+    assert.equal(await p.locator('#go').isEnabled(),true);
+    assert.equal(await p.locator('.lane').count(),3);
    }else{
     assert.match(await p.locator('main').textContent(),/COMING SOON/);
     assert.equal(await p.locator('.back').getAttribute('href'),'../../index.html');
    }
   }
   await p.goto(base+'/harness');await p.evaluate(()=>starPalace());
-  assert.equal(await p.locator('[data-tp]').count(),5);assert.equal(await p.locator('[data-fsoon]').count(),3);
-  for(const k of ['qixi','moon','national']){
+  assert.equal(await p.locator('[data-tp]').count(),6);assert.equal(await p.locator('[data-fsoon]').count(),2);
+  for(const k of ['qixi','national']){
    await p.locator('[data-fsoon="'+k+'"]').click();assert.match(await p.locator('#sheet').textContent(),/COMING SOON/);
    assert.equal(await p.locator('#fgFrame').count(),0);assert.equal(await p.evaluate(()=>S.candy),1000);assert.equal(await p.evaluate(()=>Object.keys(S.trial.used).length),0);
    await p.locator('#fsSoonBack').click();
@@ -141,17 +147,18 @@ window.firebase={initializeApp:()=>({}),auth,firestore};
   const reload=await context.newPage();await reload.route('**/firebase-app-compat.js',r=>r.fulfill({contentType:'text/javascript',body:mockFirebase+'\nwindow.__remotePlayer=window.__cloudSeed;'}));
   await reload.goto(base+'/index.html');await reload.locator('#clMeBtn').waitFor();
   assert.equal(await reload.evaluate(()=>S.trial.used.duanwu),1);assert(await reload.evaluate(()=>S.items.includes('L-FSP05')));await reload.close();
-  await main.setViewportSize({width:390,height:844});await main.evaluate(()=>{closeQuiz();scrollTo(0,0)});await main.locator('[data-tpgo]').click();assert.equal(await main.locator('[data-tp]').count(),5);assert.equal(await main.locator('[data-fsoon]').count(),3);
+  await main.setViewportSize({width:390,height:844});await main.evaluate(()=>{closeQuiz();scrollTo(0,0)});await main.locator('[data-tpgo]').click();assert.equal(await main.locator('[data-tp]').count(),6);assert.equal(await main.locator('[data-fsoon]').count(),2);
   await main.waitForTimeout(700);await main.screenshot({path:path.join(output,'FS-star-palace.png')});
   await main.locator('.sheet').evaluate(el=>el.scrollTop=el.scrollHeight);await main.waitForTimeout(300);await main.screenshot({path:path.join(output,'FS-coming-soon.png')});assert.deepEqual(mainErrors,[]);
   await main.locator('.sheet').evaluate(el=>el.scrollTop=0);main.once('dialog',d=>d.accept());await main.locator('[data-tp="duanwu"]').click();await main.locator('#fgFrame').waitFor();
   await main.evaluate(()=>__authChanged(null));await main.locator('#fgFrame').waitFor({state:'detached'});assert.equal(await main.evaluate(()=>FS_CLOUD_READY),false);
-  console.log('PASS: actual homepage HUD at 320/390/768/1280, long name, five ready entries, shared ownership, account isolation and cloud retry (simulated Firebase)');
+  console.log('PASS: actual homepage HUD at 320/390/768/1280, long name, six ready entries, shared ownership, account isolation and cloud retry (simulated Firebase)');
   const admin=await context.newPage(),adminErrors=[];admin.on('pageerror',e=>adminErrors.push(e.message));
   await admin.setViewportSize({width:1100,height:844});await admin.goto(base+'/admin.html');await admin.locator('[data-t="stat"]').click();await admin.locator('[data-s="fest"]').click();
-  assert.equal(await admin.locator('#sbody>.card').count(),5);assert.match(await admin.locator('#sbody').textContent(),/端午節・粽力龍舟賽/);
+  assert.equal(await admin.locator('#sbody>.card').count(),6);assert.match(await admin.locator('#sbody').textContent(),/端午節・粽力龍舟賽/);
   assert(!/讀不到/.test(await admin.locator('#sbody').textContent()));await admin.screenshot({path:path.join(output,'FS-admin-festivals.png'),fullPage:true});assert.deepEqual(adminErrors,[]);
-  console.log('PASS: actual admin catalog and all five festival statistic panels (simulated Firebase)');
+  console.log('PASS: actual admin catalog and all six festival statistic panels (simulated Firebase)');
   await context.close();
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});
+
