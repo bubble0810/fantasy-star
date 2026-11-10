@@ -617,7 +617,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261110-tabs7">
+<link rel="stylesheet" href="home-ui.css?v=20261110-xp8">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -2106,7 +2106,7 @@ function stage(anim){
   const e=eqObj();
   const ch=S.char||'f',B=BASES[ch],R=curHome();
   const spi=e.special&&(e.special.src?[e.special.src,e.special.w,e.special.h]:SPIMG[e.special.img]);
-  const W0=600,H0=400,FOOT=384,K=290/1408;
+  const W0=600,H0=400,FOOT=330,K=290/1408;
   const bg=R.img?`<image href="${R.img}" x="0" y="0" width="${W0}" height="${H0}"/>`:`<svg x="0" y="0" width="${W0}" height="${H0}" viewBox="0 0 400 320" preserveAspectRatio="xMidYMid slice">${room(S.room,'main')}</svg>`;
   let fig,label,fw;
   if(spi){const [src,iw,ih]=spi,H2=(e.special.sh||BASE_H[ch]*1.04)*K,W2=H2*iw/ih;fw=W2;
@@ -3269,7 +3269,7 @@ stage();render();
 if(!window.CLOUD_GATE){if(!checkHashRestore()&&!S.char)pickChar(true)}
 if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造型已下架，已退回 350 星星糖'),800)}
 </script>
-<script src="home-ui.js?v=20261110-home1"></script>
+<script src="home-ui.js?v=20261110-xp8"></script>
 <script src="festgames.js?v=20261110-moon-integration1"></script>
 <script src="cloud.js?v=20261110-home1"></script>
 </body></html>

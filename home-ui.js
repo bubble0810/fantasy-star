@@ -14,6 +14,8 @@
     return `<div class="stbar ${!f&&uiOptions.hideInactiveFestival?'no-event':''}">${button('quest',`id="t-quest" aria-pressed="${tab==='quest'}"`,'🗺️','闖關')}${button('tp','data-tpgo aria-label="星宮體驗館"','🏰','星宮')}${festival}${button('rank',`data-rankgo aria-pressed="${tab==='rank'}"`,'🏆','星空榜')}</div>`;
   }
   function updateHud(){
+    const progress=document.querySelector('.hud-level'),level=document.getElementById('lv'),experience=document.getElementById('xptxt');
+    if(progress&&level&&experience){const detail=level.textContent+'｜經驗 '+experience.textContent;progress.title=detail;progress.setAttribute('aria-label',detail);progress.tabIndex=0;}
     const star=document.getElementById('candy');if(star){star.textContent=smallAmount(S.candy||0);star.title=`${S.candy||0} 星星糖`;}
     const slot=document.getElementById('festCurrencyHud');if(!slot)return;
     const active=activeFests().filter(f=>window.FESTIVAL_CATALOG?.[f.k]?.cur),f=active[0],g=f&&FESTIVAL_CATALOG[f.k];
