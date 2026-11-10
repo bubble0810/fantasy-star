@@ -15,13 +15,17 @@
   }
   function updateHud(){
     const progress=document.querySelector('.hud-level'),level=document.getElementById('lv'),experience=document.getElementById('xptxt');
-    if(progress&&level&&experience){const detail=level.textContent+'｜經驗 '+experience.textContent;progress.title=detail;progress.setAttribute('aria-label',detail);progress.tabIndex=0;}
+    if(progress&&level&&experience){const detail=level.textContent+'｜經驗 '+experience.textContent;progress.title=detail;progress.setAttribute('aria-label',detail+'，點擊查看');progress.setAttribute('role','button');progress.setAttribute('aria-haspopup','dialog');progress.tabIndex=0;}
     const star=document.getElementById('candy');if(star){star.textContent=smallAmount(S.candy||0);star.title=`${S.candy||0} 星星糖`;}
     const slot=document.getElementById('festCurrencyHud');if(!slot)return;
     const active=activeFests().filter(f=>window.FESTIVAL_CATALOG?.[f.k]?.cur),f=active[0],g=f&&FESTIVAL_CATALOG[f.k];
     slot.hidden=!g;
     slot.innerHTML=g?`<span class="currency-icon" aria-hidden="true">${g.ic}</span><span>${smallAmount(S.fest?.[f.k]?.c||0)}</span>${active.length>1?`<small class="currency-more">+${active.length-1}</small>`:''}`:'';
     slot.title=g?`${g.cur} ${S.fest?.[f.k]?.c||0}；點擊查看全部貨幣`:'';
+  }
+  function experienceDetails(){
+    const level=document.getElementById('lv')?.textContent||'',experience=document.getElementById('xptxt')?.textContent||'';
+    openSheet(head('等級與經驗')+'<div class="wallet-list xp-details"><div class="wallet-row"><span>目前等級</span><strong>'+esc(level)+'</strong></div><div class="wallet-row"><span>本級經驗／升級所需</span><strong>'+esc(experience)+'</strong></div></div>');
   }
   function wallet(){
     const fests=Object.entries(window.FESTIVAL_CATALOG||{}).filter(([k,g])=>g.cur&&(activeFests().some(f=>f.k===k)||(S.fest?.[k]?.c||0)>0));
@@ -49,9 +53,13 @@
     panel.querySelectorAll('[data-rank-tab]').forEach(b=>b.onclick=()=>{rankTab=b.dataset.rankTab;renderRank(panel)});
   }
   document.addEventListener('click',e=>{
+    if(e.target.closest('.hud-level'))experienceDetails();
     if(e.target.closest('[data-wallet]'))wallet();
     if(e.target.closest('[data-festival-entry]'))festivalEntry();
     if(e.target.closest('[data-rankgo]')){tab='rank';trySp=null;stage();render();}
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.target.closest('.hud-level')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();experienceDetails();}
   });
   window.FSHomeUI={stageActions,updateHud,sellPanel,saleKeys,renderMarket,renderRank,options:uiOptions};
   stage();hud();

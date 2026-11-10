@@ -45,7 +45,7 @@
 #stagewrap>.hud{grid-template-columns:minmax(0,1fr) minmax(76px,1.25fr) minmax(0,1.65fr) 32px;gap:4px}
 #stagewrap .hud-cell{height:22px;min-height:22px;flex-wrap:nowrap;white-space:nowrap;font-size:14px;font-weight:500;line-height:18px;text-shadow:0 1px 2px #15102499}
 #stagewrap #hudNameSlot button,#stagewrap #hudMailSlot button{height:20px;min-height:20px;flex-direction:row;flex-wrap:nowrap;white-space:nowrap;font-size:14px;font-weight:500;line-height:18px;padding:0;text-shadow:0 1px 2px #15102499}
-#stagewrap .hud-level{flex-direction:row;gap:4px}
+#stagewrap .hud-level{flex-direction:row;gap:4px;cursor:pointer}
 #stagewrap .hud-level .lvbadge{flex:0 0 auto;font-size:12px;font-weight:400;text-shadow:0 1px 2px #15102499}
 #stagewrap .hud-level #lv,#stagewrap .hud-level #xptxt{display:none}
 #stagewrap .hud-level::before{content:"經驗";flex:0 0 auto;font:400 11px/18px var(--body);color:#fff2d1}
