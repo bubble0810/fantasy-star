@@ -111,4 +111,4 @@
 共用畫面準備完成後發送 `fsGameReady`；主頁收到後移除載入畫面。載入失敗時可返回、不扣次。
 
 `node verify-integration.cjs` 檢查共用清單、COMING SOON、載入失敗返回、過期兌換、幣別轉換通知、主頁 HUD 與後台清單；雲端採模擬 Firebase，不接觸正式資料。截圖在 `artifacts/integration/`。
-七夕、中秋、國慶的獨立網址已有開發中頁面；完成時以實際遊戲替換，再依共用流程驗證。
+七夕的獨立網址已是可試玩的開發版；主站仍標示 coming-soon，尚未接入正式扣次／入帳。中秋已是三軌玉兔與八次嫦娥奔月的開發試玩版，使用共用開始與結算流程，但兌換值仍為暫定，主站維持 coming-soon；素材與規則見 `moon/README.md`，執行 `node verify-moon.cjs` 驗證。國慶仍為開發中頁面。七夕上架對照與阻擋項見根目錄「七夕上架檢查.txt」，發布前執行 node verify-seven-release.cjs --release。
