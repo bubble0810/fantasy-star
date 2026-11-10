@@ -2,7 +2,7 @@
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>春節趕年獸搶紅包（試玩版）</title>
-<script src="../common.js?v=20261109-integration1"></script><link rel="stylesheet" href="../common.css?v=20261109-integration1">
+<script src="../common.js?v=20261110-shared2"></script><link rel="stylesheet" href="../common.css?v=20261110-shared2">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
 *{box-sizing:border-box}
@@ -39,7 +39,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%}
 <div class="hud" id="hud" hidden><div class="chip disp" id="timeN" style="grid-column:2;justify-self:center">20 秒</div><div class="hr" style="grid-column:3;justify-self:end"><div class="chip"><img src="img/envelope.webp" alt="紅包"><span id="envN">0</span></div><button class="icon" id="musBtn" aria-label="音樂開關">♫</button></div></div>
 <div class="toast disp" id="toast"></div>
 <div class="panel" id="startP"><div class="card"><span class="tag">試玩版・只有你看得到</span><h1 class="disp">趕年獸・搶紅包</h1>
-<p>過年囉！先在新春老街<b>點燃冒出來的鞭炮和煙火</b>，搶紅包（煙火給 2 個）。接著<b>丟鞭炮趕跑年獸</b>：3 隻小年獸各炸 5 下就跑掉，每炸一下掉 1 個紅包；最後大年獸要命中 20 下才能擊退！第二關不限時，全部擊退後結算。</p>
+<p>過年囉！先在新春老街<b>點燃冒出來的鞭炮和煙火</b>，搶紅包（煙火給 2 個）。接著<b>丟鞭炮趕跑年獸</b>：3 隻小年獸各炸 10 下就跑掉，每炸一下掉 1 個紅包；最後大年獸要命中 50 下才能擊退！第二關不限時，全部擊退後結算。</p>
 <div class="steps"><div><img src="img/scene1.webp" alt=""><b>第 1 關</b>放鞭炮・20 秒</div><div><img src="img/scene2.webp" alt=""><b>第 2 關</b>炸年獸</div></div>
 <button class="go disp" id="goBtn">出發！</button><p class="note">測試版不會存檔，可以無限次重玩。有音樂和音效，右上角 ♪ 可以關掉音樂。</p></div></div>
 <div class="panel" id="lvP" hidden><div class="card"><h1 class="disp">年獸來了！</h1><div class="big"><img src="img/nian_small.webp" alt=""><img src="img/nian_big.webp" alt=""></div>
@@ -247,7 +247,7 @@ function l1Update(dt){
       if(!it.fw&&Math.random()<.6)spark(it);
       if(it.fw&&!it.launched&&it.litT>.45){it.launched=true;const s=SLOTS[it.slot];G.rockets.push({x:s.x*W,y:(s.y-.05)*H,tx:rnd(.15,.85)*W,ty:rnd(.07,.28)*H,t:0,d:.8,c:pick(['#ffd23a','#ff5d8f','#7ee0ff','#b48bff','#7dff9b'])});SFX.whistle()}}}
   G.items=G.items.filter(it=>it.lit?it.litT<(it.fw?.9:.75):it.age<it.life);
-  if(left<=0){G.lv=1;G.t=0;G.P=[];G.items=[];G.rockets=[];toast('年獸來了！小年獸 5 下，大年獸 20 下','#ffd23a')}
+  if(left<=0){G.lv=1;G.t=0;G.P=[];G.items=[];G.rockets=[];toast('年獸來了！小年獸 10 下，大年獸 50 下','#ffd23a')}
 }
 function spark(it){const s=SLOTS[it.slot],b=it.bb||{x:s.x*W-10,y:s.y*H-10,w:20,h:20};
   const x=b.x+Math.random()*b.w,y=b.y+Math.random()*b.h;
@@ -274,7 +274,7 @@ function l1Draw(){
 const HOR=.66,NEAR=.93;
 function nianPos(n){const z=n.z,y=(HOR+(NEAR-HOR)*Math.pow(z,1.25))*H;const k=.18+.82*z;
   const x=(.5+(n.lane+.12*Math.sin(G.t*1.6+n.ph))*k)*W;const w=(n.kind==='big'?1.45:1)*(.11+.33*z)*W;return{x,y,w}}
-function spawnNian(kind){const n={kind,z:0,lane:rnd(-.32,.32),ph:rnd(0,6),hp:kind==='big'?20:5,max:kind==='big'?20:5,st:'run',hitT:0,img:kind==='big'?IM.nian_big:IM.nian_small,flip:Math.random()<.5};
+function spawnNian(kind){const n={kind,z:0,lane:rnd(-.32,.32),ph:rnd(0,6),hp:kind==='big'?50:10,max:kind==='big'?50:10,st:'run',hitT:0,img:kind==='big'?IM.nian_big:IM.nian_small,flip:Math.random()<.5};
   G.nians.push(n);if(kind==='big'){toast('大年獸出現了！','#ffd23a');SFX.roar();G.shake=.5}}
 function l2Update(dt){
   const current=G.nians.find(n=>n.st==='run');$('timeN').textContent=current?`${current.kind==='big'?'大':'小'}年獸 ${current.max-current.hp}/${current.max}`:`小年獸 ${G.smallDone}/3`;
