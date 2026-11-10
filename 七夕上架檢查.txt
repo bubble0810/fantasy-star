@@ -1,0 +1,87 @@
+七夕・心心相印：部署對照與檢查結果
+檢查日期：2026-11-10
+
+目前結論
+檔名、資料夾大小寫、主站代號與七夕素材路徑可正確載入。
+已以 HTTP 模擬 GitHub Pages 的專案子路徑 /FS-release/，圖片及配樂無缺檔。
+目前是獨立開發試玩版，不能直接宣稱正式上架完成。
+festival-config.js 的 qixi 保留 coming-soon，主站正式入口及星宮體驗入口不扣次、不收費。
+
+固定名稱對照（不可因為不同名稱就自行改名）
+活動／存檔／統計代號：qixi
+遊戲資料夾：fest/seven/
+遊戲入口：fest/seven/index.html
+HTML 對應：data-game-key="qixi"
+遊戲名稱：心心相印
+活動貨幣：紙鶴
+造型後綴：SP06
+男造型圖片：outfits/MSP06.webp；存檔道具 ID：L-MSP06
+女造型圖片：outfits/FSP06.webp；存檔道具 ID：L-FSP06
+小屋 ID：SP06；圖片：rooms/SP06.webp
+注意：主站小屋的實際 ID 為 SP06，不要改成註解中曾使用的 RSP06。
+
+主資料夾相關檔案
+1. festival-config.js
+   活動網址、名稱、幣別、每日次數 runs、造型價格 look、小屋價格 room、狀態 status 的唯一共用來源。
+   此次已統一七夕名稱、幣別與入口；runs／look／room 尚未定案，狀態仍為 coming-soon。
+2. festgames.js
+   處理星宮封面、主站啟動、局次、扣次／體驗費、單次入帳、再玩、返回與到期貨幣轉換。
+   此次已補七夕封面 fest/seven/img/background.jpg。所有流程都須用 qixi，不能用 seven 當活動鍵。
+3. index.html（根目錄，切勿被小遊戲同名檔覆蓋）
+   保留 qixi 活動日期、MSP06／FSP06 造型、小屋 SP06 與 fest:'qixi' 對應。
+   載入 festival-config.js 和 festgames.js，版本已更新為 20261110-qixi-audit1。
+4. admin.html
+   從 festival-config.js 篩選 ready 活動，不需要另外硬寫七夕統計清單。
+   與主頁使用相同設定版本；此次修正讀取失敗時顯示的檔案名稱。
+5. fest/common.js、fest/common.css
+   是正式版必須接入的開始／結算／離開／再玩與 HUD 共用流程。
+   七夕目前尚未載入；不能只補 script/link 就視為完成，還須調整所需 DOM 和開始／結算呼叫。
+6. cloud.js、firebase-config.js、firestore.rules
+   本次不需為七夕另外更名、開新活動集合或搬移既有資料。
+   正式串接應沿用既有 S.fest.qixi 與統計流程，不要產生 S.fest.seven。
+
+七夕子資料夾必須完整上傳
+fest/seven/index.html
+fest/seven/music.js（HTML 已帶版本參數；配樂更動時同步更新參數）
+fest/seven/img/background.jpg
+fest/seven/img/heart0.png～heart4.png
+fest/seven/img/bridge.png
+fest/seven/img/man.png
+fest/seven/img/woman.png
+fest/seven/img/hug.png
+fest/seven/img/bird.png
+全部維持原大小寫；不要包成 fest/seven/seven-v1/，也不要改成 fest/qixi/。
+README.txt 中的舊 seven-v1 與 IMG_3655／IMG_3657 引用已移除。
+artifacts/ 中的試聽 WAV、截圖與根目錄驗證腳本不是遊戲執行時依賴，不需要讓 HTML 載入。
+
+正式發布仍需完成的項目
+1. 決定正式每日場次與兌換價格，檢查現行每局 2～7 紙鶴是否符合 FEST 收集天數目標。
+2. 接入共用流程，先 fsGameReady，再由主頁核可 fsGameStart 才開始並扣次。
+3. 完成後顯示共用「遊戲結束」，再 fsReport，等待主頁確認才開放再玩／返回。
+4. 核對 origin／來源／session／qixi，確認同一局重送不重複發獎。
+5. 再玩由主頁建立新 session；正式返回活動頁、體驗返回星宮、獨立試玩返回 ../../index.html。
+6. 加入圖片／配樂載入失敗的開始阻擋及可返回畫面，避免失敗仍扣次。
+7. 將七夕正式／體驗的完整流程納入整合測試後，才把 status 改成 ready。
+不能只改 status 就上架。
+
+玩家畫面與內部規則
+保留鵲橋進度條與連擊數，只告知「連擊越高，鵲橋築得越快」。
+不顯示七次通關門檻、加成百分比、下一輪增幅或數字百分比。
+內部仍採 8／10／12／14／16／18／22 的連續成功增幅；答錯保留進度並重置連擊。
+
+檢查指令（在主資料夾執行）
+node verify-seven-release.cjs
+  檢查路徑、大小寫、名稱對應、主頁／後台版本及專案子路徑載入；列出正式發布阻擋項。
+node verify-seven-release.cjs --release
+  正式發布檢查。未完成上列條件時會以失敗結束，這是預期的防誤上架行為。
+node verify-seven.cjs
+  驗證七夕玩法、進度、靜音、再玩、離開及手機排版。
+node verify-integration.cjs
+  驗證主站／後台及開發中入口不扣次；使用模擬 Firebase，不讀寫正式玩家資料。
+node render-seven-audio.cjs
+  產生試聽檔並檢查削波。
+
+部署方式
+這次更新應一起部署根目錄 index.html、admin.html、festival-config.js、festgames.js，
+以及整個 fest/seven/，保留主專案其餘相依檔案及現有資料夾結構。
+此組合可發布為仍被主站擋住的開發版；正式開放前仍須完成上述阻擋項。

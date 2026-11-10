@@ -51,8 +51,18 @@ window.firebase={initializeApp:()=>({}),auth,firestore};
  try{
   const p=await browser.newPage({viewport:{width:390,height:844}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
   for(const k of ['qixi','moon','national']){
-   await p.goto(base+'/'+catalog[k].url);assert.match(await p.locator('main').textContent(),/COMING SOON/);
-   assert.equal(await p.locator('.back').getAttribute('href'),'../../index.html');
+   await p.goto(base+'/'+catalog[k].url);
+   if(k==='qixi'){
+    // Qixi now has a playable standalone development build. The host still
+    // blocks the official/trial entries below until integration is complete.
+    assert.equal(await p.locator('html').getAttribute('data-game-key'),'qixi');
+    assert.match(await p.locator('#panel').textContent(),/心心相印/);
+    assert.equal(await p.locator('#start').isVisible(),true);
+    assert.equal(await p.evaluate(()=>typeof QixiMusic.start),'function');
+   }else{
+    assert.match(await p.locator('main').textContent(),/COMING SOON/);
+    assert.equal(await p.locator('.back').getAttribute('href'),'../../index.html');
+   }
   }
   await p.goto(base+'/harness');await p.evaluate(()=>starPalace());
   assert.equal(await p.locator('[data-tp]').count(),5);assert.equal(await p.locator('[data-fsoon]').count(),3);

@@ -20,6 +20,7 @@ const TRIAL_DAILY=3;
 /* ===== 星宮卡片圖片 ===== */
 
 const TRIAL_COVER={
+  qixi:['fest/seven/img/background.jpg','50%'],
   duanwu:['fest/dragonboat/img/river.png','58%'],
   halloween:[
     'fest/halloween/img/scene1.webp',

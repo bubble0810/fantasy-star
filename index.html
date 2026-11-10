@@ -651,7 +651,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="festival-config.js?v=20261109-integration1"></script>
+<script src="festival-config.js?v=20261110-qixi-audit1"></script>
 <script>
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -1041,7 +1041,7 @@ const FESTS=[
  {k:'halloween',n:'萬聖節',md:['10-24','11-03'],ov:{2026:['10-15','11-10']},c:'#ff8c1a'},  // 平常 10/24～11/3；2026 年特別延長
  {k:'xmas',n:'聖誕節',md:['12-01','12-31'],c:'#1f9d55'}
 ];
-// 節慶：萬聖SP01 聖誕SP02 春節SP03 兒童節SP04 端午SP05 七夕SP06 中秋SP07 國慶SP08（小屋同順序 RSP01～RSP08）
+// 節慶：萬聖SP01 聖誕SP02 春節SP03 兒童節SP04 端午SP05 七夕SP06 中秋SP07 國慶SP08（小屋 ID 同順序 SP01～SP08）
 // 情人節已停用（off），定義保留給舊資料查名稱用
 const FEST_DEF=FESTS.slice();FESTS.splice(0,FESTS.length,...FEST_DEF.filter(f=>!f.off));FESTS.find=fn=>FEST_DEF.find(fn);
 [
@@ -3245,7 +3245,7 @@ stage();render();
 if(!window.CLOUD_GATE){if(!checkHashRestore()&&!S.char)pickChar(true)}
 if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造型已下架，已退回 350 星星糖'),800)}
 </script>
-<script src="festgames.js?v=20261109-integration1"></script>
+<script src="festgames.js?v=20261110-qixi-audit1"></script>
 <script src="cloud.js?v=20261109-integration1"></script>
 </body></html>
 </body></html>

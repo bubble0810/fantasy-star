@@ -9,7 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="festival-config.js?v=20261109-integration1"></script>
+<script src="festival-config.js?v=20261110-qixi-audit1"></script>
 <style>
 :root{--ink:#2e2340;--muted:#6b5b7d;--line:#e3d9ef;--bg:#f6f2fb;--accent:#c23258;--ok:#1f7a45;--warn:#b42318}
 *{box-sizing:border-box}
@@ -337,7 +337,7 @@ function activeStat(){
   <div class="days">${days.map((k,i)=>`<div title="${k}：上線 ${act[i]} 人、新註冊 ${reg[i]} 人"><span>${act[i]||''}</span><div style="display:flex;gap:1px;width:100%;align-items:flex-end;flex:1"><i style="height:${act[i]/mx*100}%"></i><i class="n" style="height:${reg[i]/mx*100}%"></i></div><span>${N<=31&&(i%Math.ceil(N/10)===0||i===N-1)?k.slice(5):''}</span></div>`).join('')}</div>`;
 }
 function festStat(){
-  if(!GAMEF.length)return '<p class="empty">讀不到節慶活動設定（festgames.js）</p>';
+  if(!GAMEF.length)return '<p class="empty">讀不到節慶活動設定（festival-config.js）</p>';
   const own=id=>PLAYERS.filter(p=>{const S=pdata(p);return (S.items||[]).includes(id)||(S.homes||[]).includes(id)}).length;
   const sum=key=>PLAYERS.reduce((a,p)=>a+pcount(p,key),0),ppl=key=>PLAYERS.filter(p=>pcount(p,key)>0).length;
   return GAMEF.map(g=>{const n=ppl('f:'+g.k),runs=sum('f:'+g.k),cur=sum('fc:'+g.k);

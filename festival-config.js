@@ -71,7 +71,8 @@
   },
   "qixi": {
     "n": "七夕",
-    "title": "開發中",
+    "title": "心心相印",
+    "cur": "紙鶴",
     "ic": "💞",
     "status": "coming-soon",
     "url": "fest/seven/index.html",
