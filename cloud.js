@@ -240,6 +240,7 @@ function nameView(user){
 /* ---------- 雲端存檔 ---------- */
 let ME=null,adminRev=0,timer=0,ready=false,unsubs=[];
 function applyState(sj,name){
+  lbStop();
   dispatchEvent(new Event('fs-player-changing'));
   const id='u_'+ME.uid;
   PL.list=[{id,name}];PL.cur=id;savePL();
@@ -255,19 +256,102 @@ function snapshot(){
 }
 async function push(){
   clearTimeout(timer);timer=0;if(!ME||!ready)return;
-  try{await db.doc('players/'+ME.uid).set(snapshot(),{merge:true});foot('已存到雲端')}
+  try{await db.doc('players/'+ME.uid).set(snapshot(),{merge:true});foot('已存到雲端');void lbFlush()}
   catch(e){foot('雲端存檔失敗，網路恢復後會再試')}
 }
 function queue(){if(!ME||!ready)return;clearTimeout(timer);timer=setTimeout(push,2500)}
 addEventListener('online',()=>{if(ME&&ready)queue()});
 function foot(t){const f=document.getElementById('savefoot');if(f)f.textContent=`☁ ${t}（${new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）`}
 const _save=window.save;
-window.save=function(){try{ownCheck()}catch(e){}_save.apply(this,arguments);queue()};
+window.save=function(){try{ownCheck();lbCollectionCheck()}catch(e){}_save.apply(this,arguments);queue()};
 addEventListener('pagehide',()=>{if(ME&&ready)seen(true);if(timer)push()});
 ['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{if(ME&&ready)seen()},{passive:true}));
 document.addEventListener('visibilitychange',()=>{if(ME&&ready&&document.visibilityState==='hidden')seen(true)});
 setInterval(()=>{if(ME&&ready&&document.visibilityState==='visible')seen(true)},60000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&timer)push()});
+
+/* ---------- Private leaderboard history and durable per-account outbox ---------- */
+let lbSession=null;
+const lbView={syncStatus:'signed-out',publicStatus:'loading',result:null,publishedAt:null,pending:0,errorCode:null};
+const lbMillis=v=>v&&typeof v.toMillis==='function'?Math.floor(v.toMillis()):Number.isSafeInteger(v)?v:null;
+const lbSameTimestamp=(a,b)=>a?.isEqual&&b?.toMillis?a.isEqual(b):lbMillis(a)===lbMillis(b);
+const lbKey=uid=>'fs-leaderboard-outbox-v1:'+uid;
+const lbLegacyKey=uid=>'fs-leaderboard-import-v1:'+uid;
+function lbCanonical(v){return Array.isArray(v)?v.map(lbCanonical):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,lbCanonical(v[k])])):v;}
+const lbFingerprint=v=>JSON.stringify({...v,lookIds:v.lookIds?.slice().sort(),roomIds:v.roomIds?.slice().sort()});
+function lbNotify(patch={}){Object.assign(lbView,patch);dispatchEvent(new CustomEvent('fs-leaderboard-updated',{detail:{...lbView}}));}
+function lbCurrent(s){return lbSession===s&&ME?.uid===s.uid&&ready;}
+function lbStore(s){try{localStorage.setItem(lbKey(s.uid),JSON.stringify(s.outbox));return true}catch(e){if(lbCurrent(s))lbNotify({syncStatus:'storage-error',errorCode:'local-storage'});return false;}}
+function lbStop(){if(lbSession)lbSession.unsubs.forEach(f=>f());lbSession=null;lbNotify({syncStatus:'signed-out',publicStatus:'loading',result:null,publishedAt:null,pending:0,errorCode:null});}
+function lbEnqueue(s,type,value,clientAchievedAt=Date.now()){
+  if(!lbCurrent(s)||!Object.hasOwn(FSLeaderboard.types,type))return;
+  const entry={id:'r_'+crypto.randomUUID(),type,value:JSON.parse(JSON.stringify(value)),clientAchievedAt};
+  s.outbox.push(entry);S.leaderboardV1=S.leaderboardV1||{modernTypes:{}};S.leaderboardV1.modernTypes=S.leaderboardV1.modernTypes||{};S.leaderboardV1.modernTypes[type]=true;if(type==='looks')S.leaderboardV1.lastCollection=lbFingerprint(value);if(type==='quest')S.leaderboardV1.lastQuest=JSON.stringify(value);
+  lbStore(s);lbNotify({pending:s.outbox.length,syncStatus:'pending'});
+  void lbFlush(s);
+}
+async function lbImport(s){
+  if(s.imported)return;
+  const ref=db.doc('players/'+s.uid+'/leaderboardState/v1');
+  await db.runTransaction(async tx=>{
+    const meta=await tx.get(ref);if(meta.exists)return;
+    const legacy=s.legacyRecords;
+    tx.set(ref,{schemaVersion:1,importedAt:FV.serverTimestamp()});
+    for(const r of legacy)tx.set(db.doc('players/'+s.uid+'/leaderboardRecords/'+r.id),{id:r.id,uid:s.uid,type:r.type,value:r.value,legacy:true,achievedAt:null,recordedAt:FV.serverTimestamp(),schemaVersion:1});
+  });
+  s.imported=true;try{localStorage.removeItem(lbLegacyKey(s.uid));}catch(e){}
+}
+function lbFlush(s=lbSession){
+  if(!s||!lbCurrent(s))return Promise.resolve();
+  if(s.flushing)return s.flushing;
+  s.flushing=(async()=>{
+    try{
+      await lbImport(s);
+      while(lbCurrent(s)&&s.outbox.length){
+        const r=s.outbox[0],ref=db.doc('players/'+s.uid+'/leaderboardRecords/'+r.id);
+        await db.runTransaction(async tx=>{const old=await tx.get(ref);if(old.exists){const d=old.data();if(d.uid!==s.uid||d.type!==r.type||JSON.stringify(lbCanonical(d.value))!==JSON.stringify(lbCanonical(r.value)))throw new Error('leaderboard-record-conflict');return;}
+          tx.set(ref,{id:r.id,uid:s.uid,type:r.type,value:r.value,legacy:false,clientAchievedAt:r.clientAchievedAt,achievedAt:FV.serverTimestamp(),recordedAt:FV.serverTimestamp(),schemaVersion:1});
+        });
+        s.outbox.shift();lbStore(s);
+      }
+      if(lbCurrent(s))lbNotify({syncStatus:s.outbox.length?'pending':'synced',pending:s.outbox.length,errorCode:null});
+    }catch(e){if(lbCurrent(s))lbNotify({syncStatus:'pending',pending:s.outbox.length,errorCode:e.code||e.message||'sync-failed'});}
+    finally{s.flushing=null;}
+  })();return s.flushing;
+}
+function lbPublic(data){
+  const boards={};for(const type of ['total',...Object.keys(FSLeaderboard.types)])boards[type]=(Array.isArray(data.boards?.[type])?data.boards[type]:[]).slice(0,3).map((r,i)=>({uid:String(r.u||''),name:String(r.n||'玩家'),level:r.l,rank:i+1}));
+  return {enabled:data.enabled===true,startsAt:lbMillis(data.startsAt)||0,boards};
+}
+function lbStart(uid,isNew=false,previous=null){
+  lbStop();if(!window.FSLeaderboard||!window.FSGameRecords||typeof db.runTransaction!=='function'){lbNotify({syncStatus:'unavailable',publicStatus:'unavailable'});return;}
+  let outbox=[];try{const stored=JSON.parse(localStorage.getItem(lbKey(uid))||'[]');if(Array.isArray(stored))outbox=stored.filter(r=>/^r_[0-9a-f-]{36}$/i.test(r.id)&&Object.hasOwn(FSLeaderboard.types,r.type)&&r.value&&Number.isSafeInteger(r.clientAchievedAt));}catch(e){}
+  const collection=FSLeaderboard.collectionValue(S,FSGameRecords.catalog());
+  const s=lbSession={uid,isNew,initial:JSON.parse(JSON.stringify(S)),outbox,legacySkip:new Set(outbox.map(r=>r.type)),imported:false,flushing:null,unsubs:[],collection:lbFingerprint(collection),config:null,published:null};
+  const modern=s.initial.leaderboardV1?.modernTypes||{};let frozen=null;try{const stored=JSON.parse(localStorage.getItem(lbLegacyKey(uid))||'null');if(stored&&stored.uid===uid&&Array.isArray(stored.records))frozen=stored.records;}catch(e){}
+  s.legacyRecords=frozen||(isNew?[]:FSLeaderboard.legacyRecords(uid,s.initial,Date.now(),FSGameRecords.catalog()).filter(r=>!modern[r.type]&&!s.legacySkip.has(r.type)));
+  try{localStorage.setItem(lbLegacyKey(uid),JSON.stringify({uid,records:s.legacyRecords}));}catch(e){}
+  lbNotify({syncStatus:'pending',publicStatus:'loading',pending:outbox.length});
+  const refresh=()=>{if(!lbCurrent(s)||!s.config)return;if(!s.config.enabled){lbNotify({publicStatus:'closed',result:{enabled:false,boards:{}},publishedAt:null});return;}const d=s.published;if(!d||!lbSameTimestamp(d.configUpdatedAt,s.config.updatedAt)){lbNotify({publicStatus:'unpublished',result:null,publishedAt:null});return;}lbNotify({publicStatus:'ready',result:lbPublic(d),publishedAt:lbMillis(d.publishedAt)});};
+  const readError=e=>{if(lbCurrent(s))lbNotify({publicStatus:'error',result:null,errorCode:e.code||'read-failed'});};
+  s.unsubs.push(db.doc('leaderboardConfig/current').onSnapshot(snap=>{if(!lbCurrent(s))return;s.config=snap.exists?snap.data():{enabled:false};refresh();},readError));
+  s.unsubs.push(db.doc('leaderboardPublic/current').onSnapshot(snap=>{if(!lbCurrent(s))return;s.published=snap.exists?snap.data():null;refresh();},readError));
+  if(isNew){S.leaderboardV1.personalBest={};FSGameRecords.record('looks',collection);}
+  else if((previous&&previous.collection!==s.collection)||(typeof s.initial.leaderboardV1?.lastCollection==='string'&&s.initial.leaderboardV1.lastCollection!==s.collection))FSGameRecords.record('looks',collection);
+  if((previous&&previous.quest!==JSON.stringify(FSGameRecords.questValue()))||(typeof s.initial.leaderboardV1?.lastQuest==='string'&&s.initial.leaderboardV1.lastQuest!==JSON.stringify(FSGameRecords.questValue())))FSGameRecords.record('quest',FSGameRecords.questValue());
+  S.leaderboardV1.lastCollection=s.collection;S.leaderboardV1.lastQuest=JSON.stringify(FSGameRecords.questValue());try{_save();queue();}catch(e){}
+  void lbFlush(s);
+}
+function lbCollectionCheck(){
+  const s=lbSession;if(!s||!lbCurrent(s))return;
+  const value=FSLeaderboard.collectionValue(S,FSGameRecords.catalog()),fingerprint=lbFingerprint(value);
+  if(fingerprint!==s.collection){s.collection=fingerprint;FSGameRecords.record('looks',value);}
+}
+addEventListener('fs-leaderboard-record',e=>{const s=lbSession,d=e.detail;if(s&&d)lbEnqueue(s,d.type,d.value,d.clientAchievedAt);});
+window.FSLeaderboardSync=Object.freeze({
+  get state(){return {...lbView};},flush:()=>lbFlush(),
+  async readOwnRecords(){const s=lbSession;if(!s||!lbCurrent(s))return [];const snapshot=await db.collection('players/'+s.uid+'/leaderboardRecords').get();if(!lbCurrent(s))return [];return snapshot.docs.map(d=>({...d.data(),id:d.id,achievedAt:lbMillis(d.data().achievedAt),recordedAt:lbMillis(d.data().recordedAt)}));}
+});
 
 /* ---------- 統計（給管理後台看：玩了什麼、買了什麼、哪天有上線） ---------- */
 const dk=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -290,7 +374,7 @@ function ownCheck(){if(!ME||!ready||!S)return;const now=ownSet();if(ownBase){for
 /* ---------- 登入後 ---------- */
 auth.onAuthStateChanged(async user=>{
   if(regCreating)return;
-  window.FS_CLOUD_READY=false;dispatchEvent(new Event('fs-player-changing'));
+  lbStop();window.FS_CLOUD_READY=false;dispatchEvent(new Event('fs-player-changing'));
   unsubs.forEach(f=>f());unsubs=[];ready=false;clearTimeout(timer);timer=0;ME=user;
   const restored=firstAuth;firstAuth=false;
   if(!user){mask.hidden=false;loginView();fab(false);return}
@@ -321,7 +405,7 @@ function enter(user,d,isNew){
   adminRev=d.adminRev||0;ME.name=d.name||'玩家';ME.code=d.code||'';
   applyState(d.sj||'',ME.name);
   if(isNew&&d.char){S.char=d.char;try{_save()}catch(e){}stage(true);render()}
-  ready=true;window.FS_CLOUD_READY=true;lsSet(K_VER,LOGIN_VER);seen(true);ownBase=ownSet();markDay();mask.hidden=true;fab(true);
+  ready=true;window.FS_CLOUD_READY=true;lbStart(user.uid,isNew);lsSet(K_VER,LOGIN_VER);seen(true);ownBase=ownSet();markDay();mask.hidden=true;fab(true);
   if(!isNew)ref.update({lastLogin:FV.serverTimestamp()}).catch(()=>{});
   if(!S.char)pickChar(true);else toast(isNew?`歡迎來到幻想智慧星，${ME.name}！`:`歡迎回來，${ME.name}！`);
   if(!d.sj)push();
@@ -329,7 +413,7 @@ function enter(user,d,isNew){
   // 管理員修改了資料 → 自動重新讀取
   unsubs.push(ref.onSnapshot(s=>{const x=s.data();if(!x){if(ready){ready=false;outMsg='這個帳號已經被刪除，請找老師或管理員';auth.signOut()}return}
     if(x.disabled){auth.signOut();return}
-    if((x.adminRev||0)>adminRev){adminRev=x.adminRev;ME.name=x.name||ME.name;applyState(x.sj||'',ME.name);ownBase=ownSet();toast('管理員更新了你的資料');fab(true)}}));
+    if((x.adminRev||0)>adminRev){const previous=lbSession?{collection:lbSession.collection,quest:JSON.stringify(FSGameRecords.questValue())}:null;adminRev=x.adminRev;ME.name=x.name||ME.name;applyState(x.sj||'',ME.name);lbStart(user.uid,false,previous);ownBase=ownSet();toast('管理員更新了你的資料');fab(true)}}));
   // 信箱
   cleaned=false;popped=false;mailA=[];mailB=[];listenMail(ref);
   syncBroadcasts();
@@ -487,10 +571,13 @@ async function syncBroadcasts(){
   catch(e){}
 }
 function meSheet(){
+  const best=window.FSGameRecords?.personalBest()||{};
+  const metric=(type,r)=>{if(!r)return '尚無紀錄';const v=r.value;return type==='stroop'?v.score+' 分':type==='memory'?v.tries+' 次':type==='maze'?(v.durationMs/1000).toFixed(3)+' 秒':type==='quest'?v.cleared+' 關／'+v.stars+' 顆星':v.count+' 款';};
+  const personal=window.FSLeaderboard?'<details><summary>個人最佳成績</summary>'+Object.entries(FSLeaderboard.types).map(([type,name])=>'<p>'+esc(name)+'：'+esc(metric(type,best[type]))+(best[type]?.legacy?'（舊成績，原時間未記錄）':'')+'</p>').join('')+'</details>':'';
   const L=levelOf(S.exp),a=need(L),b=need(L+1);
   openSheet(head('👤 我的帳號')+`<p>暱稱：<b class="account-full-name">${esc(ME.name)}</b></p><p>帳號：<b>${esc(ME.code)}</b></p>
   <p>等級：<b class="account-level">${L}</b></p><p>本級經驗／升級所需：<b class="account-experience">${S.exp-a} / ${b-a}</b></p>
-  <p class="hint">進度會自動存到雲端。在學校或別人的電腦玩完，記得按登出。</p>
+  ${personal}<p class="hint">進度會自動存到雲端。在學校或別人的電腦玩完，記得按登出。</p>
   <button class="big" id="clLogout" style="width:100%">登出</button>`);
   document.getElementById('clLogout').onclick=async()=>{await push();try{localStorage.removeItem(skey(PL.cur))}catch(e){}closeQuiz();try{localStorage.removeItem(K_SEEN)}catch(e){}await auth.signOut()};
 }

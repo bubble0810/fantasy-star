@@ -11,6 +11,8 @@
 <script src="firebase-config.js"></script>
 <script src="nickname.js?v=20261110-home1"></script>
 <script src="festival-config.js?v=20261110-home1"></script>
+<script src="leaderboard.js?v=20261110-v1"></script>
+<link rel="stylesheet" href="home-ui.css?v=20261110-width14">
 <style>
 :root{--ink:#2e2340;--muted:#6b5b7d;--line:#e3d9ef;--bg:#f6f2fb;--accent:#c23258;--ok:#1f7a45;--warn:#b42318}
 *{box-sizing:border-box}
@@ -132,13 +134,74 @@ auth.onAuthStateChanged(async u=>{
 /* ---------- 外框 ---------- */
 function shell(){
   app.innerHTML=`<header><h1>幻想智慧星・管理後台</h1><nav>
-  <button data-t="players">玩家</button><button data-t="stat">📊 統計</button><button data-t="bc">🎁 送禮物</button><button data-t="log">操作紀錄</button></nav>
+  <button data-t="players">玩家</button><button data-t="stat">📊 統計</button><button data-t="bc">🎁 送禮物</button><button data-t="leaderboard">🏆 星空榜</button><button data-t="log">操作紀錄</button></nav>
   <div class="who">${esc(ME.email)}<button class="btn" id="lo">登出</button></div></header><main id="main"></main>`;
   app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;view()});
   $('#lo').onclick=()=>auth.signOut();view();
 }
 function view(){app.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===tab));
-  if(tab==='players')playersView();else if(tab==='stat')statView();else if(tab==='bc')bcView();else logView()}
+  if(tab==='players')playersView();else if(tab==='stat')statView();else if(tab==='bc')bcView();else if(tab==='leaderboard')leaderboardView();else logView()}
+
+/* ---------- Administrator-only leaderboard review and publication ---------- */
+let LB_ADMIN=null;
+const lbTime=v=>v&&typeof v.toMillis==='function'?Math.floor(v.toMillis()):Number.isSafeInteger(v)?v:0;
+const lbSameTimestamp=(a,b)=>a?.isEqual&&b?.toMillis?a.isEqual(b):lbTime(a)===lbTime(b);
+const lbTaipeiInput=ms=>ms?new Date(ms+8*3600000).toISOString().slice(0,16):'';
+const lbMetric=(type,v)=>type==='stroop'?v.score+' 分':type==='memory'?v.tries+' 次翻牌':type==='maze'?(v.durationMs/1000).toFixed(3)+' 秒':type==='quest'?v.cleared+' 關／'+v.stars+' 顆星':v.count+' 款造型與小屋';
+const lbTimeText=ms=>ms?new Date(ms).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}):'—';
+async function leaderboardView(){
+  const owner=ME?.uid,m=$('#main');m.innerHTML='<div class="card"><h2>星空榜管理</h2><p>正在讀取設定…</p></div>';
+  if(!window.FSLeaderboard){m.innerHTML='<div class="card">排行榜模組未載入，請確認 leaderboard.js 已上傳。</div>';return;}
+  try{
+    const [cfgSnap,pubSnap,playersSnap,eligSnap]=await Promise.all([db.doc('leaderboardConfig/current').get(),db.doc('leaderboardPublic/current').get(),db.collection('players').get(),db.collection('leaderboardEligibility').get()]);
+    if(tab!=='leaderboard'||ME?.uid!==owner||auth.currentUser?.uid!==owner)return;
+    const eligibility=new Map(eligSnap.docs.map(d=>[d.id,d.data()]));
+    LB_ADMIN={owner,config:cfgSnap.exists?cfgSnap.data():{enabled:false,startsAt:0},published:pubSnap.exists?pubSnap.data():null,players:playersSnap.docs.map(d=>({uid:d.id,...d.data()})),eligibility,preview:null};
+    const C=LB_ADMIN.config;
+    m.innerHTML=`<div class="card"><h2>星空榜管理</h2><p>請先儲存設定，讀取成績預覽，再手動發布。玩家會看到上次發布的前三名。</p>
+      <label style="display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:8px"><input style="width:18px;height:18px;min-height:18px;margin:0" type="checkbox" id="lbEnabled" ${C.enabled?'checked':''}> 開放排行榜</label>
+      <label>起算時間（台灣時間；留空表示不限）<input type="datetime-local" id="lbStartsAt" value="${lbTaipeiInput(lbTime(C.startsAt))}"></label>
+      <div class="row"><button class="btn" id="lbSave">儲存設定</button><button class="btn" id="lbPreview">讀取成績並預覽</button><button class="btn primary" id="lbPublish" disabled>發布排行榜</button></div>
+      <p id="lbStatus" role="status">上次發布：${lbTimeText(lbTime(LB_ADMIN.published?.publishedAt))}</p><div id="lbPreviewArea"></div></div>
+      <div class="card"><h2>資格與單項重置</h2><p>重置會保留歷史紀錄，只排除重置時間當下及之前的該項成績。變更後請重新預覽、發布。</p><div class="tablewrap"><table><thead><tr><th>玩家</th><th>資格</th><th>單項重置</th></tr></thead><tbody>${LB_ADMIN.players.map(p=>{const policy=eligibility.get(p.uid)||{};return `<tr><td>${esc(p.name)} · Lv.${lvOf(p.exp||0)}</td><td>${p.disabled?'帳號停用':`<button class="btn" data-lb-exclude="${esc(p.uid)}">${policy.excluded?'恢復資格':'排除資格'}</button>`}</td><td><select data-lb-type="${esc(p.uid)}">${Object.entries(FSLeaderboard.types).map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}</select><button class="btn" data-lb-reset="${esc(p.uid)}">重置此項</button></td></tr>`}).join('')}</tbody></table></div></div>`;
+    $('#lbSave').onclick=lbSaveConfig;$('#lbPreview').onclick=lbPreview;$('#lbPublish').onclick=lbPublish;
+    m.querySelectorAll('[data-lb-exclude]').forEach(b=>b.onclick=()=>lbEligibility(b.dataset.lbExclude,null));
+    m.querySelectorAll('[data-lb-reset]').forEach(b=>b.onclick=()=>{const uid=b.dataset.lbReset,select=[...m.querySelectorAll('[data-lb-type]')].find(e=>e.dataset.lbType===uid);if(confirm('確定重置此玩家的這一項榜單資格？歷史成績會保留，需在重置後重新取得成績。'))lbEligibility(uid,select.value);});
+  }catch(e){if(tab==='leaderboard')m.innerHTML=`<div class="card"><h2>星空榜管理</h2><p>無法讀取排行榜設定，請確認登入資格及新版資料庫規則。</p><p>${esc(e.code||e.message)}</p></div>`;}
+}
+function lbAssertOwner(){if(!LB_ADMIN||ME?.uid!==LB_ADMIN.owner||auth.currentUser?.uid!==LB_ADMIN.owner)throw new Error('管理員登入已變更，請重新開啟排行榜管理。');}
+async function lbSaveConfig(){
+  const button=$('#lbSave');button.disabled=true;
+  try{lbAssertOwner();const input=$('#lbStartsAt').value,startsAt=input?Date.parse(input+'+08:00'):0;if(!Number.isSafeInteger(startsAt)||startsAt<0)throw new Error('請輸入有效的台灣時間');const config={schemaVersion:1,enabled:$('#lbEnabled').checked,startsAt,updatedAt:FV.serverTimestamp()};await db.doc('leaderboardConfig/current').set(config);await log('排行榜設定','全站',JSON.stringify({enabled:config.enabled,startsAt}));await leaderboardView();toast('已儲存設定，請重新預覽後發布');}catch(e){toast('設定未儲存：'+(e.code||e.message));}finally{if(button.isConnected)button.disabled=false;}
+}
+async function lbEligibility(uid,type){
+  try{lbAssertOwner();const configRef=db.doc('leaderboardConfig/current'),policyRef=db.doc('leaderboardEligibility/'+uid);await db.runTransaction(async tx=>{const [cs,ps]=await Promise.all([tx.get(configRef),tx.get(policyRef)]),old=ps.exists?ps.data():{excluded:false,resetAt:{}},config=cs.exists?cs.data():{schemaVersion:1,enabled:false,startsAt:0};const resetAt={...(old.resetAt||{})};if(type)resetAt[type]=FV.serverTimestamp();tx.set(policyRef,{excluded:type?old.excluded===true:!old.excluded,resetAt,updatedAt:FV.serverTimestamp()});tx.set(configRef,{schemaVersion:1,enabled:config.enabled===true,startsAt:lbTime(config.startsAt),updatedAt:FV.serverTimestamp()});});await log(type?'排行榜單項重置':'排行榜資格',uid,type||'切換排除資格');await leaderboardView();toast('已更新，請重新預覽並發布');}catch(e){toast('變更失敗：'+(e.code||e.message));}
+}
+async function lbPreview(){
+  const button=$('#lbPreview');button.disabled=true;$('#lbPublish').disabled=true;
+  try{
+    lbAssertOwner();$('#lbStatus').textContent='正在讀取完整成績歷史，請稍候…';
+    const [cs,ps,es]=await Promise.all([db.doc('leaderboardConfig/current').get(),db.collection('players').get(),db.collection('leaderboardEligibility').get()]);if(!cs.exists)throw new Error('請先儲存排行榜設定');
+    const config=cs.data(),eligibility=new Map(es.docs.map(d=>[d.id,d.data()])),players=ps.docs.map(d=>{const p=d.data(),e=eligibility.get(d.id)||{};return{uid:d.id,name:p.name||'玩家',level:lvOf(p.exp||0),disabled:p.disabled===true,excluded:e.excluded===true,resetAt:Object.fromEntries(Object.entries(e.resetAt||{}).map(([k,v])=>[k,lbTime(v)]))}}),records=[];let queried=0;
+    const eligible=players.filter(p=>!p.disabled&&!p.excluded);
+    for(let i=0;i<eligible.length;i+=8){const groups=await Promise.all(eligible.slice(i,i+8).map(p=>db.collection('players/'+p.uid+'/leaderboardRecords').get()));queried+=groups.length;for(const group of groups)for(const d of group.docs){const r=d.data();records.push({...r,id:d.id,achievedAt:lbTime(r.achievedAt)||null,recordedAt:lbTime(r.recordedAt)})}}
+    lbAssertOwner();if(tab!=='leaderboard')return;
+    const now=players.reduce((n,p)=>Object.values(p.resetAt).reduce((a,v)=>Math.max(a,v),n),records.reduce((n,r)=>Math.max(n,r.recordedAt),Date.now())),result=FSLeaderboard.calculate({players,records,config:{enabled:config.enabled===true,startsAt:lbTime(config.startsAt)}},now);
+    LB_ADMIN.preview={config,result,records,players};$('#lbPublish').disabled=false;$('#lbStatus').textContent=`預覽完成：${players.length} 位玩家，${queried} 位合格玩家的成績歷史，共 ${records.length} 筆紀錄。發布前可查看六個榜單；本次為完整歷史重算。`;
+    const area=$('#lbPreviewArea');area.innerHTML='<div id="lbRankPreview"></div><h3>積分明細</h3><div id="lbPoints"></div><h3>成績歷史（最近 200 筆）</h3><div id="lbHistory"></div>';
+    FSLeaderboard.render($('#lbRankPreview'),{...result,enabled:true},'total');
+    const names=new Map(players.map(p=>[p.uid,p.name]));$('#lbPoints').innerHTML=`<div class="tablewrap"><table><thead><tr><th>玩家</th>${Object.values(FSLeaderboard.types).map(n=>`<th>${esc(n)}</th>`).join('')}<th>加權總分</th></tr></thead><tbody>${players.filter(p=>!p.disabled&&!p.excluded).map(p=>{const points=Object.keys(FSLeaderboard.types).map(k=>result.boards[k].find(r=>r.uid===p.uid)?.points||0);return `<tr><td>${esc(p.name)}</td>${points.map(n=>`<td>${n}</td>`).join('')}<td>${points.reduce((a,b)=>a+b,0)/5}</td></tr>`}).join('')}</tbody></table></div>`;
+    $('#lbHistory').innerHTML=`<div class="tablewrap"><table><thead><tr><th>玩家</th><th>項目</th><th>成績</th><th>達成時間</th><th>登錄時間</th><th>舊資料</th></tr></thead><tbody>${records.slice().sort((a,b)=>b.recordedAt-a.recordedAt).slice(0,200).map(r=>`<tr><td>${esc(names.get(r.uid)||r.uid)}</td><td>${esc(FSLeaderboard.types[r.type]||r.type)}</td><td>${esc(lbMetric(r.type,r.value))}</td><td>${lbTimeText(r.achievedAt)}</td><td>${lbTimeText(r.recordedAt)}</td><td>${r.legacy?'是':'否'}</td></tr>`).join('')}</tbody></table></div>`;
+  }catch(e){$('#lbStatus').textContent='預覽失敗：'+(e.code||e.message);LB_ADMIN.preview=null;}finally{if(button.isConnected)button.disabled=false;}
+}
+async function lbPublish(){
+  const button=$('#lbPublish');button.disabled=true;
+  try{
+    lbAssertOwner();const preview=LB_ADMIN.preview;if(!preview)throw new Error('請先讀取成績並預覽');
+    const boards=Object.fromEntries(['total',...Object.keys(FSLeaderboard.types)].map(type=>[type,preview.result.enabled?preview.result.boards[type].map(r=>({u:r.uid,n:r.name,l:r.level})):[]]));
+    const auditRef=db.collection('adminlog').doc();await db.runTransaction(async tx=>{lbAssertOwner();const ref=db.doc('leaderboardConfig/current'),latest=await tx.get(ref),config=latest.exists?latest.data():null;if(!config||!lbSameTimestamp(config.updatedAt,preview.config.updatedAt)||config.enabled!==preview.config.enabled||lbTime(config.startsAt)!==lbTime(preview.config.startsAt))throw new Error('設定或資格已變更，請重新預覽');tx.set(db.doc('leaderboardPublic/current'),{schemaVersion:1,enabled:config.enabled===true,startsAt:lbTime(config.startsAt),configUpdatedAt:config.updatedAt,publishedAt:FV.serverTimestamp(),boards});tx.set(auditRef,{at:FV.serverTimestamp(),admin:ME.email,action:'發布排行榜',target:'全站',detail:JSON.stringify({players:preview.players.length,records:preview.records.length,startsAt:lbTime(preview.config.startsAt)})});});$('#lbStatus').textContent='已發布，玩家頁面會收到更新。';toast('排行榜已發布');
+  }catch(e){$('#lbStatus').textContent='發布失敗：'+(e.code||e.message);}finally{if(button.isConnected)button.disabled=false;}
+}
 
 /* ---------- 玩家列表 ---------- */
 async function loadPlayers(){

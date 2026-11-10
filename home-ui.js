@@ -2,7 +2,6 @@
 (() => {
   'use strict';
   const esc=FSNickname.escape;
-  const rankTypes=[['total','幻想智多星'],['stroop','最佳變色王'],['memory','最佳記憶王'],['maze','最佳電流王'],['quest','最佳闖關王'],['looks','最佳造型王']];
   let rankTab='total',marketTab='stars';
   const uiOptions={hideInactiveFestival:true};
   const activeFests=()=>FESTS.filter(f=>{try{return festState(f).on}catch{return false}});
@@ -50,10 +49,17 @@
     if(marketTab==='stars')mkBind(panel);
   }
   function renderRank(panel){
-    const selected=rankTypes.find(([k])=>k===rankTab)||rankTypes[0];
-    panel.innerHTML=`<section class="rank-view"><h2>星空榜</h2><p class="rank-intro">五大單項與幻想智多星總榜，各呈現前三名。排行榜資料準備中。</p><div class="rank-tabs" role="tablist" aria-label="排行榜類別">${rankTypes.map(([k,n])=>`<button role="tab" aria-selected="${rankTab===k}" data-rank-tab="${k}">${n}</button>`).join('')}</div><div class="rank-heading"><h3>${selected[1]}</h3><span class="rank-status">尚未開放</span></div><div class="rank-table-head"><span>名次</span><span>暱稱</span><span>等級</span></div><div class="rank-top3">${[1,2,3].map(n=>`<div class="rank-person"><span class="rank-medal">${n}</span><div><b>等待榜單開放</b><small>尚無排名資料</small></div><span class="rank-level">—</span></div>`).join('')}</div><p class="hint">排名計算、起算時間與資料更新方式，將於功能開放時另行說明。</p></section>`;
-    panel.querySelectorAll('[data-rank-tab]').forEach(b=>b.onclick=()=>{rankTab=b.dataset.rankTab;renderRank(panel)});
+    if(!window.FSLeaderboard){panel.innerHTML='<section class="rank-view"><h2>星空榜</h2><p class="hint">排行榜模組未載入，請重新整理。</p></section>';return;}
+    const state=window.FSLeaderboardSync?.state||{publicStatus:'loading'},result=state.result||{enabled:false,boards:{}};
+    FSLeaderboard.render(panel,result,rankTab);
+    panel.onclick=e=>{const button=e.target.closest('[data-board]');if(button){rankTab=button.dataset.board;renderRank(panel);}};
+    const status={loading:'排行榜載入中',unavailable:'尚未開放',closed:'尚未開放',unpublished:'等待管理員發布',error:'暫時無法讀取排行榜'}[state.publicStatus];
+    const hint=panel.querySelector('.hint');if(status&&hint)hint.textContent=status;
+    const badge=panel.querySelector('.rank-status');if(badge)badge.textContent=status||'已發布';
+    if(state.publishedAt){const time=document.createElement('p');time.className='hint';time.textContent='發布時間：'+new Date(state.publishedAt).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'});panel.querySelector('.rank-view').append(time);}
+    if(state.syncStatus==='pending'||state.syncStatus==='storage-error'){const notice=document.createElement('p');notice.className='hint';notice.textContent='你的成績尚未完成同步，請稍後再試或聯絡管理員。';panel.querySelector('.rank-view').append(notice);}
   }
+  addEventListener('fs-leaderboard-updated',()=>{if(tab==='rank')renderRank(document.getElementById('panel'));});
   document.addEventListener('click',e=>{
     if(e.target.closest('[data-wallet]'))wallet();
     if(e.target.closest('[data-festival-entry]'))festivalEntry(e.target.closest('[data-festival-entry]').dataset.festivalKey);
