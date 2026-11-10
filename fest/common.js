@@ -6,6 +6,7 @@
   const embedded = q.get('embed') === '1' && parent !== window;
   const session = q.get('session');
   const trial = q.get('trial') === '1';
+  const ui=window.FS_UI||{};
   const trialPrice = Number(q.get('trialPrice')) || 50;
   let phase = 'ready', released = false, startButton, sent = false;
   let muted = false;
@@ -28,10 +29,18 @@
     },
     close() {
       if (phase === 'settling') return;
+      ui.onClose?.();
       if (embedded) send('fsGameClose', { fsClose: true });
       else location.href = '../../index.html';
     }
   };
+  function prepareResult(){
+    const result=document.querySelector(ui.result||'#resP .card,#result .modal');
+    if(!result)return;
+    if(!document.getElementById('fsResultFooter')){const p=document.createElement('p');p.id='fsResultFooter';p.hidden=true;p.innerHTML='<span id="fsStatus"></span>';result.append(p);}
+    document.querySelectorAll('#againBtn,#again').forEach(b=>b.textContent=trial?`再體驗一次（${trialPrice} 星星糖）`:'再玩一次');
+    document.querySelectorAll('#homeBtn,#out').forEach(b=>b.textContent=trial?'返回星宮體驗館':'返回活動頁');
+  }
   function status(text) { const el = document.getElementById('fsStatus'); if (el) el.textContent = text; }
   function unlock(text) {
     phase = 'result'; status(text);
@@ -41,7 +50,7 @@
   window.fsResult = () => {};
   window.fsReport = n => {
     if (sent || phase !== 'playing') return;
-    sent = true; phase = 'settling';
+    sent = true; phase = 'settling';prepareResult();
     document.getElementById('fsQuit').hidden = true;
     document.querySelectorAll('#againBtn,#again,#homeBtn,#out').forEach(b => { b.disabled = true; });
     const over = document.getElementById('fsOver'); over.hidden = false;
@@ -67,12 +76,12 @@
     const hud = document.querySelector('.hud');
     hud?.classList.add('fs-hud');
     const exit = document.createElement('button'); exit.id = 'fsExit'; exit.textContent = '× 離開'; hud.prepend(exit);
-    const time = document.getElementById('timeChip') || document.getElementById('timeN') || document.getElementById('time')?.parentElement;
+    const time = (ui.time&&document.querySelector(ui.time)) || document.getElementById('timeChip') || document.getElementById('timeN') || document.getElementById('time')?.parentElement;
     time.classList.add('fs-time'); hud.append(time);
     const sound = document.getElementById('musBtn') || document.getElementById('sound');
     sound.classList.add('fs-sound'); root.append(sound);
     const paintSound = () => { sound.textContent = muted ? '🔇' : '🔊'; sound.setAttribute('aria-label', muted ? '開啟聲音' : '關閉聲音'); sound.setAttribute('aria-pressed', String(!muted)); };
-    paintSound();
+    paintSound();ui.onMute?.(muted);
     const currency = document.querySelector('.hudR,.hr,.loot');
     currency?.classList.add('fs-currency');
     document.getElementById('exit')?.remove();
@@ -83,12 +92,10 @@
     exit.onclick = () => { if (phase === 'playing') quit.hidden = false; else FSGame.close(); };
     document.getElementById('fsStay').onclick = () => quit.hidden = true;
     document.getElementById('fsLeave').onclick = FSGame.close;
-    const result = document.querySelector('#resP .card,#result .modal');
-    const footer = document.createElement('p'); footer.id = 'fsResultFooter'; footer.hidden = true; footer.innerHTML = '<span id="fsStatus"></span>'; result.append(footer);
-    const title = result.querySelector('h1'); title.textContent = '本局結算';
-    document.querySelectorAll('#againBtn,#again').forEach(b => { b.textContent = trial ? `再體驗一次（${trialPrice} 星星糖）` : '再玩一次'; });
-    document.querySelectorAll('#homeBtn,#out').forEach(b => b.textContent = trial ? '返回星宮體驗館' : '返回活動頁');
-    const intro = document.querySelector('#startP .card,#intro .modal');
+    prepareResult();
+    const result=document.querySelector(ui.result||'#resP .card,#result .modal');
+    const title=result.querySelector('h1');if(title&&!ui.samePanel)title.textContent='本局結算';
+    const intro=document.querySelector(ui.intro||'#startP .card,#intro .modal');
     const note = document.createElement('p'); note.className = 'fs-rule'; note.textContent = `${trial ? '星宮體驗・不發正式獎勵。' : '完成遊戲才發獎。'}開始後無法暫停，中途離開不發獎。`; intro.append(note);
     const introExit = document.createElement('button'); introExit.className = 'sub btn alt'; introExit.textContent = trial ? '返回星宮體驗館' : '離開'; introExit.onclick = FSGame.close; intro.append(introExit);
     // Capture before legacy per-game listeners, including their sound/pause handlers.
@@ -98,7 +105,7 @@
         e.preventDefault(); e.stopImmediatePropagation(); muted = !muted;
         try { localStorage.setItem('fs-festival-muted', muted ? '1' : '0'); } catch {}
         for (const [ctx, out] of outputs) out.gain.gain.setTargetAtTime(muted ? 0 : .65, ctx.currentTime, .02);
-        paintSound(); return;
+        paintSound();ui.onMute?.(muted); return;
       }
       if (['homeBtn','out','againBtn','again'].includes(b.id)) {
         e.preventDefault(); e.stopImmediatePropagation();
@@ -109,7 +116,7 @@
         } else FSGame.close();
         return;
       }
-      if (['goBtn','go'].includes(b.id) && !released) {
+      if (['goBtn','go',ui.start].filter(Boolean).includes(b.id) && !released) {
         e.preventDefault(); e.stopImmediatePropagation(); if (phase !== 'ready' || window.fsQuestionsReady === false) return;
         startButton = b;
         if (embedded) { phase = 'starting'; b.disabled = true; send('fsGameStart'); }
