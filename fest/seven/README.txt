@@ -4,7 +4,7 @@
 部署位置固定為主專案的 fest/seven/；請勿新增 seven-v1 層、改名 qixi/，或把遊戲 index.html 覆蓋根目錄 index.html。
 實際素材：img/background.jpg、heart0.png～heart4.png、bridge.png、man.png、woman.png、hug.png、bird.png（全部位於 img/）。舊原圖名稱不是部署檔名。
 已完成：3-5 顆序列、每顆 650ms 展示、五鍵輸入、Combo、橋進度、人物移動、喜鵲飛行、結算、多層次合成配樂及答對／答錯音效。
-尚未完成：主站會員/次數/紙鶴入帳、跨瀏覽器實機測試、素材精修。
+主站會員、次數與紙鶴入帳已完成串接；跨瀏覽器實機試玩與素材精修可另行確認。
 
 2026-11-10 調整：
 上下兩排採同尺寸五欄排列，題目愛心與玩家按鈕逐欄對齊。
@@ -26,4 +26,10 @@ music.js：90 BPM、6/8 拍、八段旋律，約 32 秒循環。
 根目錄 node verify-seven.cjs 驗證進度、錯誤保留、靜音、重玩、離開及手機／桌面排版。
 根目錄 node render-seven-audio.cjs 輸出 artifacts/festivals/seven-music.wav，包含完整八段旋律並檢查峰值。
 主站活動鍵固定 qixi，與資料夾 seven 透過 data-game-key 對應。
-正式上架前閱讀根目錄「七夕上架檢查.txt」並執行 node verify-seven-release.cjs --release；目前尚有正式串接與獎勵設定待完成，維持 coming-soon。
+正式上架前閱讀根目錄「七夕上架檢查.txt」並執行 node verify-seven-release.cjs --release；正式次數、價格與 25～55 紙鶴獎勵已確認，狀態為 ready。
+
+2026-11-10 主頁整合定案：
+已接共用開始、結算、重玩、離開、靜音與單次回報。素材失敗禁止開始、不扣次。
+每日正式 3 次；每套男女造型各 240 紙鶴，共用小屋 300 紙鶴。
+依原本正確率、最高連擊與時間計算的 2～7 級距，線性對應為 25／31／37／43／49／55 紙鶴；遊戲進度與難度不變。
+正式活動完成才入帳；星宮體驗只展示成果，不發正式紙鶴。已完成整合測試後由共用設定設為 ready。
