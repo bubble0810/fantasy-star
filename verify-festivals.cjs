@@ -28,7 +28,7 @@ const server=http.createServer((req,res)=>{
  const browser=await chromium.launch({channel:'msedge',headless:true});
  try{
  fs.mkdirSync('artifacts/festivals',{recursive:true});
- for(const key of (process.argv.includes('--halloween')?['halloween']:process.argv.includes('--xmas')?['xmas']:['halloween','xmas','newyear','children'])){
+ for(const key of (process.argv.includes('--halloween')?['halloween']:process.argv.includes('--xmas')?['xmas']:process.argv.includes('--newyear')?['newyear']:['halloween','xmas','newyear','children'])){
   const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];
   page.on('pageerror',e=>errors.push(e.message));await page.route('https://fonts.googleapis.com/**',r=>r.abort());
   await page.goto(base+'/harness');await page.evaluate(k=>festMenu(k),key);await page.locator('#fgGo').click();
@@ -62,7 +62,7 @@ const server=http.createServer((req,res)=>{
     await page.clock.fastForward(10000);assert.equal(await frame.evaluate(()=>__dbg.G.lv),1);
     for(let n=0;n<4;n++){
       await page.clock.runFor(1400);
-      const expected=n===3?20:5;
+      const expected=n===3?50:10;
       assert.equal(await frame.evaluate(()=>__dbg.G.nians.find(n=>n.st==='run')?.hp),expected);
       for(let hit=0;hit<expected;hit++){
         await frame.evaluate(()=>{const n=__dbg.G.nians.find(n=>n.st==='run');n.z=.65;n.lane=0;n.hitT=100;__dbg.G.shake=0});await page.clock.runFor(20);
@@ -91,6 +91,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#fgFrame').count(),0);assert.equal(await page.evaluate(k=>S.fest[k].c,key),balance,'unfinished replay earns nothing');
   assert.deepEqual(errors,[],key+' browser errors');console.log('PASS',key,'HUD, timing, completion, duplicate result, replay, exit');await page.close();
  }
+ if(process.argv.includes('--newyear'))return;
  if(!process.argv.includes('--halloween')){
   for(const mode of ['missing','malformed','one','long']){
    const p=await browser.newPage({viewport:{width:320,height:740}});const failures=[];p.on('pageerror',e=>failures.push(e.message));

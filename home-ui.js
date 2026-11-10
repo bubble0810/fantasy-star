@@ -8,31 +8,33 @@
   const activeFests=()=>FESTS.filter(f=>{try{return festState(f).on}catch{return false}});
   const smallAmount=n=>n>=1e8?(Math.floor(n/1e7)/10)+'億':n>=1e4?(Math.floor(n/1e3)/10)+'萬':String(n);
   function stageActions(){
-    const active=activeFests(),f=active[0],g=f&&window.FESTIVAL_CATALOG?.[f.k];
+    const active=activeFests();
     const button=(cls,attrs,icon,label)=>`<button class="stbtn ${cls}" ${attrs}><span class="nav-icon" aria-hidden="true">${icon}</span><span class="nav-label">${label}</span></button>`;
-    const festival=f?button('event','data-festival-entry',active.length>1?'🎉':g?.ic||'🎉',active.length>1?'節慶活動':esc(f.n)):uiOptions.hideInactiveFestival?'<span class="stbtn event-placeholder" aria-hidden="true"></span>':button('event','disabled aria-label="節慶活動尚未開放"','✧','尚未開放');
-    return `<div class="stbar ${!f&&uiOptions.hideInactiveFestival?'no-event':''}">${button('quest',`id="t-quest" aria-pressed="${tab==='quest'}"`,'🗺️','闖關')}${button('tp','data-tpgo aria-label="星宮體驗館"','🏰','星宮')}${festival}${button('rank',`data-rankgo aria-pressed="${tab==='rank'}"`,'🏆','星空榜')}</div>`;
+    const festivals=active.map(f=>{const g=window.FESTIVAL_CATALOG?.[f.k];return button('event',`data-festival-entry data-festival-key="${esc(f.k)}"`,g?.ic||'🎉',esc(f.n))}).join('');
+    return `<div class="stbar"><div class="stbar-main">${button('quest',`id="t-quest" aria-pressed="${tab==='quest'}"`,'🗺️','闖關')}${button('tp','data-tpgo aria-label="星宮體驗館"','🏰','星宮')}</div><div class="stbar-events">${festivals}</div></div>`;
   }
   function updateHud(){
     const progress=document.querySelector('.hud-level'),level=document.getElementById('lv'),experience=document.getElementById('xptxt');
-    if(progress&&level&&experience){const detail=level.textContent+'｜經驗 '+experience.textContent;progress.title=detail;progress.setAttribute('aria-label',detail+'，點擊查看');progress.setAttribute('role','button');progress.setAttribute('aria-haspopup','dialog');progress.tabIndex=0;}
+    if(progress&&level&&experience){
+      const label='等級'+level.textContent.replace(/^Lv\./,''),detail=level.textContent+'｜經驗 '+experience.textContent;
+      document.querySelectorAll('.profile-level-label').forEach(e=>e.textContent=label);
+      progress.setAttribute('role','progressbar');progress.setAttribute('aria-label','升級經驗');progress.setAttribute('aria-valuemin','0');progress.setAttribute('aria-valuemax','100');progress.setAttribute('aria-valuenow',parseFloat(document.getElementById('xpbar').style.width)||0);progress.setAttribute('aria-valuetext',detail);
+      document.querySelectorAll('#hudNameSlot button').forEach(button=>{const name=button.querySelector('.profile-name')?.textContent||curName();button.title=name+'｜'+detail;button.setAttribute('aria-label',name+'，'+detail+'，點擊查看帳號詳情');button.setAttribute('aria-haspopup','dialog');});
+    }
     const star=document.getElementById('candy');if(star){star.textContent=smallAmount(S.candy||0);star.title=`${S.candy||0} 星星糖`;}
     const slot=document.getElementById('festCurrencyHud');if(!slot)return;
-    const active=activeFests().filter(f=>window.FESTIVAL_CATALOG?.[f.k]?.cur),f=active[0],g=f&&FESTIVAL_CATALOG[f.k];
-    slot.hidden=!g;
-    slot.innerHTML=g?`<span class="currency-icon" aria-hidden="true">${g.ic}</span><span>${smallAmount(S.fest?.[f.k]?.c||0)}</span>${active.length>1?`<small class="currency-more">+${active.length-1}</small>`:''}`:'';
-    slot.title=g?`${g.cur} ${S.fest?.[f.k]?.c||0}；點擊查看全部貨幣`:'';
-  }
-  function experienceDetails(){
-    const level=document.getElementById('lv')?.textContent||'',experience=document.getElementById('xptxt')?.textContent||'';
-    openSheet(head('等級與經驗')+'<div class="wallet-list xp-details"><div class="wallet-row"><span>目前等級</span><strong>'+esc(level)+'</strong></div><div class="wallet-row"><span>本級經驗／升級所需</span><strong>'+esc(experience)+'</strong></div></div>');
+    const active=activeFests().filter(f=>window.FESTIVAL_CATALOG?.[f.k]?.cur);
+    slot.hidden=!active.length;
+    slot.innerHTML=active.map(f=>{const g=FESTIVAL_CATALOG[f.k],amount=S.fest?.[f.k]?.c||0;return `<span class="currency-entry" data-currency="${esc(f.k)}" title="${esc(g.cur)} ${amount}" aria-label="${esc(g.cur)} ${amount}"><span class="currency-icon" aria-hidden="true">${g.ic}</span><span class="currency-amount">${smallAmount(amount)}</span></span>`}).join('');
+    slot.title='點擊查看全部貨幣';
   }
   function wallet(){
     const fests=Object.entries(window.FESTIVAL_CATALOG||{}).filter(([k,g])=>g.cur&&(activeFests().some(f=>f.k===k)||(S.fest?.[k]?.c||0)>0));
     openSheet(head('我的貨幣')+`<div class="wallet-list"><div class="wallet-row"><span>⭐ 星星糖</span><strong>${S.candy||0}</strong></div>${fests.map(([k,g])=>`<div class="wallet-row"><span>${g.ic} ${esc(g.cur)}</span><strong>${S.fest?.[k]?.c||0}</strong></div>`).join('')}</div><p class="hint">這裡顯示完整數量；活動貨幣的使用與到期轉換依各活動規則。</p>`);
   }
-  function festivalEntry(){
+  function festivalEntry(key){
     const fs=activeFests();if(!fs.length)return;
+    const selected=fs.find(f=>f.k===key);if(selected){festMenu(selected.k);return;}
     if(fs.length===1){festMenu(fs[0].k);return;}
     openSheet(head('當期節慶活動')+`<div class="wallet-list">${fs.map(f=>`<button class="wallet-row" data-choose-festival="${f.k}"><span>${esc(f.n)}</span><b>進入</b></button>`).join('')}</div>`);
     document.querySelectorAll('[data-choose-festival]').forEach(b=>b.onclick=()=>festMenu(b.dataset.chooseFestival));
@@ -53,13 +55,9 @@
     panel.querySelectorAll('[data-rank-tab]').forEach(b=>b.onclick=()=>{rankTab=b.dataset.rankTab;renderRank(panel)});
   }
   document.addEventListener('click',e=>{
-    if(e.target.closest('.hud-level'))experienceDetails();
     if(e.target.closest('[data-wallet]'))wallet();
-    if(e.target.closest('[data-festival-entry]'))festivalEntry();
+    if(e.target.closest('[data-festival-entry]'))festivalEntry(e.target.closest('[data-festival-entry]').dataset.festivalKey);
     if(e.target.closest('[data-rankgo]')){tab='rank';trySp=null;stage();render();}
-  });
-  document.addEventListener('keydown',e=>{
-    if(e.target.closest('.hud-level')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();experienceDetails();}
   });
   window.FSHomeUI={stageActions,updateHud,sellPanel,saleKeys,renderMarket,renderRank,options:uiOptions};
   stage();hud();

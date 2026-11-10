@@ -10,13 +10,14 @@ const completionX=+xmas.match(/completionBonus=(\d+)/)[1];
 const completionC=+children.match(/const collected=tickets;tickets\+=(\d+)/)[1];
 const goldChance=+halloween.match(/GOLD_CHANCE=([\d.]+)/)[1];
 const bigHitMax=+newyear.match(/else\{const n=rint\(0,(\d+)\)/)[1];
+const [,bigHits,smallHits]=newyear.match(/hp:kind==='big'\?(\d+):(\d+)/).map(Number);
 let seed=1907;function random(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/2**32}
 const int=(lo,hi)=>lo+Math.floor(random()*(hi-lo+1));
 function ordinaryBalloon(){const r=random();return r<.45?0:r<.95?1:2}
 function rainbow(){const r=random();return r<.6?3:r<.9?4:5}
 function sample(k,advanced=false){
  if(k==='halloween')return Array.from({length:12},()=>int(1,5)).reduce((a,b)=>a+b,0)+(random()<goldChance&&random()<.6?10:0);
- if(k==='newyear')return 16+15+Array.from({length:20},()=>int(0,bigHitMax)).reduce((a,b)=>a+b,0)+int(5,10);
+ if(k==='newyear')return 16+3*smallHits+Array.from({length:bigHits},()=>int(0,bigHitMax)).reduce((a,b)=>a+b,0)+int(5,10);
  if(k==='xmas'){
    let small=0,medium=0;
    for(let i=0;i<(advanced?10:7);i++)random()<modeChances[advanced?1:0]?medium++:small++;
@@ -41,3 +42,6 @@ for(const [label,chances] of [['新手',[.15,.35,.5]],['一般',[.5,.3,.2]],['�
  const g=games.duanwu,mean=chances.reduce((sum,p,i)=>sum+p*[55,35,25][i],0),daily=mean*g.runs,cost=g.look*2+g.room;
  console.log(`端午${label}（名次機率假設 ${chances.join('/')}，非玩家實測）：每場 ${mean.toFixed(1)}，每日 ${daily.toFixed(1)}，全套 ${cost}，約 ${Math.ceil(cost/daily)} 天`);
 }
+
+// Qixi income examples are planning assumptions, not observed player results.
+for(const [label,earned] of [['新手假設',25],['一般假設',43],['熟練假設',55]]){const g=games.qixi,cost=g.look*2+g.room,daily=earned*g.runs;console.log(`七夕${label}（非玩家實測）：每場 ${earned}，每日 ${daily}，男女全套 ${cost}，約 ${Math.ceil(cost/daily)} 天`)}

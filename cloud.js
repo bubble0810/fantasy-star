@@ -366,10 +366,11 @@ function fab(on){
   if(localName)localName.hidden=!!on;if(guestMail)guestMail.hidden=!!on;
   if(!on)return;
   const n=MAIL.filter(m=>live(m)&&(isGift(m)||!m.read)).length,name=ME&&ME.name||'';
-  fabEl.innerHTML=`<button id="clMailBtn" aria-label="信箱${n?'，'+n+' 封未處理信件':''}"><span aria-hidden="true">✉</span><span>信箱</span>${n?`<b class="dot">${n>99?'99+':n}</b>`:''}</button><button id="clMeBtn" title="${esc(name)}" aria-label="我的帳號：${esc(name)}"><span>${esc(name)}</span></button>`;
+  fabEl.innerHTML=`<button id="clMailBtn" aria-label="信箱${n?'，'+n+' 封未處理信件':''}"><span aria-hidden="true">✉</span><span>信箱</span>${n?`<b class="dot">${n>99?'99+':n}</b>`:''}</button><button id="clMeBtn" title="${esc(name)}" aria-label="我的帳號：${esc(name)}"><span class="profile-level-label">等級1</span><span class="profile-name">${esc(name)}</span></button>`;
   const mail=document.getElementById('clMailBtn'),me=document.getElementById('clMeBtn');
   document.getElementById('hudNameSlot')?.appendChild(me);document.getElementById('hudMailSlot')?.appendChild(mail);
   mail.onclick=mailbox;me.onclick=meSheet;
+  window.FSHomeUI?.updateHud();
 }
 
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -486,7 +487,9 @@ async function syncBroadcasts(){
   catch(e){}
 }
 function meSheet(){
+  const L=levelOf(S.exp),a=need(L),b=need(L+1);
   openSheet(head('👤 我的帳號')+`<p>暱稱：<b class="account-full-name">${esc(ME.name)}</b></p><p>帳號：<b>${esc(ME.code)}</b></p>
+  <p>等級：<b class="account-level">${L}</b></p><p>本級經驗／升級所需：<b class="account-experience">${S.exp-a} / ${b-a}</b></p>
   <p class="hint">進度會自動存到雲端。在學校或別人的電腦玩完，記得按登出。</p>
   <button class="big" id="clLogout" style="width:100%">登出</button>`);
   document.getElementById('clLogout').onclick=async()=>{await push();try{localStorage.removeItem(skey(PL.cur))}catch(e){}closeQuiz();try{localStorage.removeItem(K_SEEN)}catch(e){}await auth.signOut()};

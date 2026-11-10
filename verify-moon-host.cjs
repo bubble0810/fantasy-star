@@ -6,7 +6,7 @@ const root=__dirname,prefix='/FS-moon/';
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const catalog={window:{}};vm.runInNewContext(read('festival-config.js'),catalog);const config=catalog.window.FESTIVAL_CATALOG.moon;
 assert.deepEqual([config.status,config.runs,config.look,config.room,config.cur,config.home,config.lk],['ready',3,240,300,'月餅','SP07','SP07']);
-for(const file of ['index.html','admin.html'])assert(read(file).includes('festival-config.js?v=20261110-moon-integration1'));
+const versions=['index.html','admin.html'].map(file=>read(file).match(/festival-config\.js\?v=([^"']+)/)?.[1]);assert(versions[0]&&versions[0]===versions[1]);
 const main=read('index.html');assert(main.includes("MSP07:'moon',FSP07:'moon'"));assert(main.includes("{id:'SP07',n:'中秋賞月小屋'"));
 for(const file of ['outfits/MSP07.webp','outfits/FSP07.webp','rooms/SP07.webp'])assert(fs.existsSync(path.join(root,file)));
 const harness=`<!doctype html><meta charset="utf-8"><script>
@@ -56,7 +56,7 @@ const server=http.createServer((req,res)=>{const pathname=new URL(req.url,'http:
   for(const dependency of ['img/rabbits-alpha-v2.png','music.js']){await reset();await page.route('**/fest/moon/'+dependency+'*',r=>r.abort());await page.locator('#fgGo').click();f=await attached();await f.locator('#loadStatus').filter({hasText:'素材載入失敗'}).waitFor();assert(await f.locator('#go').isDisabled());assert.equal(await page.evaluate(()=>S.fest.moon.left),3);await f.getByRole('button',{name:'離開',exact:true}).click();await page.locator('#fgFrame').waitFor({state:'detached'});await page.unroute('**/fest/moon/'+dependency+'*');}
   assert.deepEqual(errors,[]);console.log('PASS: necessary dependency failures block start without charging; repository-prefix paths work; no real player/cloud writes.');
   // One actual homepage + admin smoke check; keep the wider integration suite separate.
-  const mockMatch=read('verify-integration.cjs').match(/const mockFirebase=`([\s\S]*?)`;/);assert(mockMatch);
+  const mockMatch=[null,read('test-fixtures/firebase.js')];
   const context=await browser.newContext({viewport:{width:390,height:844}});
   await context.route('https://**/*',r=>{const u=r.request().url();if(u.includes('firebase-app-compat'))return r.fulfill({contentType:'text/javascript',body:mockMatch[1]});if(u.includes('firebase-'))return r.fulfill({contentType:'text/javascript',body:''});return r.abort();});
   await context.addInitScript(()=>{localStorage.setItem('fs-login-ver','2026-11-08');localStorage.setItem('fs-last-seen',String(Date.now()));localStorage.setItem('fs-festival-muted','1');});

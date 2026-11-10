@@ -35,6 +35,7 @@ const url = 'file:///' + path.resolve('fest/seven/index.html').replaceAll('\\', 
     assert.equal(await page.evaluate(() => QixiMusic.playing), false, 'Music stops at completion');
     assert(await page.locator('#again').isVisible());
     await page.locator('#again').click();
+    await page.locator('#start:enabled').waitFor();await page.locator('#start').click();
     assert.equal(await page.evaluate(() => window.eval('progress')), 0);
     assert(await page.evaluate(() => QixiMusic.playing), 'Replay restarts music');
     console.log('PASS: seven consecutive rounds reach 8/18/30/44/60/78/100%; completion and replay music lifecycle');
@@ -49,7 +50,7 @@ const url = 'file:///' + path.resolve('fest/seven/index.html').replaceAll('\\', 
     assert.equal(await page.evaluate(() => combo), 0, 'Mistake resets streak');
     await page.clock.runFor(6000); await answer();
     assert.equal(await page.evaluate(() => window.eval('progress')), 26, 'After a mistake the next success adds 8%');
-    await page.locator('#sound').click();
+    await page.locator('.fs-sound').click();
     assert.equal(await page.evaluate(() => soundOn), true);
     console.log('PASS: mistakes do not deduct progress; next success adds 8%; muted start and unmute work');
 
@@ -72,7 +73,7 @@ const url = 'file:///' + path.resolve('fest/seven/index.html').replaceAll('\\', 
       let stopped = false; const stop = QixiMusic.stop;
       QixiMusic.stop = () => { stop(); stopped = !QixiMusic.playing; };
       window.confirm = () => true;
-      document.getElementById('exit').click();
+      document.getElementById('fsExit').click();document.getElementById('fsLeave').click();
       return stopped;
     });
     assert(stopped, 'Music stops before navigating away');
