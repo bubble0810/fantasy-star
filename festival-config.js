@@ -74,7 +74,10 @@
     "title": "心心相印",
     "cur": "紙鶴",
     "ic": "💞",
-    "status": "coming-soon",
+    "runs": 3,
+    "look": 240,
+    "room": 300,
+    "status": "ready",
     "url": "fest/seven/index.html",
     "home": "SP06",
     "lk": "SP06"

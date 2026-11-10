@@ -617,6 +617,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
+<link rel="stylesheet" href="home-ui.css?v=20261110-home1">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -628,16 +629,22 @@ body{padding:0!important;background:transparent!important;background-image:none!
     </div>
   </header>
 
-  <div class="stagewrap" id="stagewrap"><div class="stage" id="stage"></div><nav class="tabs" role="tablist">
-    <button role="tab" id="t-wardrobe" aria-selected="false">衣櫥</button>
-    <button role="tab" id="t-room" aria-selected="false">房間</button>
-    <button role="tab" id="t-home" aria-selected="false">家園</button>
-    <button role="tab" id="t-shop" aria-selected="false">商店</button>
-  </nav><div class="hud">
-      <div class="chip"><span class="lvbadge" id="lv">Lv.1</span><div><div class="bar"><i id="xpbar"></i></div><div class="exptxt" id="xptxt"></div></div></div>
-      <button class="chip pchip" id="pbtn" title="切換玩家"><span id="pname0">玩家</span></button>
-      <div class="chip candy" title="星星糖"><span id="candyIco"></span><span id="candy">0</span></div>
-    </div></div>
+  <div class="stagewrap" id="stagewrap">
+    <div class="hud" id="playerHud" aria-label="玩家資訊">
+      <div class="hud-cell" id="hudNameSlot"><button class="chip pchip" id="pbtn" title="玩家帳號"><span id="pname0">玩家</span></button></div>
+      <div class="hud-cell hud-level"><span class="lvbadge" id="lv">Lv.1</span><div class="bar"><i id="xpbar"></i></div><div class="exptxt" id="xptxt" aria-label="經驗值"></div></div>
+      <button class="hud-cell hud-money" data-wallet aria-label="查看完整貨幣數量"><span class="candy"><span id="candyIco"></span><span id="candy">0</span></span><span id="festCurrencyHud" hidden></span></button>
+      <div class="hud-cell" id="hudMailSlot"><button id="hudMailGuest" disabled title="登入後使用信箱"><span aria-hidden="true">✉</span><span>信箱</span></button></div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <nav class="tabs" role="tablist" aria-label="主功能">
+      <button role="tab" id="t-wardrobe" aria-selected="false">衣櫥</button>
+      <button role="tab" id="t-room" aria-selected="false">房間</button>
+      <button role="tab" id="t-home" aria-selected="false">家園</button>
+      <button role="tab" id="t-market" aria-selected="false">市場</button>
+      <button role="tab" id="t-shop" aria-selected="false">商城</button>
+    </nav>
+  </div>
   <div class="ministage" id="ministage" hidden><button class="mshide" id="mshide" aria-label="收起小視窗">－</button><div id="msin"></div></div>
 
 
@@ -651,7 +658,8 @@ body{padding:0!important;background:transparent!important;background-image:none!
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="festival-config.js?v=20261110-moon-integration1"></script>
+<script src="nickname.js?v=20261110-home1"></script>
+<script src="festival-config.js?v=20261110-home1"></script>
 <script>
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -1942,11 +1950,21 @@ function plantState(p){if(!p)return null;const S0=SEEDS.find(s=>s.k===p.k),dur=S
 const fmtLeft=ms=>{const m=Math.ceil(ms/MIN);return m>=60?`${Math.floor(m/60)} 小時 ${m%60} 分`:`${m} 分鐘`};
 function petHunger(p){return Math.max(0,p.h-(Date.now()-p.hT)/HUNGER_MS)}
 function setHunger(p,v){p.h=Math.max(0,Math.min(100,v));p.hT=Date.now()}
-function petLevel(p){return 1+Math.floor(p.aff/50)}
+function petLevel(p){return Math.min(10,1+Math.floor(Math.max(0,p.aff||0)/50))}
 function petTick(p){
   const now=Date.now();if(!p.gT)p.gT=now;
-  while(now-p.gT>=GIFT_EVERY){p.gT+=GIFT_EVERY;const hAt=Math.max(0,p.h-(p.gT-p.hT)/HUNGER_MS);if(hAt>20&&p.gifts<3)p.gifts++}
+  // Existing saved gifts remain individual items; they are never multiplied retroactively.
+  if(!Number.isInteger(p.giftTrips))p.giftTrips=Math.min(3,Math.max(0,p.gifts||0));
+  const elapsed=Math.floor((now-p.gT)/GIFT_EVERY),from=p.gT;
+  if(elapsed<=0)return;
+  p.gT+=elapsed*GIFT_EVERY;
+  for(let i=0;i<elapsed&&p.giftTrips<3;i++){
+    const time=from+(i+1)*GIFT_EVERY,hAt=Math.max(0,p.h-(time-p.hT)/HUNGER_MS);
+    if(hAt<=20)break;
+    p.gifts=(p.gifts||0)+petLevel(p);p.giftTrips++;
+  }
 }
+
 function plotSVG(p){
   const st=plantState(p);let s=`<ellipse cx="50" cy="78" rx="42" ry="14" fill="#8b5a3a"/><ellipse cx="50" cy="74" rx="38" ry="11" fill="#a8744f"/>`;
   if(!st)return `<svg viewBox="0 0 100 92">${s}<path d="M44,70L56,70M50,64L50,76" stroke="#d9b48f" stroke-width="3" stroke-linecap="round"/></svg>`;
@@ -2043,7 +2061,7 @@ function playerSheet(){
   <div class="backup"><b>備份碼</b><small>把「${curName()}」的進度變成一串文字。複製後貼到 LINE 記事本或手機備忘錄保存；換瀏覽器、換裝置或存檔不見時，貼回來就能恢復。</small>
     <div class="petacts"><button class="act buy" id="bkmake">產生備份碼</button><button class="act water" id="bkload">貼上備份碼恢復</button></div><div id="bkbox"></div></div>
   <div class="reset"><b>清除遊戲紀錄、重新開始</b><small>清除「${curName()}」的所有進度（等級、星星糖、服裝、房間、花園、寵物、闖關星星），從頭開始玩。</small><button class="act ghost2" id="rst">清除並重新開始</button><div id="rstbox"></div></div>
-  ${PL.list.length<6?`<form id="newp" class="newp"><input id="pname" maxlength="10" placeholder="新玩家的名字" required><button class="act buy" type="submit">新增玩家</button></form>`:'<p class="hint">最多 6 位玩家。</p>'}`);
+  ${PL.list.length<6?`<form id="newp" class="newp"><input id="pname" maxlength="24" placeholder="新玩家的名字" required><button class="act buy" type="submit">新增玩家</button></form>`:'<p class="hint">最多 6 位玩家。</p>'}`);
   document.querySelectorAll('[data-use]').forEach(b=>b.onclick=()=>{save();PL.cur=b.dataset.use;savePL();loadS(PL.cur);chap=Math.min(8,Math.floor((S.maxLv||0)/12));closeQuiz();stage(true);toast(`歡迎回來，${curName()}！`);if(!S.char)pickChar(true)});
   document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const x=PL.list.find(y=>y.id===b.dataset.del);$('#delbox').innerHTML=`<div class="fb no"><b>確定刪除「${x.name}」？</b>這位玩家的所有進度都會消失，無法復原。<div class="petacts" style="margin-top:8px"><button class="act ghost2" id="dno">取消</button><button class="act buy" id="dyes">確定刪除</button></div></div>`;
     $('#dno').onclick=()=>$('#delbox').innerHTML='';$('#dyes').onclick=()=>{PL.list=PL.list.filter(y=>y.id!==x.id);try{localStorage.removeItem(skey(x.id))}catch(e){}savePL();playerSheet()}});
@@ -2055,7 +2073,7 @@ function playerSheet(){
       $('#bkyes').onclick=()=>{try{localStorage.setItem(skey(PL.cur),JSON.stringify(d.s))}catch(e){}loadS(PL.cur);if(!STORAGE_OK)Object.assign(S,d.s);chap=Math.min(8,Math.floor((S.maxLv||0)/12));closeQuiz();stage(true);toast('進度恢復成功！')}}};
   $('#rst').onclick=()=>{$('#rstbox').innerHTML=`<div class="fb no"><b>確定要清除「${curName()}」的遊戲紀錄嗎？</b>清除後無法復原。<div class="petacts" style="margin-top:8px"><button class="act ghost2" id="rno">取消</button><button class="act buy" id="ryes">確定清除</button></div></div>`;
     $('#rno').onclick=()=>$('#rstbox').innerHTML='';$('#ryes').onclick=()=>{try{localStorage.removeItem(skey(PL.cur))}catch(e){}const me=PL.list.find(x=>x.id===PL.cur);if(me){delete me.exp;delete me.at;delete me.char}savePL();loadS(PL.cur);chap=0;tab='quest';closeQuiz();stage(true);toast('已清除，重新開始囉！');pickChar(true)}};
-  const f=$('#newp');if(f)f.onsubmit=e=>{e.preventDefault();const n=$('#pname').value.trim();if(!n)return;save();const id='p'+Date.now();PL.list.push({id,name:n});PL.cur=id;savePL();loadS(id);closeQuiz();stage(true);pickChar(true)};
+  const f=$('#newp');if(f)f.onsubmit=e=>{e.preventDefault();const n=$('#pname').value;const issue=FSNickname.error(n);if(issue){toast(issue);return;}save();const id='p'+Date.now();PL.list.push({id,name:n});PL.cur=id;savePL();loadS(id);closeQuiz();stage(true);pickChar(true)};
 }
 const lvCost=k=>Math.min(100*k,600);
 const need=L=>{let t=0;for(let k=1;k<L;k++)t+=lvCost(k);return t};
@@ -2078,9 +2096,10 @@ function hud(){
   const L=levelOf(S.exp),a=need(L),b=need(L+1);
   $('#lv').textContent='Lv.'+L;
   $('#xpbar').style.width=((S.exp-a)/(b-a)*100).toFixed(1)+'%';
-  $('#xptxt').textContent=`經驗 ${S.exp-a} / ${b-a}`;
+  $('#xptxt').textContent=`${S.exp-a} / ${b-a}`;$('#xptxt').title=`經驗 ${S.exp-a} / ${b-a}`;
   $('#candy').textContent=S.candy;
-  $('#pname0').textContent=curName();
+  const name=document.getElementById('pname0');if(name){name.textContent=curName();name.title=curName();}
+  window.FSHomeUI?.updateHud();
 }
 function stBadge(){try{if(!hwOn())return '';const H=hwS();return `<button class="stbadge" data-hwgo>🎃 南瓜燈夜巡<small>${H.run?'進行中':'剩 '+H.left+' 次'}</small></button>`}catch(e){return ''}}
 function stage(anim){
@@ -2094,7 +2113,7 @@ function stage(anim){
     fig=`<image href="${src}" x="${W0/2-W2/2}" y="${FOOT-H2}" width="${W2}" height="${H2}"/>`;label=e.special.n}
   else{const Hf=BASE_H[ch]*K,vh=B.H+290,vw=B.W+520,h=Hf*vh/B.H,w=h*vw/vh,y0=FOOT-h*(B.floor+240)/vh;fw=w*.4;
     fig=`<svg x="${W0/2-w/2}" y="${y0}" width="${w}" height="${h}" viewBox="${vb3(ch,'all')}">${ONLY_SETS?plainDoll(ch):doll3(ch,e,'main')}</svg>`;label=ONLY_SETS?'基本服':(e.top.set||e.top.n)}
-  $('#stage').innerHTML=`<svg viewBox="0 0 ${W0} ${H0}" role="img" aria-label="${R.n}裡${spi?'穿著'+label+'的':'的'}${B.n}角色">${bg}<ellipse cx="${W0/2}" cy="${FOOT-2}" rx="${Math.max(48,fw*.42)}" ry="9" fill="#3b2853" opacity=".22"/><g class="fig">${fig}</g></svg><div class="tag"><b>${label}</b><span>· ${R.n}</span></div><div class="stbar"><button class="stbtn quest" id="t-quest" aria-pressed="${tab==='quest'}">🗺️ 闖關</button><div class="fests">${stBadge()}</div><button class="stbtn tp" data-tpgo aria-label="星宮體驗館">🏰 星宮</button></div>`;
+  $('#stage').innerHTML=`<svg viewBox="0 0 ${W0} ${H0}" role="img" aria-label="${R.n}裡${spi?'穿著'+label+'的':'的'}${B.n}角色">${bg}<ellipse cx="${W0/2}" cy="${FOOT-2}" rx="${Math.max(48,fw*.42)}" ry="9" fill="#3b2853" opacity=".22"/><g class="fig">${fig}</g></svg><div class="tag"><b>${label}</b><span>· ${R.n}</span></div>${window.FSHomeUI?FSHomeUI.stageActions():''}`;
   {const m=$('#msin');if(m){const sv=$('#stage svg');m.innerHTML=sv?sv.outerHTML.replace(/viewBox="[^"]*"/,'viewBox="190 60 220 330" preserveAspectRatio="xMidYMid slice"'):''}}
   if(anim){const el=$('#stage');el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}
 }
@@ -2124,7 +2143,7 @@ const slotChips=(cur,attr,count)=>`<div class="filters">${slotsFor(S.char||'f').
 function render(){
   hud();
   {const ks=slotsFor(S.char||'f').map(x=>x[0]);if(!ks.includes(wSlot))wSlot=ks.includes('outfit')?'outfit':'top';if(!ks.includes(shopSlot))shopSlot=ks.includes('outfit')?'outfit':'top'}
-  for(const k of ['wardrobe','room','home','shop']){const b=$('#t-'+k);if(b)b.setAttribute('aria-selected',tab===k)}{const q=$('#t-quest');if(q)q.setAttribute('aria-pressed',tab==='quest')}
+  for(const k of ['wardrobe','room','home','market','shop']){const b=$('#t-'+k);if(b)b.setAttribute('aria-selected',tab===k)}{const q=$('#t-quest');if(q)q.setAttribute('aria-pressed',tab==='quest');const r=document.querySelector('[data-rankgo]');if(r)r.setAttribute('aria-pressed',tab==='rank')}
   const p=$('#panel');const L=levelOf(S.exp);uidN=0;
   if(tab==='quest'){
     p.innerHTML=mapHTML()+`<h2>自由練習 <span class="hint">（不限次數，隨時賺糖果）</span></h2>
@@ -2213,6 +2232,8 @@ function render(){
     const to=$('#tryoff');if(to)to.onclick=()=>{trySp=null;stage(true);render()};
   }
   if(tab==='home')renderHome(p,L);
+  if(tab==='market')FSHomeUI.renderMarket(p,L);
+  if(tab==='rank')FSHomeUI.renderRank(p);
   if(tab==='room'){
     const mine=HOMES.filter(h=>(S.homes||[]).includes(h.id));
     p.innerHTML=`<div class="fh"><h2>我的小屋 <span class="hint">（${mine.length}/${HOMES.filter(h=>h.img).length} 間）</span></h2><button class="act buy" id="godecor">去找裝潢商人</button></div><p class="hint">點「搬進去」就能換房間背景。想要新的小屋，到商店找裝潢商人購買。</p>
@@ -2256,6 +2277,7 @@ function diceState(){const today=new Date().toDateString();if(!S.dice||S.dice.da
 function dieSVG(n){const P={1:[[50,50]],2:[[28,28],[72,72]],3:[[26,26],[50,50],[74,74]],4:[[28,28],[72,28],[28,72],[72,72]],5:[[26,26],[74,26],[50,50],[26,74],[74,74]],6:[[28,24],[72,24],[28,50],[72,50],[28,76],[72,76]]}[n];
   return `<svg viewBox="0 0 100 100" aria-label="${n} 點"><rect x="6" y="6" width="88" height="88" rx="20" fill="#fff" stroke="#e5d8f2" stroke-width="4"/>${P.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="${n===1?12:9}" fill="${n===1?'#e2335b':'#3b2853'}"/>`).join('')}</svg>`}
 function renderHome(p,L){
+  if(!['garden','pets','dice'].includes(homeSub))homeSub='garden';
   S.pets.forEach(petTick);
   while(S.plots.length<S.plotN)S.plots.push(null);
   let body='';
@@ -2278,8 +2300,8 @@ function renderHome(p,L){
     <div class="petbox"><div class="petpic ${mood==='happy'?'bounce':''}">${petSVG(def,mood)}</div>
       <div class="petinfo"><b>${def.n} <small>Lv.${lvp}</small></b>
       <label>飽足度 <span class="pbar"><i style="width:${h.toFixed(0)}%;background:${h<25?'#f08aa0':'var(--mint)'}"></i></span></label>
-      <label>親密度 <span class="pbar"><i style="width:${(P.aff%50)*2}%;background:var(--rose)"></i></span></label>
-      <p class="hint">${h<25?`${def.n}肚子好餓，餓著的時候不會帶禮物回來。`:`吃飽的${def.n}每 30 分鐘會帶一個「${def.gift}」回來（最多存 3 個），親密度越高賣得越貴。`}</p>
+      <label>${lvp>=10?'親密度（已滿級）':'親密度'} <span class="pbar"><i style="width:${lvp>=10?100:(P.aff%50)*2}%;background:var(--rose)"></i></span></label>
+      <p class="hint">${h<25?`${def.n}肚子好餓，餓著的時候不會帶禮物回來。`:`吃飽的${def.n}每 30 分鐘會帶回 ${lvp} 個「${def.gift}」（最多暫存 3 次），目前累積 ${P.gifts||0} 個；親密度越高賣得越貴。`}</p>
       <div class="petacts"><button class="act buy" data-feed ${S.candy<10?'disabled':''}>餵食 ${mini}10</button><button class="act wear" data-play ${canPlay?'':'disabled'}>${canPlay?'陪牠玩':'休息中'}</button><button class="act water" data-gift ${P.gifts?'':'disabled'}>收禮物 ×${P.gifts}</button></div></div></div>
     <h2>領養新寵物</h2><div class="adopt">${PETS.filter(d=>!d.hide&&!S.pets.some(x=>x.k===d.k)).sort((a,b)=>a.lv-b.lv).map(d=>`<div class="ad ${L<d.lv?'locked':''}">${petSVG(d,'normal')}<b>${d.n}</b><small>會帶回：${d.gift}</small><button class="act buy" data-adopt="${d.k}" ${L<d.lv||S.candy<d.cost?'disabled':''}>${L<d.lv?'Lv.'+d.lv+' 解鎖':mini+d.cost}</button></div>`).join('')||'<p class="hint">所有寵物都領養了！</p>'}</div>`;
   }
@@ -2298,7 +2320,9 @@ function renderHome(p,L){
     ${items.length?`<div class="bag">${items.map(([k,n])=>`<div class="bi"><b class="bin">${bagIco(k)}${k}</b><small>×${n} · 每個 ${sellPrice(k)} 糖</small><div class="petacts"><button class="act buy" data-sell="${k}">賣 1 個</button><button class="act wear" data-sellall="${k}">全賣 +${sellPrice(k)*n}</button></div></div>`).join('')}</div><button class="big" data-sellevery>全部賣掉 +${total} 糖</button>`:'<p class="hint">背包空空的。去花園收成，或是收寵物的禮物吧！</p>'}`;
   }
   const bagN=Object.values(S.bag).reduce((a,b)=>a+b,0),gifts=S.pets.reduce((a,x)=>a+x.gifts,0),ready=S.plots.filter(pl=>pl&&plantState(pl).ready).length;
-  p.innerHTML=`<h2>我的家園</h2><div class="sub"><button aria-pressed="${homeSub==='garden'}" data-hs="garden">花園${ready?` <span class="dot">${ready}</span>`:''}</button><button aria-pressed="${homeSub==='pets'}" data-hs="pets">寵物${gifts?` <span class="dot">${gifts}</span>`:''}</button><button aria-pressed="${homeSub==='dice'}" data-hs="dice">幸運骰子${diceState().free?` <span class="dot">${diceState().free}</span>`:''}</button><button aria-pressed="${homeSub==='market'}" data-hs="market">星星市場</button><button aria-pressed="${homeSub==='sell'}" data-hs="sell">收購商人${bagN?` <span class="dot">${bagN}</span>`:''}</button></div>${body}`;
+  if(homeSub==='garden')body+=FSHomeUI.sellPanel('flowers');
+  if(homeSub==='pets')body+=FSHomeUI.sellPanel('gifts');
+  p.innerHTML=`<h2>我的家園</h2><div class="sub home-local-tabs"><button aria-pressed="${homeSub==='garden'}" data-hs="garden">花園${ready?` <span class="dot">${ready}</span>`:''}</button><button aria-pressed="${homeSub==='pets'}" data-hs="pets">寵物${gifts?` <span class="dot">${gifts}</span>`:''}</button><button aria-pressed="${homeSub==='dice'}" data-hs="dice">幸運骰子</button></div>${body}`;
   p.querySelectorAll('[data-hs]').forEach(b=>b.onclick=()=>{homeSub=b.dataset.hs;render()});
   if(homeSub==='market')mkBind(p);
   const rb=p.querySelector('#roll');if(rb)rb.onclick=()=>{const D=diceState();if(!D.free&&!D.bonus)return;rb.disabled=true;
@@ -2318,15 +2342,15 @@ function renderHome(p,L){
   const P=S.pets[S.pet]||S.pets[0];
   const fd=p.querySelector('[data-feed]');if(fd)fd.onclick=()=>{if(S.candy<10)return;S.candy-=10;setHunger(P,petHunger(P)+35);P.aff+=3;P.happyT=Date.now();save();render()};
   const pl=p.querySelector('[data-play]');if(pl)pl.onclick=()=>{P.pT=Date.now();P.aff+=8;setHunger(P,petHunger(P)-8);P.happyT=Date.now();save();toast('玩得好開心！親密度 +8');render()};
-  const gf=p.querySelector('[data-gift]');if(gf)gf.onclick=()=>{const d=PETS.find(x=>x.k===P.k);const n=P.gifts;bagAdd(d.gift,n);P.gifts=0;P.aff+=n;save();toast(`收到 ${n} 個${d.gift}！`);render()};
+  const gf=p.querySelector('[data-gift]');if(gf)gf.onclick=()=>{const d=PETS.find(x=>x.k===P.k);const n=P.gifts||0,trips=Number.isInteger(P.giftTrips)?P.giftTrips:Math.min(3,n);bagAdd(d.gift,n);P.gifts=0;P.giftTrips=0;P.aff+=trips;save();toast(`收到 ${n} 個${d.gift}！`);render()};
   p.querySelectorAll('[data-adopt]').forEach(b=>b.onclick=()=>{const d=PETS.find(x=>x.k===b.dataset.adopt);if(S.candy<d.cost||L<d.lv)return;S.candy-=d.cost;S.pets.push({k:d.k,h:80,hT:Date.now(),aff:0,gT:Date.now(),gifts:0,pT:0});S.pet=S.pets.length-1;save();toast(`歡迎${d.n}加入家園！`);render()});
-  const sell=(k,n)=>{n=Math.min(n,S.bag[k]||0);const g=sellPrice(k)*n;S.bag[k]-=n;if(!S.bag[k])delete S.bag[k];S.candy+=g;return g};
+  const sell=(k,n)=>{n=Math.max(0,Math.min(Math.floor(Number(n)||0),S.bag[k]||0));const g=sellPrice(k)*n;S.bag[k]-=n;if(!S.bag[k])delete S.bag[k];S.candy+=g;return g};
   p.querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>{const g=sell(b.dataset.sell,1);save();toast(`賣出，獲得 ${g} 星星糖`);render()});
   p.querySelectorAll('[data-sellall]').forEach(b=>b.onclick=()=>{const k=b.dataset.sellall,g=sell(k,S.bag[k]);save();toast(`賣出，獲得 ${g} 星星糖`);render()});
-  const se=p.querySelector('[data-sellevery]');if(se)se.onclick=()=>{let g=0;Object.keys(S.bag).forEach(k=>g+=sell(k,S.bag[k]));save();toast(`全部賣出，獲得 ${g} 星星糖！`);render()};
+  p.querySelectorAll('[data-sellgroup]').forEach(b=>b.onclick=()=>{let g=0;FSHomeUI.saleKeys(b.dataset.sellgroup).forEach(k=>g+=sell(k,S.bag[k]||0));save();toast(`出售完成，獲得 ${g} 星星糖！`);render()});
 }
-setInterval(()=>{if(tab==='home'&&$('#modal').hidden)render()},15000);
-['wardrobe','room','home','shop'].forEach(k=>$('#t-'+k).onclick=()=>{tab=k;if(trySp&&k!=='shop'){trySp=null;stage()}render()});
+setInterval(()=>{if(['home','market'].includes(tab)&&$('#modal').hidden)render()},15000);
+['wardrobe','room','home','market','shop'].forEach(k=>$('#t-'+k).onclick=()=>{tab=k;if(trySp&&k!=='shop'){trySp=null;stage()}render()});
 document.addEventListener('click',e=>{if(e.target.closest('#t-quest')){e.preventDefault();tab='quest';if(trySp){trySp=null;stage()}render();
   setTimeout(()=>{const p=$('#panel'),w=$('#stagewrap');if(!p||!w)return;const y=p.getBoundingClientRect().top+scrollY-w.offsetHeight-6;if(scrollY>y)scrollTo({top:Math.max(0,y)})},0)}});
 
@@ -3245,7 +3269,8 @@ stage();render();
 if(!window.CLOUD_GATE){if(!checkHashRestore()&&!S.char)pickChar(true)}
 if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造型已下架，已退回 350 星星糖'),800)}
 </script>
+<script src="home-ui.js?v=20261110-home1"></script>
 <script src="festgames.js?v=20261110-moon-integration1"></script>
-<script src="cloud.js?v=20261109-integration1"></script>
+<script src="cloud.js?v=20261110-home1"></script>
 </body></html>
 </body></html>

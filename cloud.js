@@ -151,12 +151,13 @@ function regCharView(){
 function regNameView(){
   card().innerHTML=`<div class="cl-brand">取一個暱稱<small>遊戲裡大家看到的名字</small></div>
   <form id="clRNF" style="display:flex;flex-direction:column;gap:12px">
-    <label>暱稱<small>可以用中文，最多 8 個字</small><input id="clRName" maxlength="8" value="${esc(regDraft.name||'')}"></label>
+    <label>暱稱<small>最多 6 個中文字或 12 個英數字，可混合，不可含符號或空格</small><input id="clRName" maxlength="24" value="${esc(regDraft.name||'')}"></label><small class="nickname-count" id="clRNameCount" aria-live="polite"></small>
     <p class="cl-err" id="clErr" role="alert"></p>
     <button class="cl-go">下一步</button><button type="button" class="cl-sub" id="clRegCharBack">重新選角色</button>
   </form>`;
+  FSNickname.bind($c('clRName'),$c('clRNameCount'));
   $c('clRegCharBack').onclick=regCharView;setTimeout(()=>$c('clRName').focus(),50);
-  $c('clRNF').onsubmit=e=>{e.preventDefault();const name=$c('clRName').value.trim();if(!name)return err('請取一個暱稱');if(BAD.some(w=>name.includes(w)))return err('這個暱稱不太適合，換一個吧');regDraft.name=name;regConfirmView()};
+  $c('clRNF').onsubmit=e=>{e.preventDefault();const name=$c('clRName').value,issue=FSNickname.error(name);if(issue)return err(issue);if(BAD.some(w=>name.includes(w)))return err('這個暱稱不太適合，換一個吧');regDraft.name=name;regConfirmView()};
 }
 function regConfirmView(msg=''){
   card().innerHTML=`<div class="cl-brand">確認建立帳號<small>確認後才會正式建立並進入遊戲</small></div>
@@ -177,6 +178,7 @@ function regAccountFix(){
   $c('clRAF').onsubmit=e=>{e.preventDefault();const code=f.value.trim();if(!/^[a-z0-9]{4,12}$/.test(code))return err('帳號要用 4～12 個英文字母或數字');regDraft.code=code;pinMem={code,pin:regDraft.pin};lastCode=code;regConfirmView()};
 }
 async function finishRegistration(){
+  if(!regDraft)return;const issue=FSNickname.error(regDraft.name);if(issue)return err(issue);
   if(regCreating)return;regCreating=true;let createdUser=null;const b=$c('clRegCreate');if(b){b.disabled=true;b.textContent='建立中…'}err('');
   try{
     const cred=await auth.createUserWithEmailAndPassword(emailOf(regDraft.code),pwStr(regDraft.pin)),user=cred.user;createdUser=user;
@@ -212,16 +214,17 @@ function charView(user){
 function nameView(user){
   card().innerHTML=`<div class="cl-brand">取一個暱稱<small>遊戲裡大家看到的名字</small></div>
   <form id="clNF" style="display:flex;flex-direction:column;gap:12px">
-    <label>暱稱<small>可以用中文，最多 8 個字</small><input id="clName" maxlength="8"></label>
+    <label>暱稱<small>最多 6 個中文字或 12 個英數字，可混合，不可含符號或空格</small><input id="clName" maxlength="24"></label><small class="nickname-count" id="clNameCount" aria-live="polite"></small>
     <p class="cl-err" id="clErr" role="alert"></p>
     <button class="cl-go" id="clGo">開始玩！</button>
     <button type="button" class="cl-sub" id="clBackC">重新選角色</button>
   </form>`;
+  FSNickname.bind($c('clName'),$c('clNameCount'));
   $c('clBackC').onclick=()=>charView(user);
   setTimeout(()=>$c('clName').focus(),50);
   $c('clNF').onsubmit=async e=>{e.preventDefault();
-    const name=$c('clName').value.trim();
-    if(!name)return err('請取一個暱稱');
+    const name=$c('clName').value,issue=FSNickname.error(name);
+    if(issue)return err(issue);
     if(BAD.some(w=>name.includes(w)))return err('這個暱稱不太適合，換一個吧');
     busy(true);err('');
     try{
@@ -358,12 +361,17 @@ function cleanMail(){
 }
 const fabEl=document.createElement('div');fabEl.className='cl-fab';document.body.appendChild(fabEl);
 function fab(on){
-  if(!on){fabEl.innerHTML='';return}
-  const n=MAIL.filter(m=>live(m)&&(isGift(m)||!m.read)).length;
-  fabEl.innerHTML=`<button id="clMailBtn" aria-label="信箱">✉${n?`<b class="dot">${n}</b>`:''}</button><button id="clMeBtn" title="${esc(ME&&ME.name||'')}" aria-label="我的帳號：${esc(ME&&ME.name||'')}">👤 ${esc(ME&&ME.name||'')}</button>`;
-  document.getElementById('clMailBtn').onclick=mailbox;
-  document.getElementById('clMeBtn').onclick=meSheet;
+  document.getElementById('clMailBtn')?.remove();document.getElementById('clMeBtn')?.remove();fabEl.innerHTML='';
+  const localName=document.getElementById('pbtn'),guestMail=document.getElementById('hudMailGuest');
+  if(localName)localName.hidden=!!on;if(guestMail)guestMail.hidden=!!on;
+  if(!on)return;
+  const n=MAIL.filter(m=>live(m)&&(isGift(m)||!m.read)).length,name=ME&&ME.name||'';
+  fabEl.innerHTML=`<button id="clMailBtn" aria-label="信箱${n?'，'+n+' 封未處理信件':''}"><span aria-hidden="true">✉</span><span>信箱</span>${n?`<b class="dot">${n>99?'99+':n}</b>`:''}</button><button id="clMeBtn" title="${esc(name)}" aria-label="我的帳號：${esc(name)}"><span>${esc(name)}</span></button>`;
+  const mail=document.getElementById('clMailBtn'),me=document.getElementById('clMeBtn');
+  document.getElementById('hudNameSlot')?.appendChild(me);document.getElementById('hudMailSlot')?.appendChild(mail);
+  mail.onclick=mailbox;me.onclick=meSheet;
 }
+
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const ico=n=>{try{return bagIco(n)}catch(e){return ''}};
 const STAR_I=`<svg class="bagico" viewBox="0 0 100 100" aria-hidden="true"><path d="${typeof star==='function'?star(50,50,40):''}" fill="#ffc93c" stroke="#e39b00" stroke-width="4"/><circle cx="38" cy="38" r="6" fill="#fff" opacity=".8"/></svg>`;
@@ -478,7 +486,7 @@ async function syncBroadcasts(){
   catch(e){}
 }
 function meSheet(){
-  openSheet(head('👤 我的帳號')+`<p>暱稱：<b>${esc(ME.name)}</b></p><p>帳號：<b>${esc(ME.code)}</b></p>
+  openSheet(head('👤 我的帳號')+`<p>暱稱：<b class="account-full-name">${esc(ME.name)}</b></p><p>帳號：<b>${esc(ME.code)}</b></p>
   <p class="hint">進度會自動存到雲端。在學校或別人的電腦玩完，記得按登出。</p>
   <button class="big" id="clLogout" style="width:100%">登出</button>`);
   document.getElementById('clLogout').onclick=async()=>{await push();try{localStorage.removeItem(skey(PL.cur))}catch(e){}closeQuiz();try{localStorage.removeItem(K_SEEN)}catch(e){}await auth.signOut()};

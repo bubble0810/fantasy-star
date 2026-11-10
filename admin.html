@@ -9,7 +9,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="festival-config.js?v=20261110-moon-integration1"></script>
+<script src="nickname.js?v=20261110-home1"></script>
+<script src="festival-config.js?v=20261110-home1"></script>
 <style>
 :root{--ink:#2e2340;--muted:#6b5b7d;--line:#e3d9ef;--bg:#f6f2fb;--accent:#c23258;--ok:#1f7a45;--warn:#b42318}
 *{box-sizing:border-box}
@@ -186,7 +187,7 @@ function detailView(){
 
   <h3>基本資料與數值</h3>
   <div class="nums">
-    <label>暱稱<input id="eName" value="${esc(p.name)}" maxlength="8"></label>
+    <label>暱稱<input id="eName" value="${esc(p.name)}" maxlength="24"></label>
     <label>星星糖<input id="eCandy" type="number" min="0" value="${S.candy||0}"></label>
     <label>等級<input id="eLv" type="number" min="1" value="${lvInfo(S.exp||0).l}"></label>
     <label>這一級已累積<input id="eCur" type="number" min="0" value="${lvInfo(S.exp||0).cur}"><small id="eCurHint">這一級滿級是 ${lvInfo(S.exp||0).need}</small></label>
@@ -249,7 +250,8 @@ async function saveEdit(){
     S.homes=['R00',...[...document.querySelectorAll('[data-home]')].filter(c=>c.checked&&c.dataset.home!=='R00').map(c=>c.dataset.home)];
     if(S.home&&!S.homes.includes(S.home))S.home='R00';
   }
-  const name=$('#eName').value.trim()||p.name;
+  const name=$('#eName').value;
+  if(name!==p.name){const issue=FSNickname.error(name);if(issue)return toast(issue);}
   const sum={sj:JSON.stringify(S),name,exp:S.exp|0,candy:S.candy|0,char:S.char||null,maxLv:S.maxLv|0,looks:(S.items||[]).filter(x=>x.startsWith('L-')).length,homes:(S.homes||[]).length,updatedAt:FV.serverTimestamp(),adminRev:FV.increment(1)};
   try{await db.doc('players/'+p.uid).update(sum);await log('修改資料',p.code,`星星糖 ${S.candy}・經驗值 ${S.exp}・造型 ${sum.looks}・小屋 ${sum.homes}${name!==p.name?'・名稱改為 '+name:''}`);
     toast('已儲存');await loadPlayers();openPlayer(p.uid)}catch(e){toast('儲存失敗：'+(e.code||e.message))}
