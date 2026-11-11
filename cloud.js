@@ -332,7 +332,7 @@ function lbFlush(s=lbSession){
   })();return s.flushing;
 }
 function lbPublic(data){
-  const boards={};for(const type of ['total',...Object.keys(FSLeaderboard.types)])boards[type]=(Array.isArray(data.boards?.[type])?data.boards[type]:[]).slice(0,3).map((r,i)=>({uid:String(r.u||''),name:String(r.n||'玩家'),level:r.l,rank:i+1}));
+  const boards={};for(const type of ['total',...Object.keys(FSLeaderboard.types)])boards[type]=(Array.isArray(data.boards?.[type])?data.boards[type]:[]).slice(0,3).map((r,i)=>({uid:String(r.u||''),name:String(r.n||'玩家'),level:r.l,rank:i+1,...(type!=='total'?{value:FSLeaderboard.publicValue(type,r.m)}:{})}));
   return {enabled:data.enabled===true,startsAt:lbMillis(data.startsAt)||0,boards};
 }
 // Spark: subscribe to the shared boards only while their panel is visible.

@@ -100,14 +100,28 @@
     // S.best.maze is an unlock indicator, not a third-stage duration.
     return out;
   }
+  function publicValue(type,value) {
+    const v=value||{};
+    if(type==='stroop'&&integer(v.score))return {score:v.score};
+    if(type==='memory'&&integer(v.tries)&&v.tries>=8)return {tries:v.tries};
+    if(type==='maze'&&integer(v.durationMs)&&v.durationMs>0)return {durationMs:v.durationMs};
+    if(type==='quest'&&integer(v.cleared)&&v.cleared<=108&&integer(v.stars)&&v.stars<=v.cleared*3)return {cleared:v.cleared,stars:v.stars};
+    if(type==='looks'&&integer(v.count))return {count:v.count};
+    return null;
+  }
+  function performanceText(type,value) {
+    const v=publicValue(type,value);if(!v)return '—';
+    return type==='stroop'?`${v.score} 分`:type==='memory'?`${v.tries} 次`:type==='maze'?`${(v.durationMs/1000).toFixed(3)} 秒`:type==='quest'?`${v.cleared} 關・${v.stars} 顆星`:`共 ${v.count} 款`;
+  }
   function render(container,result,selected='total') {
     if(!container||typeof container.replaceChildren!=='function') throw new TypeError('DOM container required');
     const names={total:'幻想智多星',...TYPES}, active=Object.hasOwn(names,selected)?selected:'total';
     const rows=result?.enabled?result.boards?.[active]||[]:[];
-    container.innerHTML=`<section class="rank-view"><h2>星空榜</h2><div class="rank-tabs" role="tablist" aria-label="排行榜類別">${Object.entries(names).map(([key,name])=>`<button type="button" role="tab" aria-selected="${key===active}" data-board="${key}">${name}</button>`).join('')}</div><div class="rank-heading"><h3>${names[active]}</h3><span class="rank-status">${result?.enabled?'總榜':'尚未開放'}</span></div><div class="rank-table-head"><span>名次</span><span>暱稱</span><span>等級</span></div><div class="rank-top3">${rows.map(r=>`<div class="rank-person"><span class="rank-medal">${escape(r.rank)}</span><div><b>${escape(r.name)}</b></div><span class="rank-level">${integer(r.level)&&r.level>0?escape(r.level):'—'}</span></div>`).join('')}</div>${rows.length?'':`<p class="hint">${result?.enabled?'尚無排名資料':'等待榜單開放'}</p>`}</section>`;
+    const detail=active!=='total',label={stroop:'分數',memory:'配對次數',maze:'通關時間',quest:'闖關進度',looks:'收集數'}[active];
+    container.innerHTML=`<section class="rank-view${detail?' rank-with-performance':''}"><h2>星空榜</h2><div class="rank-tabs" role="tablist" aria-label="排行榜類別">${Object.entries(names).map(([key,name])=>`<button type="button" role="tab" aria-selected="${key===active}" data-board="${key}">${name}</button>`).join('')}</div><div class="rank-heading"><h3>${names[active]}</h3><span class="rank-status">${result?.enabled?'總榜':'尚未開放'}</span></div><div class="rank-table-head"><span>名次</span><span>暱稱</span><span>等級</span>${detail?`<span class="rank-performance">${label}</span>`:''}</div><div class="rank-top3">${rows.map(r=>`<div class="rank-person"><span class="rank-medal">${escape(r.rank)}</span><div><b>${escape(r.name)}</b></div><span class="rank-level">${integer(r.level)&&r.level>0?escape(r.level):'—'}</span>${detail?`<span class="rank-performance">${escape(performanceText(active,r.value))}</span>`:''}</div>`).join('')}</div>${rows.length?'':`<p class="hint">${result?.enabled?'尚無排名資料':'等待榜單開放'}</p>`}</section>`;
     container.querySelectorAll('[data-board]').forEach(button=>button.addEventListener('click',()=>render(container,result,button.dataset.board)));
   }
-  const api=Object.freeze({version:1,types:TYPES,calculate,collectionValue,legacyRecords,render});
+  const api=Object.freeze({version:1,types:TYPES,calculate,collectionValue,legacyRecords,publicValue,performanceText,render});
   if(typeof module==='object'&&module.exports) module.exports=api;
   else root.FSLeaderboard=api;
 })(typeof window==='object'?window:globalThis);
