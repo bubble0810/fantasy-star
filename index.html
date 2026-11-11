@@ -640,7 +640,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261111-compactback23">
+<link rel="stylesheet" href="home-ui.css?v=20261111-dialog24">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -2468,6 +2468,7 @@ function showQ(){
   <div class="opts">${order.map((o,k)=>`<button class="opt" data-o="${o}"><span class="k">${'ABCD'[k]}</span><span>${q[2][o]}</span></button>`).join('')}</div>
   <div class="helps"><button class="passbtn" id="pass" ${QZ.pass>=QZ.maxPass||!QZ.pool.length?'disabled':''}>PASS 換一題 <small>扣 10 分 · 本回合還有 ${QZ.maxPass-QZ.pass} 次</small></button>
   <button class="cheerbtn" id="cheer" ${C.left?'':'disabled'}>✦ 應援過關 <small>直接答對 · 今天還有 ${C.left} 次</small></button></div><div id="fb"></div>`;
+  refreshSheetLayout();
   $('#quit').onclick=closeQuiz;
   $('#pass').onclick=doPass;
   $('#cheer').onclick=useCheer;
@@ -2507,6 +2508,7 @@ function finish(){
   <div class="gains"><span class="e">+${QZ.exp} 經驗</span><span>+${QZ.candy} 星星糖</span></div>
   ${lvMsg}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><button class="ghost" id="close">返回</button><button class="big" id="again">再挑戰一次</button></div></div>`;
+  refreshSheetLayout();
   $('#close').onclick=closeQuiz;$('#again').onclick=()=>startQuiz(QZ.c);
   render();
 }
@@ -2522,7 +2524,16 @@ function grant(exp,candy){
 }
 let gameStop=null;
 function stopGame(){if(gameStop){gameStop();gameStop=null}}
-function openSheet(html){stopGame();clearInterval(timer);$('#modal').hidden=false;$('#sheet').innerHTML=html;const q=$('#quit');if(q)q.onclick=closeQuiz}
+function refreshSheetLayout(){
+  const sheet=$('#sheet');
+  sheet.dataset.layout=sheet.querySelector('canvas,.mem,.stroop,.opts')?'game':sheet.querySelector('.score')?'result':sheet.querySelector('.cl-open')?'gift':sheet.querySelector('.lvpick,.memory-levels,.pick,.fg-shop')?'selection':sheet.querySelector('.cl-list')?'list':'info';
+  sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('aria-label',sheet.querySelector('.qtag,h2')?.textContent||'資訊');
+  sheet.querySelectorAll('.result > div[style*="grid-template-columns"]').forEach(e=>e.classList.add('dialog-actions'));
+}
+function openSheet(html){
+  stopGame();clearInterval(timer);$('#modal').hidden=false;$('#sheet').innerHTML=html;refreshSheetLayout();
+  const q=$('#quit');if(q)q.onclick=closeQuiz;
+}
 const head=(tag,extra='')=>`<div class="qhead"><span class="qtag">${tag}</span>${extra}<button class="ghost" id="quit" style="padding:4px 10px">← 返回</button></div>`;
 function resultSheet(tag,big,msg,exp,candy,again,earnedLvMsg){SND.play('win');
   const lvMsg=earnedLvMsg===undefined?grant(exp,candy):earnedLvMsg;
@@ -2645,7 +2656,7 @@ function memStart(L,tier=3){
     later(()=>{
       resultSheet('記憶翻牌 · 第 '+tier+' 關',tries+' 次',tries<=mode.full?'配對完成，記憶力超強！':'全部找到了！（'+sec+' 秒）',exp,candy,()=>memStart(null,tier),lvMsg);
       const close=document.getElementById('close');close.textContent='返回選關';close.onclick=memMenu;
-      if(tier<3){const next=document.createElement('button');next.className='big';next.id='memoryNext';next.textContent='下一關';next.style.width='100%';next.onclick=()=>memStart(null,tier+1);document.querySelector('#sheet .result').append(next);}
+      if(tier<3){const next=document.createElement('button');next.className='big';next.id='memoryNext';next.textContent='下一關';next.style.width='100%';next.onclick=()=>memStart(null,tier+1);document.querySelector('#sheet .dialog-actions').append(next);}
       if(tier===3){document.querySelector('#sheet .gains').insertAdjacentHTML('afterend',memoryBestInfo());memorySyncText();}
     },700);
   }
@@ -3399,6 +3410,6 @@ if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造�
 </script>
 <script src="home-ui.js?v=20261111-type22"></script>
 <script src="festgames.js?v=20261111-type22"></script>
-<script src="cloud.js?v=20261111-rank-spark1"></script>
+<script src="cloud.js?v=20261111-dialog24"></script>
 </body></html>
 </body></html>

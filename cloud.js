@@ -601,7 +601,7 @@ async function syncBroadcasts(){
 }
 function meSheet(){
   const L=levelOf(S.exp),a=need(L),b=need(L+1);
-  openSheet(head('玩家資料')+`<p>暱稱：<b class="account-full-name">${esc(ME.name)}</b></p><p>帳號：<b>${esc(ME.code)}</b></p><p>等級：<b class="account-level">${L}</b></p><p>本級經驗／升級所需：<b class="account-experience">${S.exp-a} / ${b-a}</b></p><p>星星糖：<b class="account-candy">${S.candy||0}</b></p>`);
+  openSheet(head('玩家資料')+`<dl class="dialog-facts"><div class="fact-wide"><dt>暱稱</dt><dd class="account-full-name">${esc(ME.name)}</dd></div><div class="fact-wide"><dt>帳號</dt><dd>${esc(ME.code)}</dd></div><div><dt>等級</dt><dd class="account-level">${L}</dd></div><div><dt>星星糖</dt><dd class="account-candy">${S.candy||0}</dd></div><div class="fact-wide"><dt>升級經驗</dt><dd class="account-experience">${S.exp-a} / ${b-a}</dd></div></dl>`);
 }
 window.FSAccountSettings=function(){
   if(!ME||!ready)return;
