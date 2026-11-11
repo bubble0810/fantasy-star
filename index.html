@@ -617,7 +617,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261110-width14">
+<link rel="stylesheet" href="home-ui.css?v=20261111-profile15">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -631,7 +631,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 
   <div class="stagewrap" id="stagewrap">
     <div class="hud" id="playerHud" aria-label="玩家資訊">
-      <div class="hud-cell hud-profile" id="hudNameSlot"><button class="chip pchip" id="pbtn" title="玩家帳號"><span class="profile-level-label">等級1</span><span class="profile-name" id="pname0">玩家</span></button><div class="hud-level"><span class="lvbadge" id="lv">Lv.1</span><div class="bar"><i id="xpbar"></i></div><div class="exptxt" id="xptxt" aria-label="經驗值"></div></div></div>
+      <div class="hud-cell hud-profile" id="hudNameSlot"><button class="chip pchip" id="pbtn" title="玩家帳號"><span class="profile-level-label">Lv. 1</span><span class="profile-name" id="pname0">玩家</span></button><div class="hud-level"><span class="lvbadge" id="lv">Lv.1</span><div class="bar"><i id="xpbar"></i></div><div class="exptxt" id="xptxt" aria-label="經驗值"></div></div></div>
       <div class="hud-tools"><button class="hud-cell hud-rank" data-rankgo aria-label="星空榜" aria-pressed="false"><span aria-hidden="true">🏆</span><span>星空榜</span></button><div class="hud-cell" id="hudMailSlot"><button id="hudMailGuest" disabled title="登入後使用信箱"><span aria-hidden="true">✉</span><span>信箱</span></button></div></div>
       <button class="hud-cell hud-money" data-wallet aria-label="查看完整貨幣數量"><span class="candy"><span id="candyIco"></span><span id="candy">0</span></span><span id="festCurrencyHud" hidden></span></button>
     </div>
@@ -3304,7 +3304,7 @@ stage();render();
 if(!window.CLOUD_GATE){if(!checkHashRestore()&&!S.char)pickChar(true)}
 if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造型已下架，已退回 350 星星糖'),800)}
 </script>
-<script src="home-ui.js?v=20261110-leaderboard1"></script>
+<script src="home-ui.js?v=20261111-profile15"></script>
 <script src="festgames.js?v=20261110-moon-integration1"></script>
 <script src="cloud.js?v=20261110-leaderboard1"></script>
 </body></html>

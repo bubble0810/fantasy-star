@@ -15,7 +15,7 @@
   function updateHud(){
     const progress=document.querySelector('.hud-level'),level=document.getElementById('lv'),experience=document.getElementById('xptxt');
     if(progress&&level&&experience){
-      const label='等級'+level.textContent.replace(/^Lv\./,''),detail=level.textContent+'｜經驗 '+experience.textContent;
+      const label='Lv. '+level.textContent.replace(/^Lv\.\s*/,''),detail=level.textContent+'｜經驗 '+experience.textContent;
       document.querySelectorAll('.profile-level-label').forEach(e=>e.textContent=label);
       progress.setAttribute('role','progressbar');progress.setAttribute('aria-label','升級經驗');progress.setAttribute('aria-valuemin','0');progress.setAttribute('aria-valuemax','100');progress.setAttribute('aria-valuenow',parseFloat(document.getElementById('xpbar').style.width)||0);progress.setAttribute('aria-valuetext',detail);
       document.querySelectorAll('#hudNameSlot button').forEach(button=>{const name=button.querySelector('.profile-name')?.textContent||curName();button.title=name+'｜'+detail;button.setAttribute('aria-label',name+'，'+detail+'，點擊查看帳號詳情');button.setAttribute('aria-haspopup','dialog');});
