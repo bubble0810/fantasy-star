@@ -1,33 +1,702 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>兒童節・氣球射擊 v1.1.9</title><style>
-:root{--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10182a;font-family:"Microsoft JhengHei",sans-serif;touch-action:manipulation}.shell{height:100dvh;display:grid;place-items:center}.game{position:relative;height:100dvh;aspect-ratio:2/3;max-width:100vw;overflow:hidden;background:#61bdf6 url('img/background.jpg') center/cover no-repeat;isolation:isolate;user-select:none}.game:after{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(#0013,transparent 20% 82%,#0015);pointer-events:none}.arena{position:absolute;inset:0;z-index:4;overflow:hidden}.hud{position:absolute;z-index:50;top:calc(var(--st) + 10px);left:10px;right:10px;display:grid;grid-template-columns:1fr 1.1fr 1fr;align-items:start;pointer-events:none}.exit,.pill,.sound,.skill,.btn{font-weight:900;border:3px solid #fff9;box-shadow:0 5px 12px #0018;color:white}.exit{pointer-events:auto;justify-self:start;background:linear-gradient(#ef6372,#b8233a);border-radius:17px;padding:9px 12px;font-size:clamp(14px,3.5vw,21px)}.pill{justify-self:center;display:flex;align-items:center;gap:7px;min-height:45px;padding:7px 12px;border-radius:17px;background:linear-gradient(#2679dcf0,#164c9ef0);font-size:clamp(16px,4.2vw,27px);text-shadow:0 2px #123}.loot{justify-self:end}.loot img{width:31px;height:25px;object-fit:contain}.sound{position:absolute;z-index:51;right:12px;top:calc(var(--st) + 70px);width:46px;height:46px;border-radius:50%;background:#174d9be8;font-size:20px}.balloon{position:absolute;filter:drop-shadow(0 6px 5px #1235);cursor:crosshair;will-change:left,top,transform;touch-action:none}.balloon.lock{pointer-events:none;filter:brightness(1.18) drop-shadow(0 0 10px white)}.bow{position:absolute;z-index:16;bottom:calc(var(--sb) + 6px);left:50%;width:min(31%,190px);transform:translateX(-50%);filter:drop-shadow(0 5px 6px #1238);pointer-events:none}.arrow{position:absolute;width:64px;z-index:21;transform-origin:50% 50%;pointer-events:none;filter:drop-shadow(0 3px 4px #1238)}.burst{position:absolute;z-index:22;width:130px;pointer-events:none;animation:burst .44s ease-out forwards}.reward{position:absolute;z-index:23;color:white;font-size:25px;font-weight:1000;text-shadow:0 3px #a20,-2px 0 #a20,2px 0 #a20;animation:float .8s ease-out forwards}.skill{display:none;position:absolute;z-index:53;right:14px;bottom:calc(var(--sb) + 18px);width:118px;min-height:80px;border-radius:20px;background:linear-gradient(#13a2ef,#164fa9);border-color:#ffe66b;font-size:15px}.skill.ready{display:block;animation:pulse 1s infinite}.skill.used{display:block;filter:grayscale(1);opacity:.65}.ice{position:absolute;z-index:18;inset:0;background:#dff7ff44;box-shadow:inset 0 0 80px #dff;pointer-events:none}.banner{position:absolute;z-index:70;left:50%;top:43%;transform:translate(-50%,-50%);white-space:nowrap;color:#fff1a0;font-size:clamp(32px,9vw,62px);font-weight:1000;text-shadow:0 5px #81287e,0 0 18px white;opacity:0}.banner.show{animation:banner 1.1s both}.overlay{position:absolute;z-index:100;inset:0;display:grid;place-items:center;padding:20px;background:#06142699;backdrop-filter:blur(3px)}.modal{width:min(92%,560px);max-height:85dvh;overflow:auto;border:4px solid #fff9;border-radius:26px;background:linear-gradient(#fffdf8,#fff0c5);box-shadow:0 14px 40px #001b;padding:22px;color:#303c62;text-align:center}.modal h1{margin:0 0 8px;color:#ed5382;font-size:clamp(28px,7vw,46px)}.rules{display:grid;gap:7px;text-align:left;margin:14px auto;max-width:440px}.btn{border:0;border-radius:18px;padding:13px 24px;margin:9px 5px;background:linear-gradient(#ffbd39,#f17b21);font-size:20px;box-shadow:0 5px 0 #ae4e1e}.btn.alt{background:linear-gradient(#66afe9,#356dbb);box-shadow:0 5px 0 #244d8b}.btn:disabled{filter:grayscale(1);opacity:.55;box-shadow:none}.hidden{display:none!important}#over .modal{width:min(72%,380px);padding:18px 16px}.gameover{font-size:clamp(28px,7vw,44px)!important;color:#fff1a0!important;text-shadow:0 5px #d24b72,0 0 18px white}.err{color:#ad2638;font-weight:900}@keyframes burst{0%{transform:scale(.25);opacity:1}85%{transform:scale(1.3)}100%{transform:scale(1.55);opacity:0}}@keyframes float{to{transform:translateY(-75px) scale(1.25);opacity:0}}@keyframes pulse{50%{transform:scale(1.06);box-shadow:0 0 24px #fff47c}}@keyframes banner{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}25%,70%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-60%) scale(1.1)}}@media(orientation:landscape) and (max-height:600px){.rotate{display:grid!important}}
-</style><script src="../common.js?v=20261110-shared2"></script><link rel="stylesheet" href="../common.css?v=20261110-shared2"></head><body><main class="shell"><section class="game" id="game"><div class="arena" id="arena"></div><div class="hud"><button class="exit" id="exit">× 離開</button><div class="pill"><span id="time">40 秒</span></div><div class="pill loot"><img src="img/ticket.png"><span id="tickets">0</span></div></div><button class="sound" id="sound">🔊</button><img class="bow" id="bow" src="img/bow.png" alt="弓"><button class="skill" id="skill">🏹 萬箭齊發<br><b id="skillN">×1</b></button><div class="banner" id="banner">萬箭齊發！</div>
-<div class="overlay" id="loading"><div class="modal"><h1>🎈 氣球射擊</h1><p id="loadmsg">正在載入遊戲素材…</p></div></div><div class="overlay hidden" id="intro"><div class="modal"><h1>🎈 氣球射擊</h1><p>40 秒內直接點氣球。弓固定在下方，只有箭矢射出去。</p><div class="rules"><div>🎈 普通氣球：0～1 張為主，偶爾 2 張</div><div>🌈 七彩氣球：3～5 張彩票</div><div>❓ 神秘氣球：命中保證取得一次萬箭齊發</div><div>🏹 萬箭：凍結當前氣球，時間仍照常倒數</div><div>🎁 完成一局另得 8 張彩票，中途離開不發獎</div></div><button class="btn" id="go">START</button></div></div><div class="overlay hidden" id="quit"><div class="modal"><h1>要離開嗎？</h1><button class="btn alt" id="stay">繼續遊戲</button><button class="btn" id="leave">確定離開</button></div></div><div class="overlay hidden" id="over"><div class="modal"><h1 class="gameover">遊戲結束</h1><p>正在統計本局彩票…</p></div></div><div class="overlay hidden" id="result"><div class="modal"><h1>RESULT</h1><p style="font-size:27px">本局取得 <b>🎟️ <span id="final">0</span></b></p><p id="trialNote"></p><button class="btn" id="again" disabled>請稍候…</button><button class="btn alt" id="out" disabled>離開</button></div></div><div class="overlay hidden rotate"><div class="modal"><h1>請轉為直式</h1></div></div></section></main><script>
-(()=>{'use strict';const $=s=>document.querySelector(s),game=$('#game'),arena=$('#arena'),q=new URLSearchParams(location.search),trial=q.get('trial')==='1'||q.get('mode')==='trial';const files=['background.jpg','bow.png','arrow-normal.png','ticket.png',...['red','yellow','green','blue','purple','rainbow','mystery'].map(x=>'balloon-'+x+'.png'),...['red','yellow','green','blue','purple','rainbow'].map(x=>'burst-'+x+'.png')];let state='LOADING',rid=0,endAt=0,tickets=0,skill='none',mystery=false,rainbow1=false,rainbow2=false,next=1,active=new Map(),pending=0,spawnAt=0,last=0,raf=0,resultSent=false;const normal=['red','yellow','green','blue','purple'];let ac=null,master=null,dry=null,rev=null,bgmTimer=0,on=true,bgmPlaying=false,bgmStep=0,bgmNext=0,bgmFast=false,noiseBuf=null;
-function audio(){try{if(ac){if(ac.state==='suspended')ac.resume();return}ac=new (window.AudioContext||window.webkitAudioContext)();const comp=ac.createDynamicsCompressor();comp.threshold.value=-14;comp.knee.value=18;comp.ratio.value=4;comp.attack.value=.006;comp.release.value=.22;comp.connect(FSGame.output(ac));master=ac.createGain();master.gain.value=.55;master.connect(comp);dry=ac.createGain();dry.gain.value=1;dry.connect(master);rev=ac.createConvolver();const len=Math.floor(ac.sampleRate*1.25),ir=ac.createBuffer(2,len,ac.sampleRate);for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.2)}rev.buffer=ir;const rg=ac.createGain();rg.gain.value=.18;rev.connect(rg).connect(master)}catch(e){on=false;$('#sound').textContent='🔇'}}
-function outNode(p=0,wet=true){let n=ac.createStereoPanner?ac.createStereoPanner():ac.createGain();if(n.pan)n.pan.value=p;n.connect(dry);if(wet)n.connect(rev);return n}
-function env(g,t,a,peak,d){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+d)}
-function synth(freq,t,dur,type='triangle',vol=.08,p=0,wet=true){if(!on)return;audio();if(!ac)return;const o=ac.createOscillator(),g=ac.createGain(),n=outNode(p,wet);o.type=type;o.frequency.value=freq;o.connect(g).connect(n);env(g,t,.006,vol,dur);o.start(t);o.stop(t+dur+.03)}
-function marimba(freq,t,vol=.11,p=0){const n=outNode(p,true),a=ac.createOscillator(),b=ac.createOscillator(),g=ac.createGain(),gb=ac.createGain();a.type='sine';b.type='triangle';a.frequency.value=freq;b.frequency.value=freq*4;gb.gain.value=.15;b.connect(gb).connect(g);a.connect(g);g.connect(n);env(g,t,.003,vol,.22);a.start(t);b.start(t);a.stop(t+.3);b.stop(t+.3)}
-function bell(freq,t,dur=.28,vol=.075,p=0){const n=outNode(p,true),c=ac.createOscillator(),m=ac.createOscillator(),mg=ac.createGain(),g=ac.createGain();c.frequency.value=freq;m.frequency.value=freq*3.5;mg.gain.setValueAtTime(freq*1.7,t);mg.gain.exponentialRampToValueAtTime(1,t+dur+.45);m.connect(mg).connect(c.frequency);c.connect(g).connect(n);env(g,t,.004,vol,dur+.42);c.start(t);m.start(t);c.stop(t+dur+.5);m.stop(t+dur+.5)}
-function pad(freqs,t,dur,vol=.018){const f=ac.createBiquadFilter(),n=outNode(0,true);f.type='lowpass';f.frequency.value=1500;f.connect(n);freqs.forEach(fr=>[-6,6].forEach(dt=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sawtooth';o.frequency.value=fr;o.detune.value=dt;o.connect(g).connect(f);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+.12);g.gain.setValueAtTime(vol,t+dur-.12);g.gain.linearRampToValueAtTime(.0001,t+dur);o.start(t);o.stop(t+dur+.03)}))}
-function bass(freq,t,dur=.24,vol=.085){const n=outNode(0,false),o=ac.createOscillator(),f=ac.createBiquadFilter(),g=ac.createGain();o.type='triangle';o.frequency.value=freq;f.type='lowpass';f.frequency.value=650;o.connect(f).connect(g).connect(n);env(g,t,.008,vol,dur);o.start(t);o.stop(t+dur+.03)}
-function noise(t,dur,vol,freq=5000,q=.8,p=0){if(!noiseBuf){noiseBuf=ac.createBuffer(1,ac.sampleRate,ac.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}const src=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain(),n=outNode(p,false);src.buffer=noiseBuf;f.type='bandpass';f.frequency.value=freq;f.Q.value=q;src.connect(f).connect(g).connect(n);env(g,t,.002,vol,dur);src.start(t,Math.random()*.5);src.stop(t+dur+.03)}
-function kick(t,v=.13){const n=outNode(0,false),o=ac.createOscillator(),g=ac.createGain();o.frequency.setValueAtTime(145,t);o.frequency.exponentialRampToValueAtTime(48,t+.12);o.connect(g).connect(n);env(g,t,.002,v,.16);o.start(t);o.stop(t+.2)}
-function clap(t,v=.06){noise(t,.09,v,2100,.7,-.1);noise(t+.015,.07,v*.65,3200,1.1,.15)}
-function sfx(n){if(!on)return;audio();if(!ac)return;const t=ac.currentTime+.01;if(n==='shoot'){synth(620,t,.065,'triangle',.1,-.15,false);synth(980,t+.025,.05,'sine',.065,.15,false)}if(n==='pop'){noise(t,.07,.075,900,1.1,0);synth(130,t,.08,'sine',.075,0,false)}if(n==='ticket'){bell(820,t,.15,.09,-.2);bell(1240,t+.07,.18,.07,.2)}if(n==='rare'){[660,880,1100].forEach((f,i)=>bell(f,t+i*.08,.2,.09,(i-1)*.25))}if(n==='mystery'){[420,620,920,1220].forEach((f,i)=>bell(f,t+i*.07,.18,.085,(i%2?1:-1)*.3))}if(n==='volley'){kick(t,.16);[260,390,520,780].forEach((f,i)=>synth(f,t+i*.045,.28,'sawtooth',.075,(i-1.5)*.2,false));noise(t+.08,.28,.08,4500,.8,0)}if(n==='end'){[523,659,784,1047].forEach((f,i)=>bell(f,t+i*.11,.28,.1,(i%2?1:-1)*.25))}}
-const MELODY=[659,784,880,784,659,587,659,784,880,988,1047,988,880,784,659,587,523,659,784,659,587,698,784,880,784,698,659,587,659,784,659,523];
-const CHORDS=[[261.63,329.63,392],[220,261.63,329.63],[174.61,220,261.63],[196,246.94,293.66],[261.63,329.63,392],[220,261.63,329.63],[174.61,220,261.63],[196,246.94,293.66]];
-const BASSES=[130.81,110,87.31,98,130.81,110,87.31,98];
-function musicTick(){if(!ac||!bgmPlaying||!on)return;const bpm=bgmFast?172:160,stepDur=60/bpm/2;while(bgmNext<ac.currentTime+.16){const st=bgmStep%64,bar=Math.floor(st/8)%8,pos=st%8,t=bgmNext;marimba(MELODY[st%32],t,pos%2? .08:.105,(pos%2?.22:-.22));if(pos===0)pad(CHORDS[bar],t,stepDur*7.8,.02);if(pos%2===0)bass(BASSES[bar],t,stepDur*1.55,.09);if(pos===0||pos===4)kick(t,.14);if(pos===2||pos===6)clap(t,.07);noise(t+stepDur*.5,.025,pos%2?.018:.026,7800,1.1,pos%2?.25:-.25);if(pos===3||pos===7)bell(MELODY[(st+4)%32]*2,t,.13,.035,pos===3?-.35:.35);bgmNext+=stepDur;bgmStep++}}
-function music(fast=false){if(!on)return;audio();bgmFast=fast;if(!ac)return;if(!bgmPlaying){bgmPlaying=true;bgmStep=0;bgmNext=ac.currentTime+.06;clearInterval(bgmTimer);bgmTimer=setInterval(musicTick,35);musicTick()}}
-function stopMusic(){bgmPlaying=false;clearInterval(bgmTimer);bgmTimer=0}
-function preload(){let bad=[];Promise.all(files.map(f=>new Promise(r=>{let i=new Image;i.onload=r;i.onerror=()=>{bad.push(f);r()};i.src='img/'+f}))).then(()=>{if(bad.length){$('#loadmsg').innerHTML='<span class="err">素材載入失敗：'+bad.join('、')+'</span>';return}$('#loading').classList.add('hidden');$('#intro').classList.remove('hidden');state='READY'})}function clearRun(){rid++;cancelAnimationFrame(raf);stopMusic();arena.querySelectorAll('*').forEach(x=>{for(let a of x.getAnimations?.()||[])a.cancel();x.remove()});active.clear();pending=0;resultSent=false;$('.ice')?.remove()}function begin(){clearRun();tickets=0;skill='none';mystery=false;rainbow1=false;rainbow2=false;next=1;last=performance.now();endAt=performance.now()+40000;spawnAt=performance.now()+450;$('#tickets').textContent=0;$('#time').textContent='40 秒';$('#skillN').textContent='×1';$('#skill').className='skill';$('#result').classList.add('hidden');state='PLAYING';audio();music();raf=requestAnimationFrame(t=>loop(t,rid))}
-function spawn(kind){if(state!=='PLAYING')return;kind=kind||normal[Math.floor(Math.random()*5)];let el=new Image;el.src='img/balloon-'+kind+'.png';el.className='balloon';let sp=['rainbow','mystery'].includes(kind),size=(sp?155:120)*(.68+Math.random()*.35),b={id:next++,run:rid,kind,el,x:35+Math.random()*(954-size),y:1490+Math.random()*45,size,speed:(sp?410:240)+Math.random()*(sp?145:145),drift:(Math.random()*2-1)*(45+Math.random()*50),phase:Math.random()*6.28,state:'alive',rewarded:false};el.addEventListener('pointerdown',e=>{e.preventDefault();shoot(b,false)});arena.append(el);active.set(b.id,b);render(b);if(kind==='rainbow')sfx('rare');if(kind==='mystery')sfx('mystery')}
-function render(b){let sc=game.getBoundingClientRect().width/1024;b.el.style.left=b.x*sc+'px';b.el.style.top=b.y*sc+'px';b.el.style.width=b.size*sc+'px';b.el.style.transform=`rotate(${Math.sin(b.phase)*3}deg)`}function reward(k){if(k==='rainbow'){let r=Math.random();return r<.6?3:r<.9?4:5}if(k==='mystery')return 0;let r=Math.random();return r<.45?0:r<.95?1:2}
-function shoot(b,volley){if(b.run!==rid||b.state!=='alive'||(!volley&&state!=='PLAYING'))return;b.state=volley?'volley':'targeted';b.el.classList.add('lock');pending++;sfx('shoot');let ar=new Image;ar.src='img/arrow-normal.png';ar.className='arrow';arena.append(ar);let id=rid,start=performance.now(),dur=volley?330:250;function fly(now){if(id!==rid){ar.remove();return}let gr=game.getBoundingClientRect(),br=b.el.getBoundingClientRect(),bow=$('#bow').getBoundingClientRect(),sx=bow.left-gr.left+bow.width/2,sy=bow.top-gr.top+bow.height*.35,tx=br.left-gr.left+br.width/2,ty=br.top-gr.top+br.height/2,p=Math.min(1,(now-start)/dur),x=sx+(tx-sx)*p,y=sy+(ty-sy)*p,ang=Math.atan2(ty-sy,tx-sx)*180/Math.PI;ar.style.left=x-32+'px';ar.style.top=y-12+'px';ar.style.transform=`rotate(${ang}deg)`;if(p<1)requestAnimationFrame(fly);else{ar.remove();pop(b)}}requestAnimationFrame(fly)}
-function pop(b){if(b.run!==rid||b.rewarded)return;b.rewarded=true;b.state='popped';let gr=game.getBoundingClientRect(),br=b.el.getBoundingClientRect(),x=br.left-gr.left+br.width/2,y=br.top-gr.top+br.height/2;b.el.remove();active.delete(b.id);let k=normal.includes(b.kind)?b.kind:b.kind==='rainbow'?'rainbow':'purple',fx=new Image;fx.src='img/burst-'+k+'.png';fx.className='burst';fx.style.left=x-65+'px';fx.style.top=y-65+'px';arena.append(fx);setTimeout(()=>{if(b.run===rid)fx.remove()},500);sfx('pop');let n=reward(b.kind);if(n){tickets+=n;$('#tickets').textContent=tickets;let t=document.createElement('div');t.className='reward';t.textContent='🎟️ +'+n;t.style.left=x-30+'px';t.style.top=y-30+'px';arena.append(t);setTimeout(()=>{if(b.run===rid)t.remove()},800);sfx('ticket')}if(b.kind==='mystery'&&skill==='none'){skill='ready';$('#skill').className='skill ready'}pending=Math.max(0,pending-1);if(state==='SETTLING'&&pending===0)gameOver()}
-function volley(){if(state!=='PLAYING'||skill!=='ready')return;state='VOLLEY';skill='used';$('#skill').className='skill used';$('#skillN').textContent='×0';$('#banner').className='banner show';setTimeout(()=>$('#banner').className='banner',1100);let ice=document.createElement('div');ice.className='ice';game.append(ice);sfx('volley');let tar=[...active.values()].filter(b=>b.state==='alive').slice(0,18);if(!tar.length){ice.remove();state=performance.now()<endAt?'PLAYING':'SETTLING';if(state==='SETTLING'&&pending===0)gameOver();return}tar.forEach((b,i)=>setTimeout(()=>{if(b.run===rid)shoot(b,true)},i*28));let w=setInterval(()=>{if(!tar.some(b=>!b.rewarded)){clearInterval(w);ice.remove();state=performance.now()<endAt?'PLAYING':'SETTLING';if(state==='SETTLING'&&pending===0)gameOver()}},30)}
-function loop(now,id){if(id!==rid)return;let rem=endAt-now,sec=Math.max(0,Math.ceil(rem/1000));$('#time').textContent=sec+' 秒';if(rem<=0&&state==='PLAYING'){state='SETTLING';stopMusic();for(let b of [...active.values()])if(b.state==='alive'){b.el.remove();active.delete(b.id)}if(pending===0)gameOver()}if(state==='PLAYING'){if(rem<=10000&&!bgmFast){bgmFast=true}let dt=Math.min(.04,(now-last)/1000); last=now; let elapsed=40000-rem;if(!mystery&&elapsed>=12000){mystery=true;spawn('mystery')}if(!rainbow1&&elapsed>=14000){rainbow1=true;spawn('rainbow')}if(!rainbow2&&elapsed>=30000){rainbow2=true;spawn('rainbow')}if(now>=spawnAt){spawn();spawnAt=now+(elapsed<10000?850:elapsed<30000?630:460);if(Math.random()<(elapsed>10000?.18:.08))spawn()}for(let b of [...active.values()])if(b.state==='alive'){b.phase+=dt*2;b.y-=b.speed*dt;b.x=Math.max(10,Math.min(1014-b.size,b.x+Math.sin(b.phase)*b.drift*dt*.08));render(b);if(b.y<-260){b.el.remove();active.delete(b.id)}}}if(['PLAYING','VOLLEY','SETTLING'].includes(state))raf=requestAnimationFrame(t=>loop(t,id))}
-function gameOver(){if(resultSent)return;resultSent=true;state='RESULT';stopMusic();sfx('end');const collected=tickets;tickets+=8;$('#final').textContent=tickets;$('#trialNote').textContent=`射擊所得 ${collected} 張＋完成獎勵 8 張${trial?'（體驗不發獎）':''}`;$('#result').classList.remove('hidden');fsReport(tickets)}function leave(){FSGame.close()}
-$('#go').onclick=()=>{$('#intro').classList.add('hidden');begin()};$('#again').onclick=begin;$('#skill').onclick=volley;$('#exit').onclick=()=>{if(state==='PLAYING'){$('#quit').classList.remove('hidden');state='QUIT'}};$('#stay').onclick=()=>{$('#quit').classList.add('hidden');state='PLAYING'};$('#leave').onclick=leave;$('#out').onclick=leave;$('#sound').onclick=()=>{on=!on;$('#sound').textContent=on?'🔊':'🔇';if(on){audio();if(state==='PLAYING')music(bgmFast)}else stopMusic()};preload()})();
-</script></body></html>
+<!DOCTYPE html>
+<html lang="zh-Hant" data-game-key="national">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>幻想智慧星｜國慶旗海慶典</title>
+<script>
+window.fsQuestionsReady = false;
+window.FS_UI = {start:'startBtn',time:'#timePill',intro:'#startCard',result:'#endCard',
+  onClose:()=>window.doubleTenCleanup?.(),onMute:value=>window.DoubleTenMusic?.setMuted(value)};
+</script>
+<script src="../common.js?v=20261110-shared2"></script>
+<link rel="stylesheet" href="../common.css?v=20261110-shared2">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+  html,body{margin:0;height:100%;background:#120c2a;overflow:hidden;font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;color:#fff}
+  #wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);touch-action:none}
+  canvas{display:block;width:100%;height:100%;touch-action:none}
+  .hud{position:absolute;left:0;right:0;top:0;padding:2.2% 3%;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .pill{background:rgba(20,14,50,.72);border:2px solid rgba(255,255,255,.35);border-radius:999px;padding:4px 14px;font-weight:800;font-size:clamp(14px,3.6vmin,26px);text-shadow:0 2px 4px rgba(0,0,0,.6);white-space:nowrap}
+  .timebar{height:clamp(8px,1.6vmin,14px);border-radius:99px;background:rgba(0,0,0,.45);overflow:hidden;border:1.5px solid rgba(255,255,255,.4)}
+  .timebar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff5a6e,#ffd24a,#5ad1ff);transform-origin:left;transition:none}
+  .buffs{display:flex;gap:6px}
+  .buff{display:flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-weight:800;font-size:clamp(12px,3vmin,20px)}
+  .buff.speed{background:rgba(40,140,255,.85)} .buff.shield{background:rgba(230,170,0,.9)} .buff.multi{background:rgba(160,70,230,.9)}
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.2vmin;background:rgba(10,6,30,.62);backdrop-filter:blur(2px);text-align:center;padding:6%}
+  .screen h1{margin:0;font-size:clamp(26px,7vmin,54px);text-shadow:0 0 18px #ff7bd5,0 3px 0 #5a1a7a}
+  .screen p{margin:0;font-size:clamp(13px,3.2vmin,22px);line-height:1.6;opacity:.95}
+  .char-preview{display:block;height:clamp(90px,22vmin,180px);margin:1vmin auto;object-fit:contain}
+  .btn{pointer-events:auto;border:0;border-radius:999px;padding:1.6vmin 7vmin;font-size:clamp(16px,4.2vmin,30px);font-weight:900;color:#3a1500;background:linear-gradient(#fff0a0,#ffb83a);box-shadow:0 5px 0 #b2600c,0 0 22px rgba(255,200,80,.7);cursor:pointer}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b2600c}
+  .big{font-size:clamp(40px,12vmin,96px);font-weight:900;text-shadow:0 0 20px #ffe26b}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:clamp(12px,2.8vmin,18px)}
+  .legend span{background:rgba(255,255,255,.12);padding:3px 10px;border-radius:99px}
+  #banner{position:absolute;left:0;right:0;top:20%;text-align:center;font-weight:900;font-size:clamp(20px,6vmin,46px);text-shadow:0 0 16px #ff6ad5,0 3px 0 #3a0a50;pointer-events:none;opacity:0;transition:opacity .25s}
+  #hint{position:absolute;left:0;right:0;bottom:6%;text-align:center;font-weight:800;font-size:clamp(14px,3.4vmin,24px);text-shadow:0 2px 4px #000;pointer-events:none;opacity:0;transition:opacity .3s}
+  .hidden{display:none!important}
+  .sound-btn{position:absolute;right:3%;bottom:2%;z-index:5;border:1px solid #ffffff88;border-radius:999px;padding:8px 12px;background:#201338dd;color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;min-width:44px;min-height:44px}
+</style>
+<link rel="stylesheet" href="game.css?v=20261111-1">
+</head>
+<body>
+<div id="wrap" class="app">
+  <canvas id="cv" aria-label="國慶旗海慶典遊戲場景"></canvas>
+  <div class="hud" id="hud">
+    <div class="timebar"><i id="tbar"></i></div>
+    <div class="row">
+      <div class="pill loot" id="flagPill" aria-label="保留旗數">🏳️‍🌈 × 0</div>
+      <div class="buffs" id="buffs"></div>
+      <div class="pill" id="timePill">⏱ 60</div>
+    </div>
+  </div>
+  <div id="banner"></div>
+  <div id="hint">按住角色，拖曳移動！</div>
+  <button id="sound" class="sound-btn" type="button" aria-label="關閉聲音" aria-pressed="true">🔊</button>
+
+  <div class="screen overlay" id="startScreen"><div class="modal" id="startCard">
+    <div class="instructions" tabindex="0" aria-label="玩法說明，可上下捲動">
+    <h1>國慶旗海慶典</h1>
+    <p>按住角色在廣場自由移動<br>在<b>光圈亮起</b>時碰到 🏳️‍🌈 才算數<br>收集越多，身後的旗海越壯觀！</p>
+    <div class="legend"><span>🔵 加速 5秒</span><span>🟡 無敵 5秒</span><span>🟣 倍率×2 5秒</span><span>🎆 看到紅圈快閃開</span></div>
+    <p>挑戰 60 秒，以最後保留旗數計分。<br>功能旗隨機出現、停留 5 秒，三種效果可同時生效；<br>同種再取得會刷新為 5 秒。</p>
+    <p class="rules">煙火先以紅圈預警 1 秒，炸開後危險持續 1 秒。<br>被炸到會後退跌坐，掉目前旗數約 20%（最少 1、最多 5 面）；無敵時可抵擋。</p>
+    <p class="rules">完成獲得 20 國慶徽章，每保留 4 面旗再加 1，最多 60。<br>旗數是本局成績，國慶徽章是活動兌換貨幣。</p>
+    <img id="charPreview" class="char-preview" src="img/girl_idle.png" alt="國慶慶典角色">
+    </div>
+    <button class="btn" id="startBtn" disabled>素材載入中…</button>
+    <p id="loadStatus" role="status" aria-live="polite"></p>
+  </div></div>
+
+  <div class="screen hidden" id="countScreen" style="background:rgba(10,6,30,.35)"><div class="big" id="countNum">3</div></div>
+
+  <div class="screen overlay hidden" id="endScreen"><div class="modal" id="endCard">
+    <h1>🎆 國慶旗海慶典完成</h1>
+    <p>🏳️‍🌈 最終保留</p>
+    <div class="big" id="endNum">0 面</div>
+    <p id="endTier"></p>
+    <p id="endStats" style="opacity:.8"></p>
+    <p class="reward" id="endReward"></p>
+    <p class="rules">完成獎勵 20＋每保留 4 面旗加 1，最多 60 國慶徽章。</p>
+    <button class="btn" id="againBtn" disabled>再玩一次</button>
+    <button class="btn alt" id="out" disabled>返回活動頁</button>
+  </div></div>
+</div>
+<div id="portraitNotice" role="status" aria-live="polite"><div class="phone-icon" aria-hidden="true"></div><b>請把手機轉直玩</b><span>國慶旗海慶典是直式畫面，轉直後即可操作。</span><small>本局開始後計時持續進行。</small></div>
+
+<script src="music.js?v=20261111-2"></script>
+<script>
+/* =========================================================
+   可調參數（實機微調都改這裡）
+   ========================================================= */
+const CONFIG = {
+  GAME_TIME: 60,               // 一局秒數
+  FOLLOW: 0.18,                // 角色跟隨係數（每幀 60fps 基準）
+  SPEED_BOOST: 1.25,           // 加速時跟隨係數倍率
+  GRAB_RADIUS: 120,            // 按住角色的判定半徑（邏輯像素）
+  CHAR_HEIGHT: 130,            // 角色顯示高度；觸控抓取範圍維持寬鬆
+
+  // 彩虹旗生命週期（秒）
+  FLAG_FADE_IN: 0.18,
+  FLAG_ACTIVE_END: 3.25,
+  FLAG_LIFE: 3.60,
+  FLAG_SIZE: 74,
+  COLLECT_RADIUS: 72,
+  FLAG_MAX_ON_FIELD: 8,
+  FLAG_INTERVAL: [0.45, 0.36, 0.30],   // 0-20 / 20-40 / 40-60 秒的出旗間隔
+  FLAG_NEAR_CHANCE: 0.7,               // 出現在角色附近的機率
+  FLAG_NEAR_MIN: 110, FLAG_NEAR_MAX: 360,
+
+  // 旗海
+  TIER2: 12, TIER3: 24,
+  TRAIL_MAX_PER_CHAIN: 20,
+  TRAIL_SPACING: 30,
+  TRAIL_FLAG_SIZE: 56,
+  CHAIN_OFFSET: [0, -14, 18],
+  CHAIN_LAG: [0.34, 0.28, 0.23],
+  CHAIN_PHASE: [0, 1.7, 3.4],
+  CHAIN_SPREAD: 0.14,          // 側向偏移往尾端放大的比例
+
+  // 特殊功能
+  POWER_FIRST: 8,             // 首次出現秒數
+  POWER_INTERVAL: [4, 6],     // 之後每 4–6 秒獨立隨機抽一種，不限制種類或總次數
+  POWER_LIFE: 5.0,
+  POWER_DURATION: 5,
+  POWER_SIZE: 120,
+  POWER_RADIUS: 80,
+
+  // 煙火
+  FW_FIRST: 6,
+  FW_INTERVAL: [3.2, 2.4, 1.8],
+  FW_WARN: 1.0,
+  FW_BURST: 1.0,
+  FW_RADIUS: 100,
+  ROCKET_SIZE: 72,            // 只縮小升空火箭，預警與爆炸範圍不變
+  FW_TARGET_PLAYER: 0.6,
+  FW_LOSS_RATE: 0.2, FW_LOSS_MIN: 1, FW_LOSS_MAX: 5,
+  HIT_GRACE: 1.0,              // 被擊中後短暫保護秒數
+  HIT_DURATION: 0.55,
+  KNOCKBACK_DISTANCE: 85,
+  REWARD_BASE: 20, REWARD_FLAGS: 4, REWARD_CAP: 60,
+
+  // 活動區（以 1024×1536 背景座標，角色腳底可到的範圍）
+  FIELD: {x0: 110, y0: 430, x1: 914, y1: 1290},
+};
+
+/* ========================================================= */
+const W = 1024, H = 1536;
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const wrap = document.getElementById('wrap');
+const $ = id => document.getElementById(id);
+let audioContext;
+function startMusic(){
+  try {
+    audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+    window.DoubleTenMusic?.start(audioContext);
+  } catch (e) { console.warn('無法播放音樂', e); }
+}
+
+const IMG_NAMES = ['bg.jpg','flag1','flag2','flag3','flag4','flag5','pw_speed','pw_shield','pw_multi',
+  'boy_idle','boy_run','boy_hit','girl_idle','girl_run','girl_hit','aura_speed','aura_shield','aura_multi',
+  'aura_rainbow','rocket','warn_ring','fw_big','fw_purple','fw_stars','fx_flags','fx_tornado','fx_sparkle',
+  'fx_glowflag','fx_starring','fx_confetti'];
+const IMG = {};
+function loadImages(){
+  return Promise.all(IMG_NAMES.map(n => new Promise(res => {
+    const im = new Image(); const file = n.includes('.') ? n : n + '.png';
+    im.onload = () => res(null); im.onerror = () => res(file);
+    im.src = 'img/' + file; IMG[n.replace(/\..*/,'')] = im;
+  })));
+}
+
+/* ---------- 版面縮放 ---------- */
+let scale = 1, dpr = 1;
+function resize(){
+  const vw = innerWidth, vh = innerHeight;
+  scale = Math.min(vw / W, vh / H);
+  const cw = Math.floor(W * scale), ch = Math.floor(H * scale);
+  wrap.style.width = cw + 'px'; wrap.style.height = ch + 'px';
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.floor(cw * dpr); cv.height = Math.floor(ch * dpr);
+}
+addEventListener('resize', resize); resize();
+
+/* ---------- 工具 ---------- */
+const rand = (a,b) => a + Math.random()*(b-a);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const dist = (ax,ay,bx,by) => Math.hypot(ax-bx, ay-by);
+const phaseOf = t => t < 20 ? 0 : t < 40 ? 1 : 2;
+const rewardOf = flags => Math.min(CONFIG.REWARD_CAP, CONFIG.REWARD_BASE + Math.floor(Math.max(0,flags) / CONFIG.REWARD_FLAGS));
+function drawImg(im, x, y, w, h, alpha=1, rot=0, flip=false){
+  if(!im || !im.complete || !im.naturalWidth) return;
+  ctx.save(); ctx.globalAlpha *= alpha; ctx.translate(x,y); if(rot) ctx.rotate(rot); if(flip) ctx.scale(-1,1);
+  ctx.drawImage(im, -w/2, -h/2, w, h); ctx.restore();
+}
+function drawFit(im, x, y, size, alpha=1, rot=0, flip=false){ // 以最長邊 size 縮放
+  if(!im || !im.naturalWidth) return;
+  const r = size / Math.max(im.naturalWidth, im.naturalHeight);
+  drawImg(im, x, y, im.naturalWidth*r, im.naturalHeight*r, alpha, rot, flip);
+}
+
+/* ---------- 遊戲狀態 ---------- */
+let S = null, charKind = 'girl', running = false, lastT = 0;
+const FLAG_KEYS = ['flag1','flag2','flag3','flag5'];
+
+function newGame(){
+  const f = CONFIG.FIELD;
+  const x = (f.x0+f.x1)/2, y = f.y1 - 180;
+  S = {
+    t: 0, over: false, endT: 0, startedAt: null,
+    cx: x, cy: y, tx: x, ty: y, vx: 0, vy: 0, face: 1, moving: 0,
+    dragging: false, gox: 0, goy: 0,
+    count: 0, collected: 0, lost: 0, hits: 0, blocked: 0,
+    flags: [], nextFlag: 0.8,
+    fws: [], nextFw: CONFIG.FW_FIRST,
+    powers: [], nextPower: CONFIG.POWER_FIRST,
+    buff: {speed:0, shield:0, multi:0},
+    chains: [[],[],[]], tier: 0,
+    flying: [], texts: [], fx: [], ripples: [],
+    hitT: -9, shakeT: 0, wave: 0, knockback: null,
+    nx: 0, ny: 1, // 角色移動法線
+  };
+}
+
+/* ---------- 輸入 ---------- */
+function toLogic(e){
+  const r = cv.getBoundingClientRect();
+  return {x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H};
+}
+const bodyY = () => S.cy - CONFIG.CHAR_HEIGHT*0.45;
+cv.addEventListener('pointerdown', e => {
+  if(!running || !S || S.over || S.knockback || portraitQuery.matches) return;
+  const p = toLogic(e);
+  if(dist(p.x,p.y,S.cx,bodyY()) <= CONFIG.GRAB_RADIUS){
+    S.dragging = true; S.gox = S.cx - p.x; S.goy = S.cy - p.y;
+    S.tx = S.cx; S.ty = S.cy;
+    cv.setPointerCapture(e.pointerId); showHint(false);
+  } else showHint(true);
+});
+cv.addEventListener('pointermove', e => {
+  if(!S || !S.dragging || S.knockback || portraitQuery.matches) return;
+  const p = toLogic(e), f = CONFIG.FIELD;
+  S.tx = clamp(p.x + S.gox, f.x0, f.x1); S.ty = clamp(p.y + S.goy, f.y0, f.y1);
+});
+const endDrag = () => { if(S) S.dragging = false; };
+cv.addEventListener('pointerup', endDrag); cv.addEventListener('pointercancel', endDrag);
+let hintTimer = 0;
+function showHint(on){ $('hint').style.opacity = on ? 1 : 0; clearTimeout(hintTimer); if(on) hintTimer = setTimeout(()=>showHint(false), 1400); }
+
+/* ---------- 旗數與旗海 ---------- */
+const tierOf = n => n >= CONFIG.TIER3 ? 3 : n >= CONFIG.TIER2 ? 2 : n > 0 ? 1 : 0;
+function chainCounts(n){
+  const t = tierOf(n); const out = [0,0,0];
+  for(let i=0;i<t;i++) out[i] = Math.min(CONFIG.TRAIL_MAX_PER_CHAIN, Math.floor(n/t) + (i < n % t ? 1 : 0));
+  return out;
+}
+function anchor(){ return {x: S.cx - S.face*18, y: S.cy - CONFIG.CHAR_HEIGHT*0.42}; }
+function syncChains(spawnLostAt){
+  const want = chainCounts(S.count), a = anchor();
+  for(let c=0;c<3;c++){
+    const ch = S.chains[c];
+    while(ch.length < want[c]){
+      const last = ch.length ? ch[ch.length-1] : {x:a.x, y:a.y};
+      ch.push({x: last.x + rand(-2,2), y: last.y + rand(-2,2), k: FLAG_KEYS[(ch.length + c) % FLAG_KEYS.length], born: S.t});
+    }
+    while(ch.length > want[c]){
+      const n = ch.pop();
+      if(spawnLostAt) flyAway(n.x, n.y, n.k);
+    }
+  }
+  const t = tierOf(S.count);
+  if(t > S.tier && t >= 2){ banner(t === 2 ? '🏳️‍🌈 第2條旗海展開！' : '🌈 第3條旗海展開！'); addFx('fx_confetti', S.cx, bodyY(), 220, 0.9); S.wave = 1; }
+  S.tier = t;
+}
+function flyAway(x, y, k){
+  const ang = rand(0, Math.PI*2), sp = rand(260, 520);
+  S.flying.push({x, y, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp - 220, r: 0, vr: rand(-8,8), k, life: 0.95, t: 0});
+}
+function updateChains(dt){
+  const a = anchor();
+  const spacing = CONFIG.TRAIL_SPACING * (S.buff.speed > 0 ? 1.22 : 1);
+  for(let c=0;c<3;c++){
+    const ch = S.chains[c]; if(!ch.length) continue;
+    const off = CONFIG.CHAIN_OFFSET[c];
+    let px = a.x + S.nx*off, py = a.y + S.ny*off;
+    const lag = 1 - Math.pow(1 - CONFIG.CHAIN_LAG[c] * (S.buff.speed > 0 ? 1.15 : 1), dt*60);
+    for(let j=0;j<ch.length;j++){
+      const n = ch[j];
+      let dx = n.x - px, dy = n.y - py, d = Math.hypot(dx,dy) || 0.001;
+      // 目標：維持與前一節的固定距離（鏈條）
+      const gx = px + dx/d*spacing, gy = py + dy/d*spacing;
+      n.x += (gx - n.x) * lag; n.y += (gy - n.y) * lag;
+      n.y += 8 * dt; // 靜止時輕微下垂，讓旗海自然展開
+      // 硬性限制最大距離，避免拉斷
+      dx = n.x - px; dy = n.y - py; d = Math.hypot(dx,dy) || 0.001;
+      const maxD = spacing * 1.6; if(d > maxD){ n.x = px + dx/d*maxD; n.y = py + dy/d*maxD; }
+      px = n.x; py = n.y;
+    }
+  }
+}
+function drawChains(){
+  const fl = S.buff.speed > 0 ? 2.0 : 1.0;
+  const a = anchor();
+  for(let c=2;c>=0;c--){
+    const ch = S.chains[c]; if(!ch.length) continue;
+    // 依每節方向的法線做側向偏移：越靠尾端越散開，三條旗海不完全重疊
+    const pts = []; let px = a.x, py = a.y;
+    for(let j=0;j<ch.length;j++){
+      const n = ch[j]; let dx = n.x - px, dy = n.y - py; const d = Math.hypot(dx,dy) || 1;
+      const nx = -dy/d, ny = dx/d;
+      const lat = CONFIG.CHAIN_OFFSET[c] * (1 + j*CONFIG.CHAIN_SPREAD) + Math.sin(S.t*4*fl + j*0.5 + CONFIG.CHAIN_PHASE[c]) * (3 + j*0.5) * (1 + S.wave*2);
+      pts.push({x: n.x + nx*lat, y: n.y + ny*lat, dx, dy, k: n.k, born: n.born});
+      px = n.x; py = n.y;
+    }
+    ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = ['rgba(255,230,120,.55)','rgba(255,140,210,.5)','rgba(120,220,255,.5)'][c]; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); for(const q of pts) ctx.lineTo(q.x, q.y); ctx.stroke(); ctx.restore();
+    for(let j=pts.length-1;j>=0;j--){
+      const q = pts[j], flip = q.dx < 0;
+      const wave = Math.sin(S.t*9*fl + j*0.7 + CONFIG.CHAIN_PHASE[c]) * (0.12 + S.wave*0.35);
+      const rot = clamp(Math.atan2(q.dy, Math.abs(q.dx) + 0.01) * 0.55, -0.7, 0.7) * (flip ? -1 : 1) + wave;
+      const grow = clamp((S.t - q.born)/0.25, 0, 1);
+      const sz = CONFIG.TRAIL_FLAG_SIZE * (1 - j*0.008) * (0.4 + 0.6*grow);
+      const sy = 1 + Math.sin(S.t*12*fl + j) * 0.06;
+      const im = IMG[q.k]; if(im && im.naturalWidth){
+        const r = sz / Math.max(im.naturalWidth, im.naturalHeight);
+        drawImg(im, q.x, q.y, im.naturalWidth*r, im.naturalHeight*r*sy, 1, rot, flip);
+      }
+    }
+  }
+}
+
+/* ---------- 彩虹旗 ---------- */
+function spawnFlag(){
+  const f = CONFIG.FIELD; let x, y, tries = 0;
+  do {
+    if(Math.random() < CONFIG.FLAG_NEAR_CHANCE){
+      const ang = rand(0, Math.PI*2), r = rand(CONFIG.FLAG_NEAR_MIN, CONFIG.FLAG_NEAR_MAX);
+      x = S.cx + Math.cos(ang)*r; y = bodyY() + Math.sin(ang)*r;
+    } else { x = rand(f.x0, f.x1); y = rand(f.y0 - 40, f.y1 - 60); }
+    x = clamp(x, f.x0, f.x1); y = clamp(y, f.y0 - 40, f.y1 - 60);
+    tries++;
+  } while(tries < 8 && S.flags.some(o => dist(o.x,o.y,x,y) < 120));
+  S.flags.push({x, y, t: 0, k: FLAG_KEYS[Math.floor(Math.random()*FLAG_KEYS.length)], got: false});
+}
+function updateFlags(dt){
+  const C = CONFIG, by = bodyY();
+  for(const o of S.flags){
+    o.t += dt;
+    if(!o.got && o.t >= C.FLAG_FADE_IN && o.t <= C.FLAG_ACTIVE_END && dist(o.x,o.y,S.cx,by) <= C.COLLECT_RADIUS){
+      o.got = true;
+      const add = S.buff.multi > 0 ? 2 : 1;
+      S.count += add; S.collected += add;
+      addText(o.x, o.y - 40, '+' + add, add > 1 ? '#e7a6ff' : '#fff6a8');
+      addFx('fx_sparkle', o.x, o.y, 110, 0.4);
+      syncChains(false);
+    }
+  }
+  S.flags = S.flags.filter(o => !o.got && o.t < C.FLAG_LIFE);
+}
+function drawFlags(){
+  const C = CONFIG;
+  for(const o of S.flags){
+    let a;
+    if(o.t < C.FLAG_FADE_IN) a = o.t / C.FLAG_FADE_IN;
+    else if(o.t <= C.FLAG_ACTIVE_END) a = 1;
+    else a = 1 - (o.t - C.FLAG_ACTIVE_END) / (C.FLAG_LIFE - C.FLAG_ACTIVE_END);
+    a = clamp(a, 0, 1);
+    const active = o.t >= C.FLAG_FADE_IN && o.t <= C.FLAG_ACTIVE_END;
+    if(active){
+      const p = (o.t - C.FLAG_FADE_IN) / (C.FLAG_ACTIVE_END - C.FLAG_FADE_IN);
+      const pulse = 1 + Math.sin(o.t*22)*0.05;
+      drawFit(IMG.aura_rainbow, o.x, o.y + 26, 150*pulse, 0.95 - p*0.25);
+      // 剩餘時間環
+      ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(o.x, o.y, 62, -Math.PI/2, -Math.PI/2 + Math.PI*2*(1-p)); ctx.stroke(); ctx.restore();
+    }
+    const bob = Math.sin(o.t*10)*3;
+    drawFit(IMG[o.k], o.x, o.y + bob, C.FLAG_SIZE * (0.8 + 0.2*a), a * (active ? 1 : 0.75));
+  }
+}
+
+/* ---------- 特殊功能 ---------- */
+const PW_IMG = {speed:'pw_speed', shield:'pw_shield', multi:'pw_multi'};
+const PW_NAME = {speed:'🔵 加速！', shield:'🟡 無敵護盾！', multi:'🟣 倍率×2！'};
+function spawnPower(kind){
+  const f = CONFIG.FIELD; let x, y, tries = 0;
+  do { const ang = rand(0,Math.PI*2), r = rand(200, 380);
+    x = clamp(S.cx + Math.cos(ang)*r, f.x0+20, f.x1-20); y = clamp(bodyY() + Math.sin(ang)*r, f.y0, f.y1-80); tries++;
+  } while(tries < 10 && dist(x,y,S.cx,bodyY()) < 160);
+  S.powers.push({kind, x, y, t: 0});
+  addFx('fx_starring', x, y, 170, 0.5);
+}
+function updatePowers(dt){
+  if(S.t >= S.nextPower && S.t < CONFIG.GAME_TIME){
+    const kinds = ['speed','shield','multi'];
+    spawnPower(kinds[Math.floor(Math.random()*kinds.length)]);
+    S.nextPower = S.t + rand(...CONFIG.POWER_INTERVAL);
+  }
+  for(const k in S.buff) S.buff[k] = Math.max(0, S.buff[k] - dt);
+  for(const p of S.powers){
+    p.t += dt;
+    if(!p.got && p.t < CONFIG.POWER_LIFE && dist(p.x,p.y,S.cx,bodyY()) <= CONFIG.POWER_RADIUS){
+      p.got = true; S.buff[p.kind] = CONFIG.POWER_DURATION;
+      banner(PW_NAME[p.kind]); addFx(p.kind === 'speed' ? 'fx_tornado' : 'fx_glowflag', S.cx, bodyY(), 200, 0.6);
+    }
+  }
+  S.powers = S.powers.filter(p => !p.got && p.t < CONFIG.POWER_LIFE);
+}
+function drawPowers(){
+  for(const p of S.powers){
+    const left = CONFIG.POWER_LIFE - p.t;
+    const blink = left < 0.6 ? (Math.sin(p.t*40) > 0 ? 1 : 0.35) : 1;
+    const a = clamp(p.t/0.2, 0, 1) * blink;
+    const s = CONFIG.POWER_SIZE * (1 + Math.sin(p.t*8)*0.06);
+    drawFit(IMG.fx_starring, p.x, p.y + 10, s*1.25, a*0.6, p.t*1.5);
+    drawFit(IMG[PW_IMG[p.kind]], p.x, p.y + Math.sin(p.t*6)*6, s, a);
+  }
+}
+
+/* ---------- 煙火 ---------- */
+function spawnFirework(){
+  const f = CONFIG.FIELD; let x, y;
+  if(Math.random() < CONFIG.FW_TARGET_PLAYER){
+    // 預判角色位置
+    x = S.cx + S.vx*0.5 + rand(-60,60); y = bodyY() + S.vy*0.5 + rand(-60,60);
+  } else { x = rand(f.x0, f.x1); y = rand(f.y0, f.y1 - 60); }
+  x = clamp(x, f.x0, f.x1); y = clamp(y, f.y0 - 20, f.y1 - 60);
+  S.fws.push({x, y, t: 0, burst: false, img: ['fw_big','fw_purple','fw_stars'][Math.floor(Math.random()*3)]});
+}
+function updateFireworks(dt){
+  const C = CONFIG;
+  for(const w of S.fws){
+    w.t += dt;
+    if(!w.burst && w.t >= C.FW_WARN){
+      w.burst = true; S.shakeT = Math.max(S.shakeT, 0.12);
+    }
+    if(w.burst && !w.hit && w.t < C.FW_WARN + C.FW_BURST && dist(w.x,w.y,S.cx,bodyY()) <= C.FW_RADIUS){
+      if(hitPlayer(w)) w.hit = true;
+    }
+  }
+  S.fws = S.fws.filter(w => w.t < C.FW_WARN + C.FW_BURST);
+}
+function hitPlayer(w){
+  if(S.buff.shield > 0){
+    S.blocked++; S.ripples.push({x: S.cx, y: bodyY(), t: 0});
+    addText(S.cx, bodyY() - 90, '護盾抵擋！', '#ffe36b'); return true;
+  }
+  if(S.t - S.hitT < CONFIG.HIT_GRACE) return false;
+  S.hitT = S.t; S.hits++; S.wave = 1;
+  const f = CONFIG.FIELD;
+  let dx = S.cx - w.x, dy = bodyY() - w.y;
+  const length = Math.hypot(dx,dy);
+  if(length < 1){ dx = -S.face; dy = 0; } else { dx /= length; dy /= length; }
+  S.knockback = {x:S.cx,y:S.cy,toX:clamp(S.cx+dx*CONFIG.KNOCKBACK_DISTANCE,f.x0,f.x1),toY:clamp(S.cy+dy*CONFIG.KNOCKBACK_DISTANCE,f.y0,f.y1),t:0};
+  S.dragging = false; S.tx = S.knockback.toX; S.ty = S.knockback.toY;
+  if(S.count <= 0){ addText(S.cx, bodyY() - 90, '好險！', '#ffb0b0'); return true; }
+  const loss = clamp(Math.round(S.count * CONFIG.FW_LOSS_RATE), CONFIG.FW_LOSS_MIN, CONFIG.FW_LOSS_MAX);
+  const real = Math.min(loss, S.count);
+  // 先讓顯示用的尾端旗子飛散（若顯示數量少於實際損失，額外從角色身上飛出）
+  const before = chainCounts(S.count).reduce((a,b)=>a+b,0);
+  S.count -= real; S.lost += real;
+  syncChains(true);
+  const after = chainCounts(S.count).reduce((a,b)=>a+b,0);
+  for(let i = before - after; i < real; i++) flyAway(S.cx, bodyY(), FLAG_KEYS[i % FLAG_KEYS.length]);
+  addText(S.cx, bodyY() - 100, '-' + real, '#ff7a7a');
+  return true;
+}
+function drawFireworksGround(){
+  const C = CONFIG;
+  for(const w of S.fws){
+    if(w.t < C.FW_WARN){
+      const p = w.t / C.FW_WARN;
+      const blink = 0.6 + 0.4*Math.sin(w.t*30);
+      const r = C.FW_RADIUS * 2.2;
+      drawImg(IMG.warn_ring, w.x, w.y + 10, r*(0.7+0.3*p), r*0.48*(0.7+0.3*p), (0.5 + 0.5*p)*blink);
+      ctx.save(); ctx.fillStyle = `rgba(255,70,40,${0.12 + 0.18*p})`;
+      ctx.beginPath(); ctx.ellipse(w.x, w.y + 10, C.FW_RADIUS*p, C.FW_RADIUS*0.5*p, 0, 0, Math.PI*2); ctx.fill(); ctx.restore();
+    }
+    // The circle marks the actual hit radius, including the full one-second burst.
+    const burstAge = w.t - C.FW_WARN;
+    if(w.t < C.FW_WARN || burstAge < C.FW_BURST){
+      ctx.save(); ctx.strokeStyle = w.burst ? 'rgba(255,120,60,.85)' : 'rgba(255,90,70,.65)';
+      ctx.lineWidth = 4; ctx.setLineDash(w.burst ? [] : [12,8]);
+      ctx.beginPath(); ctx.arc(w.x,w.y,C.FW_RADIUS,0,Math.PI*2); ctx.stroke(); ctx.restore();
+    }
+  }
+}
+function drawFireworksAir(){
+  const C = CONFIG;
+  for(const w of S.fws){
+    if(w.t < C.FW_WARN){
+      // 火箭由下方飛入
+      const p = w.t / C.FW_WARN, e = 1 - Math.pow(1-p, 2);
+      const sx = w.x + 80, sy = H + 100;
+      drawFit(IMG.rocket, sx + (w.x - sx)*e, sy + (w.y - 30 - sy)*e, C.ROCKET_SIZE, 0.95, -0.35*(1-e));
+    } else {
+      const p = (w.t - C.FW_WARN) / C.FW_BURST;
+      const s = C.FW_RADIUS * 2.6 * (0.5 + 0.7*Math.pow(p, 0.4));
+      // Screen blending lets luminous smoke blend into the plaza without a dark blue cutout edge.
+      ctx.save(); ctx.globalCompositeOperation = 'screen';
+      drawFit(IMG[w.img], w.x, w.y - 20, s, 1 - p*p);
+      ctx.restore();
+      if(p < 0.25){ ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        const g = ctx.createRadialGradient(w.x, w.y, 0, w.x, w.y, C.FW_RADIUS*1.2);
+        g.addColorStop(0, `rgba(255,240,200,${0.45*(1-p/0.25)})`); g.addColorStop(1, 'rgba(255,200,120,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(w.x, w.y, C.FW_RADIUS*1.2, 0, Math.PI*2); ctx.fill(); ctx.restore(); }
+    }
+  }
+}
+
+/* ---------- 特效 / 文字 ---------- */
+function addFx(img, x, y, size, life){ S.fx.push({img, x, y, size, life, t: 0}); }
+function addText(x, y, s, color){ S.texts.push({x, y, s, color, t: 0}); }
+let bannerTimer = 0;
+function banner(s){ const b = $('banner'); b.textContent = s; b.style.opacity = 1; clearTimeout(bannerTimer); bannerTimer = setTimeout(()=>b.style.opacity = 0, 1300); }
+function updateFx(dt){
+  for(const f of S.fx) f.t += dt; S.fx = S.fx.filter(f => f.t < f.life);
+  for(const t of S.texts) t.t += dt; S.texts = S.texts.filter(t => t.t < 0.8);
+  for(const r of S.ripples) r.t += dt; S.ripples = S.ripples.filter(r => r.t < 0.6);
+  for(const f of S.flying){ f.t += dt; f.x += f.vx*dt; f.y += f.vy*dt; f.vy += 700*dt; f.vx *= 0.985; f.r += f.vr*dt; }
+  S.flying = S.flying.filter(f => f.t < f.life);
+}
+function drawFx(){
+  for(const f of S.fx){ const p = f.t/f.life; drawFit(IMG[f.img], f.x, f.y, f.size*(0.8+0.4*p), 1-p); }
+  for(const f of S.flying){ const p = f.t/f.life; drawFit(IMG[f.k], f.x, f.y, CONFIG.TRAIL_FLAG_SIZE*1.1, 1-p*p, f.r); }
+  for(const r of S.ripples){ const p = r.t/0.6; ctx.save(); ctx.strokeStyle = `rgba(255,225,90,${1-p})`; ctx.lineWidth = 8*(1-p)+2;
+    for(let i=0;i<2;i++){ ctx.beginPath(); ctx.arc(r.x, r.y, 70 + p*90 + i*22, 0, Math.PI*2); ctx.stroke(); } ctx.restore(); }
+  ctx.save(); ctx.textAlign = 'center'; ctx.font = '900 44px "PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif'; ctx.lineWidth = 7; ctx.strokeStyle = 'rgba(30,10,60,.85)';
+  for(const t of S.texts){ const p = t.t/0.8; ctx.globalAlpha = 1 - p*p; const y = t.y - p*60; ctx.strokeText(t.s, t.x, y); ctx.fillStyle = t.color; ctx.fillText(t.s, t.x, y); }
+  ctx.restore();
+}
+
+/* ---------- 角色 ---------- */
+function updateChar(dt){
+  const k0 = CONFIG.FOLLOW * (S.buff.speed > 0 ? CONFIG.SPEED_BOOST : 1);
+  const k = 1 - Math.pow(1 - k0, dt*60);
+  const ox = S.cx, oy = S.cy;
+  if(!S.over && S.knockback){
+    const hit = S.knockback; hit.t += dt;
+    const progress = clamp(hit.t / .22, 0, 1), ease = 1 - (1-progress)**3;
+    S.cx = hit.x + (hit.toX-hit.x)*ease; S.cy = hit.y + (hit.toY-hit.y)*ease;
+    if(hit.t >= CONFIG.HIT_DURATION) S.knockback = null;
+  } else if(!S.over){ S.cx += (S.tx - S.cx) * k; S.cy += (S.ty - S.cy) * k; }
+  const vx = (S.cx - ox) / Math.max(dt, 1e-4), vy = (S.cy - oy) / Math.max(dt, 1e-4);
+  S.vx += (vx - S.vx) * 0.25; S.vy += (vy - S.vy) * 0.25;
+  const sp = Math.hypot(S.vx, S.vy);
+  S.moving += ((sp > 60 ? 1 : 0) - S.moving) * 0.2;
+  if(Math.abs(S.vx) > 40) S.face = S.vx > 0 ? 1 : -1;
+  if(sp > 30){ const nx = -S.vy/sp, ny = S.vx/sp; S.nx += (nx - S.nx)*0.15; S.ny += (ny - S.ny)*0.15; const l = Math.hypot(S.nx,S.ny)||1; S.nx/=l; S.ny/=l; }
+  S.wave = Math.max(0, S.wave - dt*1.2);
+  S.shakeT = Math.max(0, S.shakeT - dt);
+}
+function drawChar(){
+  const hit = S.t - S.hitT < CONFIG.HIT_DURATION;
+  const key = charKind + (hit ? '_hit' : S.moving > 0.5 ? '_run' : '_idle');
+  const im = IMG[key]; if(!im || !im.naturalWidth) return;
+  const h = CONFIG.CHAR_HEIGHT * (key.endsWith('_hit') ? 0.78 : 1);
+  const w = im.naturalWidth * h / im.naturalHeight;
+  const shake = hit ? Math.sin(S.t*80)*6 : 0;
+  const bob = S.moving > 0.5 ? Math.abs(Math.sin(S.t*14))*-6 : Math.sin(S.t*3)*2;
+  // 陰影
+  ctx.save(); ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(S.cx, S.cy, 42, 13, 0, 0, Math.PI*2); ctx.fill(); ctx.restore();
+  // 光暈（腳底）
+  if(S.buff.speed > 0) drawFit(IMG.aura_speed, S.cx, S.cy - 30, 190, buffAlpha('speed'));
+  if(S.buff.multi > 0) drawFit(IMG.aura_multi, S.cx, S.cy - 30, 180, buffAlpha('multi'));
+  const flip = S.face < 0; // 原圖朝右
+  ctx.save(); if(S.t - S.hitT < CONFIG.HIT_GRACE && !hit) ctx.globalAlpha = 0.6 + 0.4*Math.sin(S.t*40);
+  drawImg(im, S.cx + shake, S.cy - h/2 + bob, w, h, 1, 0, flip);
+  ctx.restore();
+  if(S.buff.shield > 0) drawFit(IMG.aura_shield, S.cx, S.cy - h*0.48, 220*(1+Math.sin(S.t*6)*0.03), 0.75*buffAlpha('shield'));
+}
+function buffAlpha(k){ const v = S.buff[k]; return v < 1.2 ? (Math.sin(S.t*30) > 0 ? 1 : 0.35) : 1; }
+
+/* ---------- HUD ---------- */
+function updateHUD(){
+  const left = Math.max(0, CONFIG.GAME_TIME - S.t);
+  $('tbar').style.transform = `scaleX(${left / CONFIG.GAME_TIME})`;
+  $('timePill').textContent = Math.ceil(left) + ' 秒';
+  $('timePill').style.color = left <= 10 ? '#ff8a8a' : '#fff';
+  $('flagPill').textContent = '🏳️‍🌈 × ' + S.count;
+  let h = '';
+  if(S.buff.speed > 0) h += `<div class="buff speed">加速 ${S.buff.speed.toFixed(1)}</div>`;
+  if(S.buff.shield > 0) h += `<div class="buff shield">無敵 ${S.buff.shield.toFixed(1)}</div>`;
+  if(S.buff.multi > 0) h += `<div class="buff multi">×2 ${S.buff.multi.toFixed(1)}</div>`;
+  const b = $('buffs'); if(b.innerHTML !== h) b.innerHTML = h;
+}
+
+/* ---------- 主迴圈 ---------- */
+function step(dt){
+  const C = CONFIG;
+  if(!S.over){
+    S.t += dt;
+    const ph = phaseOf(S.t);
+    if(S.t >= S.nextFlag && S.t < C.GAME_TIME - 0.3){
+      if(S.flags.length < C.FLAG_MAX_ON_FIELD) spawnFlag();
+      S.nextFlag = S.t + C.FLAG_INTERVAL[ph] * rand(0.8, 1.2);
+    }
+    if(S.t >= S.nextFw && S.t < C.GAME_TIME - 2){
+      spawnFirework(); S.nextFw = S.t + C.FW_INTERVAL[ph] * rand(0.8, 1.2);
+    }
+    updatePowers(dt); updateFlags(dt); updateFireworks(dt);
+    if(S.t >= C.GAME_TIME) finish();
+  } else {
+    S.endT += dt;
+    // 結算時旗海緩慢飄動展開
+    S.wave = 0.4 + Math.sin(S.endT*2)*0.2;
+    for(const w of S.fws) w.t += dt; S.fws = S.fws.filter(w => w.burst && w.t < C.FW_WARN + C.FW_BURST);
+  }
+  updateChar(dt); updateChains(dt); updateFx(dt);
+}
+function render(){
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const s = (cv.width / W);
+  let sx = 0, sy = 0; if(S && S.shakeT > 0){ sx = rand(-6,6); sy = rand(-6,6); }
+  ctx.setTransform(s,0,0,s,sx*s,sy*s);
+  if(IMG.bg && IMG.bg.naturalWidth) ctx.drawImage(IMG.bg, 0, 0, W, H);
+  if(!S) return;
+  drawFireworksGround();
+  drawFlags();
+  drawPowers();
+  drawChains();
+  drawChar();
+  drawFireworksAir();
+  drawFx();
+}
+function loop(now){
+  const dt = Math.min(0.05, (now - lastT) / 1000 || 0); lastT = now;
+  if(running && S) {
+    if(!S.over && S.startedAt !== null) S.t = Math.max(S.t, (now-S.startedAt)/1000-dt);
+    step(dt); updateHUD();
+  }
+  render();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- 流程 ---------- */
+function finish(){
+  if(S.over) return;
+  window.DoubleTenMusic?.stop();
+  S.over = true; S.dragging = false; S.flags = []; S.powers = []; S.fws = S.fws.filter(w => w.burst);
+  for(const k in S.buff) S.buff[k] = 0;
+  addFx('fx_confetti', S.cx, bodyY() - 40, 300, 1.2);
+  let best = 0; try { best = +localStorage.getItem('fs_doubleten_best') || 0; if(S.count > best) localStorage.setItem('fs_doubleten_best', S.count); } catch(e){}
+  const earned = rewardOf(S.count);
+  const result = {flags: S.count, earned, collected: S.collected, lost: S.lost, hits: S.hits, blocked: S.blocked, time: Date.now()};
+  try { localStorage.setItem('fs_doubleten_last', JSON.stringify(result)); } catch(e){}
+  setTimeout(() => {
+    $('endNum').textContent = S.count + ' 面';
+    const t = tierOf(S.count);
+    $('endTier').textContent = t === 3 ? '🌈 三條旗海・超壯觀！' : t === 2 ? '🏳️‍🌈 兩條旗海・很厲害！' : t === 1 ? '🏳️‍🌈 一條旗海・再接再厲！' : '下次試著在光圈亮起時碰旗子！';
+    $('endStats').textContent = `共收集 ${S.collected} 面・被煙火震散 ${S.lost} 面・護盾抵擋 ${S.blocked} 次` + (S.count > best ? '・🎉 新紀錄！' : best ? `・最佳 ${best} 面` : '');
+    $('endScreen').classList.remove('hidden');
+    $('endReward').textContent = '🎖️ 本局國慶徽章 × ' + earned;
+    fsReport(earned);
+  }, 1400);
+}
+function startCountdown(){
+  newGame(); running = false;
+  startMusic();
+  $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
+  const cs = $('countScreen'), num = $('countNum'); cs.classList.remove('hidden');
+  let n = 3; num.textContent = n; updateHUD();
+  const iv = setInterval(() => {
+    n--; if(n > 0) num.textContent = n;
+    else if(n === 0) num.textContent = '開始！';
+    else { clearInterval(iv); cs.classList.add('hidden'); S.startedAt = performance.now(); running = true; showHint(true); }
+  }, 700);
+}
+$('startBtn').onclick = startCountdown;
+document.addEventListener('visibilitychange', () => {
+  lastT = performance.now();
+  if(document.hidden){ if(S) S.dragging = false; window.DoubleTenMusic?.stop(); }
+  else if(S && !S.over && $('startScreen').classList.contains('hidden')) startMusic();
+});
+addEventListener('pagehide', () => window.DoubleTenMusic?.stop());
+window.doubleTenCleanup = () => { running = false; if(S) S.dragging = false; window.DoubleTenMusic?.stop(); audioContext?.suspend().catch(()=>{}); };
+const portraitQuery = matchMedia('(orientation: landscape) and (pointer: coarse)');
+function updateOrientation(){
+  wrap.inert = portraitQuery.matches;
+  if(portraitQuery.matches && S){ S.dragging = false; S.tx = S.cx; S.ty = S.cy; }
+}
+portraitQuery.addEventListener('change',updateOrientation); updateOrientation();
+
+// 使用主頁傳入的玩家角色（S.char）：m/f；相容舊版 boy/girl 連結。
+const qp = new URLSearchParams(location.search).get('char');
+charKind = qp === 'm' || qp === 'boy' ? 'boy' : 'girl';
+$('charPreview').src = 'img/' + charKind + '_idle.png';
+$('charPreview').alt = charKind === 'boy' ? '男生國慶慶典造型' : '女生國慶慶典造型';
+
+Promise.race([loadImages(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('素材載入逾時，請重新整理後再試。')),12000))]).then(failed => {
+  if(failed.some(Boolean) || !window.DoubleTenMusic) throw new Error('素材載入失敗，請重新整理後再試。');
+  newGame(); updateHUD(); window.fsQuestionsReady = true;
+  $('startBtn').disabled = false; $('startBtn').textContent = '開始慶典';
+  requestAnimationFrame(t => { lastT = t; loop(t); });
+}).catch(error => { $('loadStatus').textContent = error.message; $('startBtn').textContent = '無法開始'; });
+// 測試用掛鉤
+window.__game = { get S(){ return S; }, CONFIG, start: startCountdown };
+</script>
+</body>
+</html>
