@@ -97,9 +97,13 @@
   },
   "national": {
     "n": "國慶日",
-    "title": "開發中",
-    "ic": "🎆",
-    "status": "coming-soon",
+    "title": "國慶旗海慶典",
+    "cur": "國慶徽章",
+    "ic": "🎖️",
+    "runs": 3,
+    "look": 240,
+    "room": 300,
+    "status": "ready",
     "url": "fest/doubleten/index.html",
     "home": "SP08",
     "lk": "SP08"
