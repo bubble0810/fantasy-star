@@ -640,7 +640,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261111-rank-metrics1">
+<link rel="stylesheet" href="home-ui.css?v=20261112-welcome25">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -2165,7 +2165,7 @@ function playerSheet(){
 const lvCost=k=>Math.min(100*k,600);
 const need=L=>{let t=0;for(let k=1;k<L;k++)t+=lvCost(k);return t};
 const levelOf=x=>{let L=1;while(x>=need(L+1))L++;return L};
-let trySp=null,tab='quest',questView='hub',wSlot='top',shopSub='normal',shopSlot='top',homeSub='garden',festPreview=false;
+let trySp=null,tab='lobby',questView='hub',wSlot='top',shopSub='normal',shopSlot='top',homeSub='garden',festPreview=false;
 
 function plainDoll(k){const B=BASES[k];return `<image href="${BASEIMG[k]}" x="0" y="0" width="${B.W}" height="${B.H}"/>`}
 function eqObj(over){const ch=S.char||'f',D=DEF[ch],ids={...S.eq,...(over||{})},o={};for(const [k] of slotsFor(ch)){const id=ids[k];if(id&&IT[id]&&fits(IT[id]))o[k]=IT[id];else if(D[k])o[k]=IT[D[k]]}if(o.outfit){o.top=IT[o.outfit.t];o.bottom=IT[o.outfit.b];delete o.outfit}return o}
@@ -2233,6 +2233,7 @@ function render(){
   {const ks=slotsFor(S.char||'f').map(x=>x[0]);if(!ks.includes(wSlot))wSlot=ks.includes('outfit')?'outfit':'top';if(!ks.includes(shopSlot))shopSlot=ks.includes('outfit')?'outfit':'top'}
   for(const k of ['wardrobe','room','home','market','shop']){const b=$('#t-'+k);if(b)b.setAttribute('aria-selected',tab===k)}{const q=$('#t-quest');if(q)q.setAttribute('aria-pressed',tab==='quest');const r=document.querySelector('[data-rankgo]');if(r)r.setAttribute('aria-pressed',tab==='rank')}
   const p=$('#panel');const L=levelOf(S.exp);uidN=0;
+  if(tab==='lobby'&&window.FSHomeUI)FSHomeUI.renderLobby(p);
   if(tab==='quest'){if(window.FSHomeUI)FSHomeUI.renderQuest(p);else p.innerHTML='<p class="hint">正在準備闖關選單…</p>';}
   if(tab==='palace'){if(window.starPalace)starPalace(p);else p.innerHTML='<p class="hint">正在準備星宮…</p>';}
   if(tab==='shop'&&shopSub==='decor'){
@@ -3408,8 +3409,8 @@ stage();render();
 if(!window.CLOUD_GATE){if(!checkHashRestore()&&!S.char)pickChar(true)}
 if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造型已下架，已退回 350 星星糖'),800)}
 </script>
-<script src="home-ui.js?v=20261111-type22"></script>
+<script src="home-ui.js?v=20261112-welcome25"></script>
 <script src="festgames.js?v=20261111-national1"></script>
-<script src="cloud.js?v=20261111-rank-metrics1"></script>
+<script src="cloud.js?v=20261112-welcome25"></script>
 </body></html>
 </body></html>

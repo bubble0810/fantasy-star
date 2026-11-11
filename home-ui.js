@@ -44,10 +44,10 @@
     return `<section class="sale-section"><h3>${title}</h3><p class="hint">${group==='flowers'?'收成後可以直接在這裡賣出花朵。':'寵物帶回的幸運物可以在這裡直接賣出。'}</p>${items.length?`<div class="bag">${items.map(([k,n])=>`<div class="bi"><b class="bin">${bagIco(k)}${esc(k)}</b><small>×${n}・每個 ${sellPrice(k)} 星星糖</small><div class="petacts"><button class="act buy" data-sell="${esc(k)}">賣 1 個</button><button class="act wear" data-sellall="${esc(k)}">全賣 +${sellPrice(k)*n}</button></div></div>`).join('')}</div><button class="big sale-total" data-sellgroup="${group}">出售全部${group==='flowers'?'花朵':'幸運物'} +${total} 糖</button>`:`<p class="hint">目前沒有可出售的${group==='flowers'?'花朵':'幸運物'}。</p>`}</section>`;
   }
   function pageHeader(title,description='',backLabel='返回主頁'){
-    return `<header class="content-page-head"><button class="page-back" data-quest-view="hub">← ${backLabel}</button><h2 tabindex="-1">${esc(title)}</h2>${description?`<p class="hint">${esc(description)}</p>`:''}</header>`;
+    return `<header class="content-page-head"><button class="page-back" data-home-view>← ${backLabel}</button><h2 tabindex="-1">${esc(title)}</h2>${description?`<p class="hint">${esc(description)}</p>`:''}</header>`;
   }
   function finalizePage(panel){
-    if(!panel||tab==='quest'&&questView==='hub')return;
+    if(!panel||tab==='lobby'||tab==='quest'&&questView==='hub')return;
     if(!panel.querySelector('.content-page-head')){
       const title={wardrobe:'衣櫥',room:'房間',home:'家園',market:'市場',shop:'商城',rank:'星空榜',palace:'星宮體驗館'}[tab];
       if(!title)return;
@@ -67,11 +67,18 @@
     tab='quest';questView=['hub','main','practice','competition'].includes(view)?view:'hub';trySp=null;
     stage();render();scrollPanel();
   }
+  function navigateHome(){tab='lobby';trySp=null;stage();render();scrollTo({top:0,behavior:'instant'});}
+  function renderLobby(panel){
+    delete panel.dataset.questView;
+    const active=activeFests(),gifts=(S.pets||[]).reduce((n,p)=>n+(p.gifts||0),0);
+    const ready=(S.plots||[]).filter(p=>p&&plantState(p).ready).length;
+    panel.innerHTML=`<section class="lobby-news"><header class="lobby-heading"><div><span class="lobby-eyebrow">YOUR LITTLE UNIVERSE</span><h2 tabindex="-1">今日星訊</h2></div><span class="lobby-spark" aria-hidden="true">✦</span></header><p class="lobby-welcome">歡迎回家，${esc(curName())}。今天也收集一點閃亮的日常。</p><div class="lobby-updates">${active.map(f=>{const g=window.FESTIVAL_CATALOG?.[f.k];return `<button class="lobby-update lobby-event" data-festival-entry data-festival-key="${esc(f.k)}"><span aria-hidden="true">${g?.ic||'✦'}</span><span><b>${esc(f.n)}進行中</b><small>活動至 ${fmtMD(festState(f).end)}</small></span><span aria-hidden="true">→</span></button>`}).join('')}${gifts?`<button class="lobby-update" data-lobby-pets><span aria-hidden="true">🐾</span><span><b>寵物帶回了幸運物</b><small>${gifts} 個等待領取</small></span><span aria-hidden="true">→</span></button>`:''}${ready?`<button class="lobby-update" data-lobby-garden><span aria-hidden="true">✿</span><span><b>花園可以收成了</b><small>${ready} 格花朵已成熟</small></span><span aria-hidden="true">→</span></button>`:''}</div>${!active.length&&!gifts&&!ready?'<p class="lobby-quiet">小屋裡一切安好，準備好就出發吧。</p>':''}<footer class="lobby-footer"><span>換上喜歡的造型，展開今天的冒險。</span><button data-quest-view="hub">前往闖關 <span aria-hidden="true">↗</span></button></footer></section>`;
+  }
   function renderQuest(panel){
     if(!['hub','main','practice','competition'].includes(questView))questView='hub';
     panel.dataset.questView=questView;
     if(questView==='hub'){
-      panel.innerHTML=`<header class="quest-hub-head"><h2 tabindex="-1">闖關</h2></header><div class="quest-portals"><button class="quest-portal portal-main" data-quest-view="main"><span class="portal-icon" aria-hidden="true">✦</span><span class="portal-copy"><b>一般闖關</b><span>九大章節・108 關主線</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-practice" data-quest-view="practice"><span class="portal-icon" aria-hidden="true">✎</span><span class="portal-copy"><b>自由練習</b><span>自選題型與難度・不限次數</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-competition" data-quest-view="competition"><span class="portal-icon" aria-hidden="true">◇</span><span class="portal-copy"><b>競賽挑戰</b><span>急急棒・翻牌・顏色陷阱</span></span><span class="portal-arrow" aria-hidden="true">→</span></button></div>`;
+      panel.innerHTML=`${pageHeader('闖關')}<div class="quest-portals"><button class="quest-portal portal-main" data-quest-view="main"><span class="portal-icon" aria-hidden="true">✦</span><span class="portal-copy"><b>一般闖關</b><span>九大章節・108 關主線</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-practice" data-quest-view="practice"><span class="portal-icon" aria-hidden="true">✎</span><span class="portal-copy"><b>自由練習</b><span>自選題型與難度・不限次數</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-competition" data-quest-view="competition"><span class="portal-icon" aria-hidden="true">◇</span><span class="portal-copy"><b>競賽挑戰</b><span>急急棒・翻牌・顏色陷阱</span></span><span class="portal-arrow" aria-hidden="true">→</span></button></div>`;
       return;
     }
     if(questView==='main')panel.innerHTML=pageHeader('一般闖關')+mapHTML();
@@ -112,14 +119,16 @@
     finalizePage(panel);
     if(state.syncStatus==='pending'||state.syncStatus==='storage-error'){const notice=document.createElement('p');notice.className='hint';notice.textContent='你的成績尚未完成同步，請稍後再試或聯絡管理員。';panel.querySelector('.rank-view').append(notice);}
   }
-  addEventListener('fs-player-changing',()=>{questView='hub';});
+  addEventListener('fs-player-changing',()=>{tab='lobby';questView='hub';});
   addEventListener('fs-leaderboard-updated',()=>{if(tab==='rank')renderRank(document.getElementById('panel'));});
   document.addEventListener('click',e=>{
+    if(e.target.closest('[data-home-view]')){navigateHome();return;}
+    if(e.target.closest('[data-lobby-pets],[data-lobby-garden]')){homeSub=e.target.closest('[data-lobby-pets]')?'pets':'garden';tab='home';stage();render();scrollPanel();return;}
     const destination=e.target.closest('button[data-quest-view]');if(destination){navigateQuest(destination.dataset.questView);return;}
     if(e.target.closest('[data-wallet]'))wallet();
     if(e.target.closest('[data-festival-entry]'))festivalEntry(e.target.closest('[data-festival-entry]').dataset.festivalKey);
     if(e.target.closest('[data-rankgo]')){tab='rank';trySp=null;stage();render();}
   });
-  window.FSHomeUI={stageActions,updateHud,sellPanel,saleKeys,renderMarket,renderRank,renderQuest,pageHeader,finalizePage,navigateQuest,scrollPanel,options:uiOptions};
+  window.FSHomeUI={stageActions,updateHud,sellPanel,saleKeys,renderMarket,renderRank,renderQuest,renderLobby,navigateHome,pageHeader,finalizePage,navigateQuest,scrollPanel,options:uiOptions};
   stage();render();
 })();

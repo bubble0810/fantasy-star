@@ -94,16 +94,18 @@ ${[...Array(14)].map((_,i)=>`.cl-spark i:nth-child(${i+1}){--a:${i*360/14}deg;an
 `;document.head.appendChild(css);
 
 /* ---------- 登入畫面 ---------- */
-const mask=document.createElement('div');mask.className='cl-mask';mask.innerHTML=`<div class="cl-card" id="clCard"><div class="cl-brand">幻想智慧星<small>正在連線中…</small></div></div>`;
+const mask=document.createElement('div');mask.className='cl-mask';mask.innerHTML=`<div class="cl-shell"><section class="cl-hero" aria-label="幻想智慧星遊戲介紹"><div class="cl-hero-copy"><span class="cl-kicker">FANTASY STAR</span><h1>幻想智慧星</h1><p>闖關集星・換裝佈置・節慶冒險</p></div><div class="cl-showcase"><img class="cl-model cl-model-boy" src="outfits/M21.webp" alt="男生造型展示"><img class="cl-model cl-model-girl" src="outfits/F21.webp" alt="女生造型展示"><span class="cl-showcase-note">造型展示・需於遊戲內取得</span></div><div class="cl-promo" id="clPromo"></div></section><div class="cl-card" id="clCard"><div class="cl-brand">歡迎來到星世界<small>正在連線中…</small></div></div></div>`;
+try{const events=FESTS.filter(f=>festState(f).on);mask.querySelector('#clPromo').textContent=events.map(f=>f.n+'限定活動・至 '+fmtMD(festState(f).end)).join(' ／ ')}catch(_){};
 document.body.appendChild(mask);
 const card=()=>document.getElementById('clCard');
 const $c=id=>document.getElementById(id);
 let lastCode='',justMade=null,newChar=null,pinMem=null,regDraft=null,regCreating=false;
 let loginMode='in';   // in＝登入現有帳號，new＝建立新帳號
 function loginView(){
+  mask.dataset.step=loginMode==='new'?'1':'0';
   const why=outMsg;outMsg='';setTimeout(()=>{if(why)err(why)},0);
   const isNew=loginMode==='new';
-  card().innerHTML=`<div class="cl-brand">幻想智慧星<small>答題闖關 · 收集造型 · 布置小屋</small></div>
+  card().innerHTML=`<div class="cl-brand">${isNew?'建立你的星世界':'歡迎回家'}<small>${isNew?'從一位角色、一間小屋開始':'登入帳號，繼續你的冒險'}</small></div>${isNew?registrationSteps(1):''}
   <div class="cl-tabs" role="tablist"><button type="button" role="tab" id="clTIn" aria-selected="${!isNew}">登入</button><button type="button" role="tab" id="clTNew" aria-selected="${isNew}">建立新帳號</button></div>
   <form id="clForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="${isNew?'off':'on'}">
     <label>帳號<small>${isNew?'自己取一個，英文字母或數字，4～12 個字':'英文字母或數字，4～12 個字'}</small><input id="clCode" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="12" value="${lastCode}"></label>
@@ -141,26 +143,30 @@ async function doLogin(){
 }
 /* 新玩家：確認 → 選角色 → 取暱稱 */
 /* 新版註冊：填資料 → 選角色 → 暱稱 → 最後確認 → 才建立 Firebase 帳號 */
+function registrationSteps(step){return `<ol class="cl-steps" aria-label="註冊進度">${['帳號','角色','暱稱','確認'].map((n,i)=>`<li ${i+1===step?'aria-current="step"':''} class="${i+1<step?'done':''}"><span>${i+1<step?'✓':i+1}</span>${n}</li>`).join('')}</ol>`}
 function regCharView(){
-  card().innerHTML=`<div class="cl-brand">選一位角色<small>之後也可以在衣櫥切換</small></div>
+  mask.dataset.step='2';
+  card().innerHTML=`${registrationSteps(2)}<div class="cl-brand">選一位角色<small>之後也可以在衣櫥切換</small></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${['f','m'].map(k=>`<button class="cl-sub" data-rck="${k}" style="border-radius:18px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:200px">${dollSvg(k)}<b>${charName(k)}</b></button>`).join('')}</div>
   <button class="cl-sub" id="clRegBack">返回修改帳號與密碼</button>`;
   $c('clRegBack').onclick=()=>{loginMode='new';lastCode=regDraft&&regDraft.code||lastCode;loginView()};
   card().querySelectorAll('[data-rck]').forEach(b=>b.onclick=()=>{newChar=b.dataset.rck;regDraft.char=newChar;regNameView()});
 }
 function regNameView(){
-  card().innerHTML=`<div class="cl-brand">取一個暱稱<small>遊戲裡大家看到的名字</small></div>
+  mask.dataset.step='3';
+  card().innerHTML=`${registrationSteps(3)}<div class="cl-brand">取一個暱稱<small>遊戲裡大家看到的名字</small></div>
   <form id="clRNF" style="display:flex;flex-direction:column;gap:12px">
     <label>暱稱<small>最多 6 個中文字或 12 個英數字，可混合，不可含符號或空格</small><input id="clRName" maxlength="24" value="${esc(regDraft.name||'')}"></label><small class="nickname-count" id="clRNameCount" aria-live="polite"></small>
     <p class="cl-err" id="clErr" role="alert"></p>
     <button class="cl-go">下一步</button><button type="button" class="cl-sub" id="clRegCharBack">重新選角色</button>
   </form>`;
   FSNickname.bind($c('clRName'),$c('clRNameCount'));
-  $c('clRegCharBack').onclick=regCharView;setTimeout(()=>$c('clRName').focus(),50);
+  $c('clRegCharBack').onclick=regCharView;setTimeout(()=>$c('clRName')?.focus(),50);
   $c('clRNF').onsubmit=e=>{e.preventDefault();const name=$c('clRName').value,issue=FSNickname.error(name);if(issue)return err(issue);if(BAD.some(w=>name.includes(w)))return err('這個暱稱不太適合，換一個吧');regDraft.name=name;regConfirmView()};
 }
 function regConfirmView(msg=''){
-  card().innerHTML=`<div class="cl-brand">確認建立帳號<small>確認後才會正式建立並進入遊戲</small></div>
+  mask.dataset.step='4';
+  card().innerHTML=`${registrationSteps(4)}<div class="cl-brand">確認建立帳號<small>確認後才會正式建立並進入遊戲</small></div>
   <div style="background:#f7f3fb;border-radius:14px;padding:12px;line-height:1.8"><div>帳號：<b>${esc(regDraft.code)}</b></div><div>密碼：<b>•••••••</b></div><div>角色：<b>${esc(charName(regDraft.char))}</b></div><div>暱稱：<b>${esc(regDraft.name)}</b></div></div>
   <p class="cl-err" id="clErr" role="alert">${esc(msg)}</p>
   <button class="cl-go" id="clRegCreate">建立帳號並進入遊戲</button>
@@ -221,7 +227,7 @@ function nameView(user){
   </form>`;
   FSNickname.bind($c('clName'),$c('clNameCount'));
   $c('clBackC').onclick=()=>charView(user);
-  setTimeout(()=>$c('clName').focus(),50);
+  setTimeout(()=>$c('clName')?.focus(),50);
   $c('clNF').onsubmit=async e=>{e.preventDefault();
     const name=$c('clName').value,issue=FSNickname.error(name);
     if(issue)return err(issue);
