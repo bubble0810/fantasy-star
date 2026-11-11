@@ -219,3 +219,49 @@
 #stagewrap .tabs button{border-radius:4px!important;border-color:#35425a;background:linear-gradient(135deg,#1d2c40,#1b2236);color:#c4d1e2;font-weight:400!important}
 #stagewrap .tabs button[aria-selected=true]{border-color:#72b4c3;background:linear-gradient(120deg,#25465a,#302e4b);color:#edfaff;box-shadow:inset 0 -1px 0 #79c2cc,0 0 5px #79c2cc16}
 .sndbar #homeSettings,.sndbar #sndBgm,.sndbar #sndSfx{border:1px solid #708ca7;background:linear-gradient(145deg,#2c4057,#152336);color:#c4edf2;box-shadow:inset 0 1px 0 #ffffff24,0 2px 5px #0c18342b}
+
+/* Starfield atmosphere uses only CSS; decoration never captures input. */
+html{background:radial-gradient(ellipse at 16% 10%,#393365 0,transparent 52%) fixed,radial-gradient(ellipse at 90% 78%,#1e4264 0,transparent 54%) fixed,#0b1329!important}
+.app{isolation:isolate;--panel:#ffffffed;--line:#d9d7ec;--ink:#373657;--muted:#777490;background:radial-gradient(ellipse at 0 0,#dadcf5a8,transparent 43%),radial-gradient(ellipse at 100% 48%,#d6e9fa80,transparent 48%),linear-gradient(165deg,#e9e9f8 0%,#edf2fc 48%,#eee9f7 100%)}
+.app::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.55;background-image:radial-gradient(1.4px 1.4px at 10% 18%,#fff 80%,transparent),radial-gradient(1px 1px at 82% 9%,#a4a6cf 80%,transparent),radial-gradient(1px 1px at 68% 46%,#fff 80%,transparent),radial-gradient(1.2px 1.2px at 18% 82%,#8aa5ce80 80%,transparent),linear-gradient(120deg,transparent 42%,#8294c112 42.1%,transparent 42.4%);background-size:220px 310px,270px 370px,240px 280px,310px 410px,100% 520px}
+.app::after{content:"";position:absolute;z-index:-1;pointer-events:none;left:12%;top:94px;width:105px;height:1px;opacity:0;background:linear-gradient(90deg,transparent,#a6b6e999,#ffffffd9);transform:rotate(-32deg);animation:quiet-meteor 18s linear infinite}
+@keyframes quiet-meteor{0%,4%{opacity:0;transform:translate(-20px,-10px) rotate(-32deg)}6%{opacity:.45}10%{opacity:0;transform:translate(95px,55px) rotate(-32deg)}100%{opacity:0;transform:translate(95px,55px) rotate(-32deg)}}
+#panel{box-shadow:0 6px 22px #303c6d12;border-color:#d3d3e8;scroll-margin-top:12px}
+.quest-hub-head h2,.content-page-head h2{font-size:21px;color:#3c3a60;letter-spacing:.03em}
+.quest-hub-head .hint,.content-page-head .hint{margin:5px 0 0;font-size:12px;line-height:1.7}
+.section-kicker{display:block;color:#7f82a6;font:400 9px/1.5 var(--body);letter-spacing:.14em;margin-bottom:5px}
+.quest-portals{display:grid;gap:10px}
+.quest-portal{position:relative;display:flex;align-items:center;gap:12px;width:100%;min-height:96px;padding:14px 13px;text-align:left;border:1px solid transparent;border-radius:13px;color:#ebf1ff;background:linear-gradient(125deg,var(--portal-top),#19233a 82%) padding-box,linear-gradient(120deg,var(--portal-edge),#52618155,var(--portal-edge)) border-box;box-shadow:inset 0 1px 0 #ffffff16,0 4px 10px #23314b17}
+.portal-main{--portal-top:#35435e;--portal-edge:#9eadd4}.portal-practice{--portal-top:#2d5262;--portal-edge:#8dbec5}.portal-competition{--portal-top:#574064;--portal-edge:#b6a0d3}
+.portal-icon{flex:0 0 34px;font:400 29px/1 var(--body);color:var(--portal-edge);text-align:center}
+.portal-copy{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.portal-copy b{font-size:17px;line-height:1.4;font-weight:500;letter-spacing:.04em}.portal-copy>span{font-size:12px;line-height:1.55;color:#dde4f5}.portal-copy small{font-size:10px;line-height:1.5;color:#aebbd3}
+.portal-arrow{font-size:20px;flex:0 0 17px;color:var(--portal-edge)}
+.quest-portal:active{filter:brightness(1.13)}.quest-portal:focus-visible{outline:2px solid #9175b6;outline-offset:2px}
+.content-page-head{display:flex;flex-direction:column;gap:4px;border-bottom:1px solid #d9dbeb;padding-bottom:12px;margin-bottom:2px}
+.page-back{align-self:flex-start;min-height:36px;padding:5px 10px;border:1px solid #c7cce3;border-radius:8px;background:linear-gradient(135deg,#f9fbff,#edf0fa);color:#5a6088;font:400 12px/1.4 var(--body)}
+.competition-note{padding:10px 11px;border-left:2px solid #aca5cc;background:#f0eef8;border-radius:0 8px 8px 0;font-size:11px;line-height:1.8}
+#panel .tp-grid{margin:0;width:100%}#panel .tp-card{min-width:0;box-shadow:0 3px 9px #34315b12}#panel .tp-card .tx{min-width:0}#panel .tp-card b{overflow-wrap:anywhere}#panel .tp-card button{min-height:40px}
+@media(max-width:360px){.quest-portal{gap:9px;padding:12px 10px}.portal-icon{flex-basis:27px;font-size:25px}.portal-copy b{font-size:16px}.portal-copy>span{font-size:11px}.portal-copy small{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.app::after{animation:none;display:none}}
+
+/* Shared content typography. HUD labels and game scores retain their own scales. */
+.app{--type-page:20px;--type-section:16px;--type-body:14px;--type-hint:12px;--type-meta:11px}
+#panel{font-size:var(--type-body);line-height:1.7}
+#panel h2{font:500 var(--type-page)/1.45 var(--body);letter-spacing:.02em;margin:0;color:#3c3a60}
+#panel h3{font:500 var(--type-section)/1.5 var(--body);margin:0;color:#494665}
+#panel p{font-size:var(--type-body);line-height:1.7}
+#panel .hint{font-size:var(--type-hint)!important;font-weight:400;line-height:1.65}
+#panel small,#panel .tagx,#panel .rank-status{font-size:var(--type-meta);line-height:1.55;font-weight:400}
+#panel .game b,#panel .cat b,#panel .portal-copy b{font-size:var(--type-section);font-weight:500;line-height:1.5}
+#panel .game>span,#panel .portal-copy>span{font-size:var(--type-hint);line-height:1.65}
+#panel .game em{font-size:var(--type-meta)}
+#panel .content-page-head{gap:7px;padding-bottom:12px;margin:0;border-bottom:1px solid #d9dbeb}
+#panel .page-back{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;height:36px;min-height:36px;padding:0 11px;border:1px solid #c7cce3;border-radius:8px;background:linear-gradient(135deg,#f9fbff,#edf0fa);color:#5a6088;font:400 var(--type-body)/1 var(--body);white-space:nowrap;cursor:pointer}
+#panel .quest-portal{min-height:84px}.portal-copy small{font-size:var(--type-meta)}
+#panel .maptop h3{display:flex;gap:5px;align-items:baseline;flex-wrap:wrap}
+#panel .page-rules{border:1px solid #d7d9e9;border-radius:9px;background:#f7f8fd;padding:9px 11px;font-size:var(--type-hint)}
+#panel .page-rules summary{font:400 var(--type-body)/1.5 var(--body);color:#66618a;cursor:pointer}
+#panel .page-rules .rules,#panel .page-rules>p{margin:9px 0 0}#panel .page-rules .rules{font-size:var(--type-hint)}
+#panel .page-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#panel .page-facts span{display:flex;align-items:center;justify-content:center;min-height:29px;padding:4px 6px;border:1px solid #dad9eb;border-radius:7px;background:linear-gradient(135deg,#f6f4fc,#edf3fc);color:#696184;font-size:var(--type-hint);line-height:1.5;text-align:center}
+.sheet>h2,.sheet .result h2{font-size:20px;line-height:1.45}.sheet>h3{font-size:16px;line-height:1.5}.sheet .hint{font-size:12px;line-height:1.65}

@@ -10,7 +10,7 @@
     const active=activeFests();
     const button=(cls,attrs,icon,label)=>`<button class="stbtn ${cls}" ${attrs}><span class="nav-icon" aria-hidden="true">${icon}</span><span class="nav-label">${label}</span></button>`;
     const festivals=active.map(f=>{const g=window.FESTIVAL_CATALOG?.[f.k];return button('event',`data-festival-entry data-festival-key="${esc(f.k)}"`,g?.ic||'🎉',esc(f.n))}).join('');
-    return `<div class="stbar"><div class="stbar-main">${button('quest',`id="t-quest" aria-pressed="${tab==='quest'}"`,'🗺️','闖關')}${button('tp','data-tpgo aria-label="星宮體驗館"','🏰','星宮')}</div><div class="stbar-events">${festivals}</div></div>`;
+    return `<div class="stbar"><div class="stbar-main">${button('quest',`id="t-quest" aria-pressed="${tab==='quest'}"`,'🗺️','闖關')}${button('tp',`data-tpgo aria-label="星宮體驗館" aria-pressed="${tab==='palace'}"`,'🏰','星宮')}</div><div class="stbar-events">${festivals}</div></div>`;
   }
   function updateHud(){
     const progress=document.querySelector('.hud-level'),level=document.getElementById('lv'),experience=document.getElementById('xptxt');
@@ -43,10 +43,62 @@
     const allowed=new Set(saleKeys(group)),items=Object.entries(S.bag||{}).filter(([k,n])=>allowed.has(k)&&n>0),total=items.reduce((n,[k,q])=>n+sellPrice(k)*q,0),title=group==='flowers'?'花朵收購':'幸運物收購';
     return `<section class="sale-section"><h3>${title}</h3><p class="hint">${group==='flowers'?'收成後可以直接在這裡賣出花朵。':'寵物帶回的幸運物可以在這裡直接賣出。'}</p>${items.length?`<div class="bag">${items.map(([k,n])=>`<div class="bi"><b class="bin">${bagIco(k)}${esc(k)}</b><small>×${n}・每個 ${sellPrice(k)} 星星糖</small><div class="petacts"><button class="act buy" data-sell="${esc(k)}">賣 1 個</button><button class="act wear" data-sellall="${esc(k)}">全賣 +${sellPrice(k)*n}</button></div></div>`).join('')}</div><button class="big sale-total" data-sellgroup="${group}">出售全部${group==='flowers'?'花朵':'幸運物'} +${total} 糖</button>`:`<p class="hint">目前沒有可出售的${group==='flowers'?'花朵':'幸運物'}。</p>`}</section>`;
   }
+  function pageHeader(title,description='',backLabel='返回主頁'){
+    return `<header class="content-page-head"><button class="page-back" data-quest-view="hub">← ${backLabel}</button><h2 tabindex="-1">${esc(title)}</h2>${description?`<p class="hint">${esc(description)}</p>`:''}</header>`;
+  }
+  function finalizePage(panel){
+    if(!panel||tab==='quest'&&questView==='hub')return;
+    if(!panel.querySelector('.content-page-head')){
+      const title={wardrobe:'衣櫥',room:'房間',home:'家園',market:'市場',shop:'商城',rank:'星空榜',palace:'星宮體驗館'}[tab];
+      if(!title)return;
+      const old=panel.querySelector('h2'),parent=old?.parentElement;
+      panel.insertAdjacentHTML('afterbegin',pageHeader(title));
+      if(old){old.tabIndex=-1;panel.querySelector('.content-page-head h2').replaceWith(old);if(parent!==panel&&parent?.classList.contains('fh')&&!parent.children.length)parent.remove();}
+    }
+    panel.querySelectorAll('h2').forEach(h=>{if(h.closest('.content-page-head'))return;const section=document.createElement('h3');for(const a of h.attributes)section.setAttribute(a.name,a.value);while(h.firstChild)section.append(h.firstChild);h.replaceWith(section);});
+  }
+  function scrollPanel(){
+    const panel=document.getElementById('panel');if(!panel)return;
+    const stickyHeight=document.getElementById('stagewrap')?.getBoundingClientRect().height||0;panel.style.scrollMarginTop=(stickyHeight+12)+'px';
+    const y=panel.getBoundingClientRect().top+scrollY-stickyHeight-12;scrollTo({top:Math.max(0,y),behavior:'instant'});
+    panel.querySelector('h2')?.focus({preventScroll:true});
+  }
+  function navigateQuest(view='hub'){
+    tab='quest';questView=['hub','main','practice','competition'].includes(view)?view:'hub';trySp=null;
+    stage();render();scrollPanel();
+  }
+  function renderQuest(panel){
+    if(!['hub','main','practice','competition'].includes(questView))questView='hub';
+    panel.dataset.questView=questView;
+    if(questView==='hub'){
+      panel.innerHTML=`<header class="quest-hub-head"><h2 tabindex="-1">闖關</h2></header><div class="quest-portals"><button class="quest-portal portal-main" data-quest-view="main"><span class="portal-icon" aria-hidden="true">✦</span><span class="portal-copy"><b>一般闖關</b><span>九大章節・108 關主線</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-practice" data-quest-view="practice"><span class="portal-icon" aria-hidden="true">✎</span><span class="portal-copy"><b>自由練習</b><span>自選題型與難度・不限次數</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-competition" data-quest-view="competition"><span class="portal-icon" aria-hidden="true">◇</span><span class="portal-copy"><b>競賽挑戰</b><span>急急棒・翻牌・顏色陷阱</span></span><span class="portal-arrow" aria-hidden="true">→</span></button></div>`;
+      return;
+    }
+    if(questView==='main')panel.innerHTML=pageHeader('一般闖關')+mapHTML();
+    if(questView==='practice')panel.innerHTML=pageHeader('自由練習')+`
+    <details class="page-rules"><summary>計分與獎勵規則</summary><div class="rules"><span>每關 5 題，滿分 100</span><span>答對一題 20 分</span><span>PASS 換題扣 10 分（每回合 2 次）</span><span>✦ 應援過關：每天 3 次，直接答對</span><span>8 秒內答對再 +5 糖</span><span>答對一題 +20 糖，滿分加碼 +50</span></div></details>
+    <div class="diffpick"><span>難度</span>${[['easy','簡單'],['mid','普通'],['hard','困難'],['mix','綜合']].map(([k,n])=>`<button data-qd="${k}" aria-pressed="${(S.qdiff||'mix')===k}">${n}</button>`).join('')}<small>題庫 ${Q.filter(q=>!q[6]).length} 題・數學無限出題・今天應援剩 ${cheerState().left} 次</small></div>
+    <div class="cats"><button class="cat all" data-c="all"><b>綜合大冒險</b><span>${CATS.length} 種題型隨機出題，最考驗實力</span></button>
+    ${CATS.map(c=>`<button class="cat" data-c="${c.k}"><b>${c.n}</b><span>${c.d}</span></button>`).join('')}</div>
+    <div class="records"><span>已闖關 <b>${S.played}</b> 次</span><span>累計答對 <b>${S.correct}</b> 題</span><span>全對 <b>${S.perfect}</b> 次</span><span>已收集套裝 <b>${ITEMS.filter(i=>own(i.id)&&fits(i)).length}/${ITEMS.filter(fits).length}</b></span><button class="linkbtn" id="rstlink">清除遊戲紀錄・重新開始</button></div>`;
+    if(questView==='competition')panel.innerHTML=pageHeader('競賽挑戰')+`    <div class="games">
+      <button class="game" data-g="maze"><b>電流急急棒</b><span>沿軌道拖曳，勿碰邊或放開。</span><em>最高 +50 糖</em></button>
+      <button class="game" data-g="memory"><b>記憶翻牌</b><span>4／6／8 對，配對次數越少越好。</span><em>最高 +60 糖</em></button>
+      <button class="game" data-g="stroop"><b>顏色陷阱</b><span>看字的顏色作答，限時 30 秒。</span><em>答越多拿越多</em></button>
+    </div>
+<details class="page-rules"><summary>排行收錄規則</summary><p class="hint">急急棒只計第三關秒數；翻牌只計第三關 8 對次數。顏色陷阱完成 30 秒即可列入，包括主線。星空榜由管理員發布更新。</p></details>`;
+    panel.querySelector('#rstlink')?.addEventListener('click',playerSheet);
+    panel.querySelectorAll('.cat').forEach(b=>b.onclick=()=>startQuiz(b.dataset.c));
+    panel.querySelectorAll('[data-qd]').forEach(b=>b.onclick=()=>{S.qdiff=b.dataset.qd;save();render()});
+    panel.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>levelIntro(+b.dataset.lv));
+    panel.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{chap=+b.dataset.ch;render()});
+    panel.querySelectorAll('.game').forEach(b=>b.onclick=()=>({maze:mazeMenu,memory:memMenu,stroop:stroopStart})[b.dataset.g]());
+  }
+
   function renderMarket(panel){
-    panel.innerHTML=`<section class="market-view"><h2>市場</h2><div class="sub market-tabs"><button data-market-tab="stars" aria-pressed="${marketTab==='stars'}">星星市場</button><button data-market-tab="players" aria-pressed="${marketTab==='players'}">節慶貨幣交易</button></div><div id="marketBody">${marketTab==='stars'?mkBody():`<div class="pending-card"><div class="pending-icon">🤝</div><h3>玩家交易準備中</h3><p>未來可在這裡交易節慶貨幣。<br>交易規則確認後開放。</p><button class="act" disabled>尚未開放交易</button></div>`}</div></section>`;
+    panel.innerHTML=`<section class="market-view"><h2>市場</h2><div class="sub market-tabs"><button data-market-tab="stars" aria-pressed="${marketTab==='stars'}">星星市場</button><button data-market-tab="players" aria-pressed="${marketTab==='players'}">節慶貨幣交易</button></div><div id="marketBody">${marketTab==='stars'?mkBody():`<div class="pending-card"><div class="pending-icon">🤝</div><h3>玩家交易準備中</h3><p>節慶貨幣交易尚未開放。</p><button class="act" disabled>尚未開放交易</button></div>`}</div></section>`;
     panel.querySelectorAll('[data-market-tab]').forEach(b=>b.onclick=()=>{marketTab=b.dataset.marketTab;renderMarket(panel)});
-    if(marketTab==='stars')mkBind(panel);
+    if(marketTab==='stars')mkBind(panel);finalizePage(panel);
   }
   function renderRank(panel){
     if(!window.FSLeaderboard){panel.innerHTML='<section class="rank-view"><h2>星空榜</h2><p class="hint">排行榜模組未載入，請重新整理。</p></section>';return;}
@@ -57,14 +109,17 @@
     const hint=panel.querySelector('.hint');if(status&&hint)hint.textContent=status;
     const badge=panel.querySelector('.rank-status');if(badge)badge.textContent=status||'已發布';
     if(state.publishedAt){const time=document.createElement('p');time.className='hint';time.textContent='發布時間：'+new Date(state.publishedAt).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'});panel.querySelector('.rank-view').append(time);}
+    finalizePage(panel);
     if(state.syncStatus==='pending'||state.syncStatus==='storage-error'){const notice=document.createElement('p');notice.className='hint';notice.textContent='你的成績尚未完成同步，請稍後再試或聯絡管理員。';panel.querySelector('.rank-view').append(notice);}
   }
+  addEventListener('fs-player-changing',()=>{questView='hub';});
   addEventListener('fs-leaderboard-updated',()=>{if(tab==='rank')renderRank(document.getElementById('panel'));});
   document.addEventListener('click',e=>{
+    const destination=e.target.closest('button[data-quest-view]');if(destination){navigateQuest(destination.dataset.questView);return;}
     if(e.target.closest('[data-wallet]'))wallet();
     if(e.target.closest('[data-festival-entry]'))festivalEntry(e.target.closest('[data-festival-entry]').dataset.festivalKey);
     if(e.target.closest('[data-rankgo]')){tab='rank';trySp=null;stage();render();}
   });
-  window.FSHomeUI={stageActions,updateHud,sellPanel,saleKeys,renderMarket,renderRank,options:uiOptions};
-  stage();hud();
+  window.FSHomeUI={stageActions,updateHud,sellPanel,saleKeys,renderMarket,renderRank,renderQuest,pageHeader,finalizePage,navigateQuest,scrollPanel,options:uiOptions};
+  stage();render();
 })();

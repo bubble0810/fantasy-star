@@ -775,7 +775,10 @@ function TS(){
 }
 
 
-window.starPalace=function(){
+window.starPalace=function(panel){
+  if(!panel){
+    closeQuiz();tab='palace';trySp=null;render();stage();window.FSHomeUI?.scrollPanel();return;
+  }
 
   const t=TS();
 
@@ -835,7 +838,7 @@ window.starPalace=function(){
             </b>
 
             <span class="tagx">
-              體驗模式・沒有獎勵
+              體驗模式
             </span>
 
 
@@ -916,32 +919,13 @@ window.starPalace=function(){
     .join('');
 
 
-  openSheet(
+  panel.innerHTML=(
 
-    head('🏰 星宮體驗館')
+    FSHomeUI.pageHeader('星宮體驗館')
 
     +`
 
-    <p class="hint mobile-compact">
-
-      已完成的節慶小遊戲可在這裡體驗；標示 COMING SOON 的遊戲尚在開發。
-
-      每個遊戲每天可以體驗
-
-      ${TRIAL_DAILY} 次，
-
-      每次 ${TRIAL_PRICE} 顆星星糖。
-
-      <br>
-
-      體驗模式
-
-      <b>沒有任何獎勵</b>，
-
-      也不會用掉節慶活動的次數。
-
-    </p>
-
+    <div class="page-facts"><span>每次 ${TRIAL_PRICE} 糖</span><span>每遊戲每日 ${TRIAL_DAILY} 次</span><span>體驗無獎勵</span><span>不占活動次數</span></div>
 
     <div class="fg-bal">
 
@@ -961,9 +945,9 @@ window.starPalace=function(){
   `);
 
 
-  document.querySelectorAll('[data-fsoon]').forEach(b=>b.onclick=()=>comingSoon(b.dataset.fsoon));
+  panel.querySelectorAll('[data-fsoon]').forEach(b=>b.onclick=()=>comingSoon(b.dataset.fsoon));
 
-  document
+  panel
     .querySelectorAll('[data-tp]')
     .forEach(b=>
 
