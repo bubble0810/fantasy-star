@@ -255,8 +255,10 @@ html{background:radial-gradient(ellipse at 16% 10%,#393365 0,transparent 52%) fi
 #panel .game b,#panel .cat b,#panel .portal-copy b{font-size:var(--type-section);font-weight:500;line-height:1.5}
 #panel .game>span,#panel .portal-copy>span{font-size:var(--type-hint);line-height:1.65}
 #panel .game em{font-size:var(--type-meta)}
-#panel .content-page-head{gap:7px;padding-bottom:12px;margin:0;border-bottom:1px solid #d9dbeb}
-#panel .page-back{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;height:36px;min-height:36px;padding:0 11px;border:1px solid #c7cce3;border-radius:8px;background:linear-gradient(135deg,#f9fbff,#edf0fa);color:#5a6088;font:400 var(--type-body)/1 var(--body);white-space:nowrap;cursor:pointer}
+#panel .content-page-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 8px;padding-bottom:10px;margin:0;border-bottom:1px solid #d9dbeb}
+#panel .content-page-head h2{grid-column:1;grid-row:1;min-width:0}
+#panel .content-page-head>.hint{grid-column:1/-1;grid-row:2}
+#panel .page-back{grid-column:2;grid-row:1;display:inline-flex;align-items:center;justify-content:center;align-self:center;height:28px;min-height:28px;padding:0 8px;border:1px solid #c7cce3;border-radius:8px;background:linear-gradient(135deg,#f9fbff,#edf0fa);color:#5a6088;font:400 var(--type-hint)/1 var(--body);white-space:nowrap;cursor:pointer}
 #panel .quest-portal{min-height:84px}.portal-copy small{font-size:var(--type-meta)}
 #panel .maptop h3{display:flex;gap:5px;align-items:baseline;flex-wrap:wrap}
 #panel .page-rules{border:1px solid #d7d9e9;border-radius:9px;background:#f7f8fd;padding:9px 11px;font-size:var(--type-hint)}
