@@ -20,10 +20,10 @@
       progress.setAttribute('role','progressbar');progress.setAttribute('aria-label','升級經驗');progress.setAttribute('aria-valuemin','0');progress.setAttribute('aria-valuemax','100');progress.setAttribute('aria-valuenow',parseFloat(document.getElementById('xpbar').style.width)||0);progress.setAttribute('aria-valuetext',detail);
       document.querySelectorAll('#hudNameSlot button').forEach(button=>{const name=button.querySelector('.profile-name')?.textContent||curName();button.title=name+'｜'+detail;button.setAttribute('aria-label',name+'，'+detail+'，點擊查看帳號詳情');button.setAttribute('aria-haspopup','dialog');});
     }
-    const star=document.getElementById('candy');if(star){star.textContent=smallAmount(S.candy||0);star.title=`${S.candy||0} 星星糖`;}
+    const star=document.getElementById('candy');if(star){star.textContent=smallAmount(S.candy||0);star.title=`${S.candy||0} 星星糖`;const profile=document.getElementById('hudNameSlot');profile?.style.setProperty('--profile-money-width',Math.ceil(star.parentElement.getBoundingClientRect().width)+'px');}
     const slot=document.getElementById('festCurrencyHud');if(!slot)return;
     const active=activeFests().filter(f=>window.FESTIVAL_CATALOG?.[f.k]?.cur);
-    slot.hidden=!active.length;
+    slot.hidden=!active.length;slot.closest('.hud-money').hidden=!active.length;
     slot.innerHTML=active.map(f=>{const g=FESTIVAL_CATALOG[f.k],amount=S.fest?.[f.k]?.c||0;return `<span class="currency-entry" data-currency="${esc(f.k)}" title="${esc(g.cur)} ${amount}" aria-label="${esc(g.cur)} ${amount}"><span class="currency-icon" aria-hidden="true">${g.ic}</span><span class="currency-amount">${smallAmount(amount)}</span></span>`}).join('');
     slot.title='點擊查看全部貨幣';
   }

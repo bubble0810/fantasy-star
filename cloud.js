@@ -571,14 +571,21 @@ async function syncBroadcasts(){
   catch(e){}
 }
 function meSheet(){
-  const best=window.FSGameRecords?.personalBest()||{};
-  const metric=(type,r)=>{if(!r)return '尚無紀錄';const v=r.value;return type==='stroop'?v.score+' 分':type==='memory'?v.tries+' 次':type==='maze'?(v.durationMs/1000).toFixed(3)+' 秒':type==='quest'?v.cleared+' 關／'+v.stars+' 顆星':v.count+' 款';};
-  const personal=window.FSLeaderboard?'<details><summary>個人最佳成績</summary>'+Object.entries(FSLeaderboard.types).map(([type,name])=>'<p>'+esc(name)+'：'+esc(metric(type,best[type]))+(best[type]?.legacy?'（舊成績，原時間未記錄）':'')+'</p>').join('')+'</details>':'';
   const L=levelOf(S.exp),a=need(L),b=need(L+1);
-  openSheet(head('👤 我的帳號')+`<p>暱稱：<b class="account-full-name">${esc(ME.name)}</b></p><p>帳號：<b>${esc(ME.code)}</b></p>
-  <p>等級：<b class="account-level">${L}</b></p><p>本級經驗／升級所需：<b class="account-experience">${S.exp-a} / ${b-a}</b></p>
-  ${personal}<p class="hint">進度會自動存到雲端。在學校或別人的電腦玩完，記得按登出。</p>
-  <button class="big" id="clLogout" style="width:100%">登出</button>`);
-  document.getElementById('clLogout').onclick=async()=>{await push();try{localStorage.removeItem(skey(PL.cur))}catch(e){}closeQuiz();try{localStorage.removeItem(K_SEEN)}catch(e){}await auth.signOut()};
+  openSheet(head('玩家資料')+`<p>暱稱：<b class="account-full-name">${esc(ME.name)}</b></p><p>帳號：<b>${esc(ME.code)}</b></p><p>等級：<b class="account-level">${L}</b></p><p>本級經驗／升級所需：<b class="account-experience">${S.exp-a} / ${b-a}</b></p><p>星星糖：<b class="account-candy">${S.candy||0}</b></p>`);
 }
+window.FSAccountSettings=function(){
+  if(!ME||!ready)return;
+  openSheet(head('設定')+'<p class="hint">進度會自動存到雲端。使用公用裝置時，玩完請登出。</p><button class="big" id="clLogout">登出帳號</button>');
+  document.getElementById('clLogout').onclick=()=>{
+    openSheet(head('確認登出')+'<p>要登出目前的帳號嗎？</p><div class="petacts"><button class="act ghost2" id="logoutCancel">取消</button><button class="act buy" id="logoutConfirm">確定登出</button></div>');
+    document.getElementById('logoutCancel').onclick=window.FSAccountSettings;
+    document.getElementById('logoutConfirm').onclick=async function(){
+      this.disabled=true;this.textContent='正在儲存…';
+      try{const stateKey=skey(PL.cur);save();await db.doc('players/'+ME.uid).set(snapshot(),{merge:true});await lbFlush();closeQuiz();await auth.signOut();try{localStorage.removeItem(stateKey);localStorage.removeItem(K_SEEN)}catch(_){}} 
+      catch(e){this.disabled=false;this.textContent='重新嘗試登出';toast('尚未完成雲端儲存，請確認連線後重試。');}
+    };
+  };
+};
+
 })();

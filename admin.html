@@ -10,9 +10,9 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="nickname.js?v=20261110-home1"></script>
-<script src="festival-config.js?v=20261110-home1"></script>
+<script src="festival-config.js?v=20261111-follow16"></script>
 <script src="leaderboard.js?v=20261110-v1"></script>
-<link rel="stylesheet" href="home-ui.css?v=20261110-width14">
+<link rel="stylesheet" href="home-ui.css?v=20261111-follow16">
 <style>
 :root{--ink:#2e2340;--muted:#6b5b7d;--line:#e3d9ef;--bg:#f6f2fb;--accent:#c23258;--ok:#1f7a45;--warn:#b42318}
 *{box-sizing:border-box}
@@ -235,8 +235,8 @@ function detailView(){
   const p=SEL,S=SELS,el=$('#detail');if(!el)return;
   const items=new Set(S.items||[]),homes=new Set(S.homes||[]),ch=S.char||'f';
   const sp=S.eqs&&S.eqs[ch]&&S.eqs[ch].special;const cur=sp?String(sp).replace('L-',''):'';
-  const fc=[['hw','萬聖糖果',S.hw&&S.hw.c]];
-  for(const [k,v] of Object.entries(S.fest||{}))fc.push(['fest.'+k,'節慶貨幣：'+k,v&&v.c]);
+  const fc=Object.entries(FESTIVAL_CATALOG).map(([k,g])=>['fest.'+k,g.n+'・'+(g.cur||'國慶貨幣（名稱待定）'),(S.fest?.[k]?.c||0)+(k==='halloween'?(S.hw?.c||0):0)]);
+  for(const [k,v] of Object.entries(S.fest||{}))if(!FESTIVAL_CATALOG[k])fc.push(['fest.'+k,'其他節慶貨幣：'+k,v?.c||0]);
   el.innerHTML=`<div class="card">
   <div class="row"><h2>${esc(p.name)}</h2>${p.disabled?'<span class="tag off">停用中</span>':'<span class="tag on">正常</span>'}</div>
   <div class="stage">${cur?`<img src="outfits/${esc(cur)}.webp" alt="目前穿著">`:''}<div class="kv">
@@ -307,7 +307,8 @@ async function saveEdit(){
   const raw0=JSON.stringify(SELS);
   if(JSON.stringify(S)===raw0){ // 沒動 JSON，就用上面的欄位
     S.candy=+$('#eCandy').value||0;S.exp=+$('#eExp').value||0;S.maxLv=+$('#eMax').value||0;
-    document.querySelectorAll('[data-fc]').forEach(i=>{const k=i.dataset.fc,v=+i.value||0;if(k==='hw'){S.hw=S.hw||{c:0,first:0,best:0,clears:0};S.hw.c=v}else{const f=k.split('.')[1];S.fest=S.fest||{};S.fest[f]=S.fest[f]||{};S.fest[f].c=v}});
+    const currencyInputs=[...document.querySelectorAll('[data-fc]')];if(currencyInputs.some(i=>!Number.isSafeInteger(Number(i.value))||Number(i.value)<0))return toast('節慶貨幣請填入 0 以上的整數，沒有儲存');
+    currencyInputs.forEach(i=>{const f=i.dataset.fc.split('.')[1];S.fest=S.fest||{};S.fest[f]=S.fest[f]||{};S.fest[f].c=Number(i.value);if(f==='halloween'&&S.hw)S.hw.c=0;});
     const looks=[...document.querySelectorAll('[data-look]')].filter(c=>c.checked).map(c=>c.dataset.look);
     S.items=(S.items||[]).filter(x=>!x.startsWith('L-')).concat(looks);
     S.homes=['R00',...[...document.querySelectorAll('[data-home]')].filter(c=>c.checked&&c.dataset.home!=='R00').map(c=>c.dataset.home)];
@@ -415,7 +416,7 @@ function festStat(){
 }
 /* ---------- 🎁 送禮物（v6）：公告／固定禮物／隨機禮物盒 × 全體／指定玩家 ---------- */
 const G_FLOWERS=[['小雛菊',12],['鬱金香',30],['向日葵',52],['玫瑰',95],['繡球花',170],['粉蓮花',300],['星光百合',520]];
-const G_PETS=[['幸運草',25],['古錢幣',42],['葉子護身符',55],['幸運珍珠',85],['彩虹寶石',120],['星晶碎片',180]];
+const G_PETS=[['幸運草',47],['古錢幣',80],['葉子護身符',110],['幸運珍珠',160],['彩虹寶石',220],['星晶碎片',280]];
 const G_ITEMS=[['candy','⭐ 星星糖',1688],['exp','✨ 經驗值',1000],['flower','🌸 花朵',10],['pet','🍀 寵物禮物',10],['dice','🎲 骰子加碼券',5]];
 let GF={type:'gift',to:'all',picks:new Set(),item:'candy',sub:'',n:100,title:'',body:'',days:7,starMax:1688,expMax:1000,q:''};
 window.giftTo=uid=>{GF.to='pick';GF.picks=new Set([uid]);tab='bc';view()};
