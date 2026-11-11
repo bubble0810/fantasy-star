@@ -335,6 +335,26 @@ function lbPublic(data){
   const boards={};for(const type of ['total',...Object.keys(FSLeaderboard.types)])boards[type]=(Array.isArray(data.boards?.[type])?data.boards[type]:[]).slice(0,3).map((r,i)=>({uid:String(r.u||''),name:String(r.n||'玩家'),level:r.l,rank:i+1}));
   return {enabled:data.enabled===true,startsAt:lbMillis(data.startsAt)||0,boards};
 }
+// Spark: subscribe to the shared boards only while their panel is visible.
+function lbWatchPublic(){
+  const s=lbSession;if(!s||!lbCurrent(s))return;
+  const visible=typeof tab!=='undefined'&&tab==='rank'&&!document.hidden&&!!document.querySelector('#panel .rank-view');
+  if(visible===!!s.watching)return;
+  s.watching=visible;
+  s.watchToken=(s.watchToken||0)+1;
+  s.unsubs.splice(0).forEach(stop=>stop());
+  if(!visible)return;
+  const token=s.watchToken,current=()=>lbCurrent(s)&&s.watching&&s.watchToken===token;
+  s.config=null;s.published=null;
+  lbNotify({publicStatus:'loading',result:null,publishedAt:null});
+  const refresh=()=>{if(!current()||!s.config)return;if(!s.config.enabled){lbNotify({publicStatus:'closed',result:{enabled:false,boards:{}},publishedAt:null});return;}const d=s.published;if(!d||!lbSameTimestamp(d.configUpdatedAt,s.config.updatedAt)){lbNotify({publicStatus:'unpublished',result:null,publishedAt:null});return;}lbNotify({publicStatus:'ready',result:lbPublic(d),publishedAt:lbMillis(d.publishedAt)});};
+  const readError=e=>{if(current())lbNotify({publicStatus:'error',result:null,errorCode:e.code||'read-failed'});};
+  s.unsubs.push(db.doc('leaderboardConfig/current').onSnapshot(snap=>{if(!current())return;s.config=snap.exists?snap.data():{enabled:false};refresh();},readError));
+  s.unsubs.push(db.doc('leaderboardPublic/current').onSnapshot(snap=>{if(!current())return;s.published=snap.exists?snap.data():null;refresh();},readError));
+}
+const lbPanel=document.getElementById('panel');
+if(lbPanel)new MutationObserver(lbWatchPublic).observe(lbPanel,{childList:true});
+document.addEventListener('visibilitychange',lbWatchPublic);
 function lbStart(uid,isNew=false,previous=null){
   lbStop();if(!window.FSLeaderboard||!window.FSGameRecords||typeof db.runTransaction!=='function'){lbNotify({syncStatus:'unavailable',publicStatus:'unavailable'});return;}
   let outbox=[];try{const stored=JSON.parse(localStorage.getItem(lbKey(uid))||'[]');if(Array.isArray(stored))outbox=stored.filter(r=>/^r_[0-9a-f-]{36}$/i.test(r.id)&&Object.hasOwn(FSLeaderboard.types,r.type)&&r.value&&Number.isSafeInteger(r.clientAchievedAt));}catch(e){}
@@ -344,10 +364,7 @@ function lbStart(uid,isNew=false,previous=null){
   s.legacyRecords=frozen||(isNew?[]:FSLeaderboard.legacyRecords(uid,s.initial,Date.now(),FSGameRecords.catalog()).filter(r=>!modern[r.type]&&!s.legacySkip.has(r.type)));
   try{localStorage.setItem(lbLegacyKey(uid),JSON.stringify({uid,records:s.legacyRecords}));}catch(e){}
   lbNotify({syncStatus:'pending',publicStatus:'loading',pending:outbox.length});
-  const refresh=()=>{if(!lbCurrent(s)||!s.config)return;if(!s.config.enabled){lbNotify({publicStatus:'closed',result:{enabled:false,boards:{}},publishedAt:null});return;}const d=s.published;if(!d||!lbSameTimestamp(d.configUpdatedAt,s.config.updatedAt)){lbNotify({publicStatus:'unpublished',result:null,publishedAt:null});return;}lbNotify({publicStatus:'ready',result:lbPublic(d),publishedAt:lbMillis(d.publishedAt)});};
-  const readError=e=>{if(lbCurrent(s))lbNotify({publicStatus:'error',result:null,errorCode:e.code||'read-failed'});};
-  s.unsubs.push(db.doc('leaderboardConfig/current').onSnapshot(snap=>{if(!lbCurrent(s))return;s.config=snap.exists?snap.data():{enabled:false};refresh();},readError));
-  s.unsubs.push(db.doc('leaderboardPublic/current').onSnapshot(snap=>{if(!lbCurrent(s))return;s.published=snap.exists?snap.data():null;refresh();},readError));
+  lbWatchPublic();
   if(isNew){S.leaderboardV1.personalBest={};FSGameRecords.record('looks',collection);}
   else if((previous&&previous.collection!==s.collection)||(typeof s.initial.leaderboardV1?.lastCollection==='string'&&s.initial.leaderboardV1.lastCollection!==s.collection))FSGameRecords.record('looks',collection);
   if((previous&&previous.quest!==JSON.stringify(FSGameRecords.questValue()))||(typeof s.initial.leaderboardV1?.lastQuest==='string'&&s.initial.leaderboardV1.lastQuest!==JSON.stringify(FSGameRecords.questValue())))FSGameRecords.record('quest',FSGameRecords.questValue());
