@@ -238,7 +238,7 @@ function nameView(user){
 }
 
 /* ---------- 雲端存檔 ---------- */
-let ME=null,adminRev=0,timer=0,ready=false,unsubs=[];
+let ME=null,adminRev=0,timer=0,ready=false,unsubs=[],saveRevision=0,saveAttempt=0;
 function applyState(sj,name){
   lbStop();
   dispatchEvent(new Event('fs-player-changing'));
@@ -256,12 +256,24 @@ function snapshot(){
 }
 async function push(){
   clearTimeout(timer);timer=0;if(!ME||!ready)return;
-  try{await db.doc('players/'+ME.uid).set(snapshot(),{merge:true});foot('已存到雲端');void lbFlush()}
-  catch(e){foot('雲端存檔失敗，網路恢復後會再試')}
+  const owner=ME.uid,revision=saveRevision,attempt=++saveAttempt;
+  const current=()=>ME?.uid===owner&&ready&&revision===saveRevision&&attempt===saveAttempt;
+  if(navigator.onLine===false){foot('同步失敗：目前離線，連線恢復後會再試');return;}
+  foot('儲存中…');
+  try{
+    await db.doc('players/'+owner).set(snapshot(),{merge:true});
+    // A completed older write must not mark newer or another player's progress as saved.
+    if(current())foot('已存到雲端');
+    if(ME?.uid===owner&&ready)void lbFlush();
+  }catch(e){if(current())foot('同步失敗，網路恢復後會再試');}
 }
-function queue(){if(!ME||!ready)return;clearTimeout(timer);timer=setTimeout(push,2500)}
+function queue(){
+  if(!ME||!ready)return;saveRevision++;
+  foot(navigator.onLine===false?'同步失敗：目前離線，連線恢復後會再試':'儲存中…');
+  clearTimeout(timer);timer=setTimeout(push,2500);
+}
 addEventListener('online',()=>{if(ME&&ready)queue()});
-function foot(t){const f=document.getElementById('savefoot');if(f)f.textContent=`☁ ${t}（${new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）`}
+function foot(t){const f=document.getElementById('savefoot');if(f){f.setAttribute('role','status');f.setAttribute('aria-live','polite');f.dataset.cloudSave=t==='已存到雲端'?'saved':t.startsWith('同步失敗')?'error':'saving';f.textContent=`☁ ${t}（${new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）`}}
 const _save=window.save;
 window.save=function(){try{ownCheck();lbCollectionCheck()}catch(e){}_save.apply(this,arguments);queue()};
 addEventListener('pagehide',()=>{if(ME&&ready)seen(true);if(timer)push()});
@@ -375,7 +387,7 @@ function ownCheck(){if(!ME||!ready||!S)return;const now=ownSet();if(ownBase){for
 auth.onAuthStateChanged(async user=>{
   if(regCreating)return;
   lbStop();window.FS_CLOUD_READY=false;dispatchEvent(new Event('fs-player-changing'));
-  unsubs.forEach(f=>f());unsubs=[];ready=false;clearTimeout(timer);timer=0;ME=user;
+  unsubs.forEach(f=>f());unsubs=[];ready=false;clearTimeout(timer);timer=0;saveAttempt++;saveRevision=0;ME=user;
   const restored=firstAuth;firstAuth=false;
   if(!user){mask.hidden=false;loginView();fab(false);return}
   // 只接受玩家帳號（帳號@fantasystar.game）。舊的匿名登入、管理員信箱等 → 不能直接進遊戲

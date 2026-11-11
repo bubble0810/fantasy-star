@@ -1477,7 +1477,7 @@ function homeCard(h,L,mode){const o=(S.homes||[]).includes(h.id),on=curHome().id
   return `<div class="hc ${on?'on':''} ${dark&&h.img?'locked':''}"><div class="silwrap">${pic}${dark&&h.img?`<span class="lockbadge">${why}</span>`:''}</div><b><span class="code">${h.fest?h.id.replace(/^SP/,'RSP'):h.id.slice(1)}</span>${h.n}</b><small>${h.st}${h.fest?`・<b class="fbadge">${FESTS.find(f=>f.k===h.fest).n}限定</b>`:''}</small><small>${o?(on?'✦ 目前的家':'已擁有'):h.cost===0?'預設':h.lv>1?`需要 Lv.${h.lv} · ${h.cost} 星星糖`:`${h.cost} 星星糖・不限等級`}</small><div class="petacts">${btn}</div></div>`}
 function bindHomes(p,L){
   p.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>{const id=b.dataset.home;if(id===S.home)return;S.home=id;save();render();roomFX(()=>stage(),HM[id].n)});
-  p.querySelectorAll('[data-hbuy]').forEach(b=>b.onclick=()=>{const h=HM[b.dataset.hbuy];if(!h.img||S.candy<h.cost||L<h.lv)return;if(h.fest&&!festState(FESTS.find(f=>f.k===h.fest)).on)return;S.candy-=h.cost;(S.homes=S.homes||['R00']).push(h.id);S.home=h.id;save();render();SND.play('coin');roomFX(()=>stage(),h.n);setTimeout(()=>toast('買到新房間了！別忘了按右上角「存檔」'),2200)});
+  p.querySelectorAll('[data-hbuy]').forEach(b=>b.onclick=()=>{const h=HM[b.dataset.hbuy];if(!h.img||S.candy<h.cost||L<h.lv)return;if(h.fest&&!festState(FESTS.find(f=>f.k===h.fest)).on)return;S.candy-=h.cost;(S.homes=S.homes||['R00']).push(h.id);S.home=h.id;save();render();SND.play('coin');roomFX(()=>stage(),h.n);setTimeout(()=>toast('買到新房間了！'),2200)});
 }
 function room(t,rid){
   const R=ROOMS[t],f=R.f,has=k=>f.includes(k);
@@ -2186,7 +2186,7 @@ function toast(msg){const t=document.createElement('div');t.className='toast';t.
 const own=id=>S.items.includes(id);
 const mini=`${CANDY.replace('<svg','<svg width="14" height="14"')}`;
 function buy(it){if(it.slot==='special'){if(it.fest&&!festState(FESTS.find(f=>f.k===it.fest)).on)return;trySp=null}const L=levelOf(S.exp);if(own(it.id)||S.candy<it.cost||L<it.lv)return;if(it.fest&&!festState(FESTS.find(f=>f.k===it.fest)).on)return;
-  S.candy-=it.cost;S.items.push(it.id);S.eq[it.slot]=it.id;save();toast(`買到「${it.n}」！別忘了按右上角「立即存檔」`);stage(true);render();SND.play('coin');setTimeout(morphFX,180)}
+  S.candy-=it.cost;S.items.push(it.id);S.eq[it.slot]=it.id;save();toast(`買到「${it.n}」！`);stage(true);render();SND.play('coin');setTimeout(morphFX,180)}
 function itemCard(it,mode){
   const L=levelOf(S.exp),o=own(it.id),on=S.eq[it.slot]===it.id,lock=L<it.lv;let btn;
   if(mode==='wear'){btn=on?(OPTIONAL.includes(it.slot)?`<button class="act ghost2" data-off="${it.slot}">脫下</button>`:`<button class="act worn" disabled>穿著中</button>`):`<button class="act wear" data-wear="${it.id}">穿上</button>`}
@@ -2512,7 +2512,7 @@ function grant(exp,candy){
   const after=levelOf(S.exp);
   if(after<=before)return '';setTimeout(()=>SND.play('levelup'),250);
   const n=ITEMS.filter(o=>fits(o)&&o.lv>before&&o.lv<=after).length,sets=ITEMS.filter(o=>fits(o)&&o.lv>before&&o.lv<=after).map(o=>o.n||o.set);
-  return `<p class="fb ok" style="width:100%"><b>升級到 Lv.${after}！</b>${n?`商店新解鎖 ${n} 套造型${sets.length?'，包括「'+sets.slice(0,3).join('」「')+'」':''}`:'可以去看看新的小屋喔'}</p>`+`<button class="big" style="width:100%;background:#1f5f99" onclick="saveSheet()">💾 升級了！順手存檔</button>`;
+  return `<p class="fb ok" style="width:100%"><b>升級到 Lv.${after}！</b>${n?`商店新解鎖 ${n} 套造型${sets.length?'，包括「'+sets.slice(0,3).join('」「')+'」':''}`:'可以去看看新的小屋喔'}</p>`;
 }
 let gameStop=null;
 function stopGame(){if(gameStop){gameStop();gameStop=null}}
@@ -2807,7 +2807,7 @@ function mkBody(){
     <p>3. 每週六晚上 8 點收盤時，手上所有標的會<b>自動全部賣出</b>，星星糖退回給你。</p>
     <p>💡 小撇步：價格常常會<b>連續兩天往同一個方向走</b>，多觀察走勢圖；看到「⚡突發」新聞時，價格會一下子大漲或大跌！</p>
     <p>4. 風險越高，漲跌越大：可能賺很多，也可能賠很多。<b>不要把所有星星糖放在同一個籃子裡喔！</b></p>
-    <p>5. 每個人看到的價格都一樣。持有中的標的不會放進備份碼，換手機前建議先賣出。</p></div></details>`;
+    <p>5. 每個人看到的價格都一樣。${window.CLOUD_GATE?'持有狀態會隨帳號進度同步到雲端，離開前請確認同步完成。':'持有中的標的不會放進備份碼，換手機前建議先賣出。'}</p></div></details>`;
 }
 function mkBind(p){
   p.querySelectorAll('[data-mq]').forEach(b=>b.onclick=()=>{const k=b.dataset.mq;mkQty[k]=b.dataset.max?+b.dataset.max:Math.max(1,(mkQty[k]||1)+ +b.dataset.d);render()});
@@ -3309,7 +3309,7 @@ function pickChar(first){
 $('#candyIco').innerHTML=CANDY;
 $('#pbtn').onclick=playerSheet;
 const IN_APP=/\bLine\/|FBAN|FBAV|FB_IAB|Instagram|MicroMessenger/i.test(navigator.userAgent||'');
-if(IN_APP){const w=$('#savewarn');w.hidden=false;w.classList.add('inapp');w.querySelector('b').textContent='⚠ 你正在 LINE／Facebook 裡面玩，關掉後進度可能會消失！';w.querySelector('span').textContent='請點右上角「⋯」或「↗」→ 選「用預設瀏覽器開啟」（Safari 或 Chrome），進度才會自動保存。暫時要在這裡玩的話，結束前一定要按「立即存檔」截圖 QR Code。';const a=document.createElement('a');a.className='act buy extbtn';a.href=EXT_URL;a.target='_blank';a.rel='noopener';a.textContent='🌐 直接用瀏覽器開啟';w.appendChild(a)}
+if(IN_APP){const w=$('#savewarn');w.hidden=false;w.classList.add('inapp');w.querySelector('b').textContent=window.CLOUD_GATE?'你正在 LINE／Facebook 內建瀏覽器中遊玩':'⚠ 你正在 LINE／Facebook 裡面玩，關掉後進度可能會消失！';w.querySelector('span').textContent=window.CLOUD_GATE?'請使用原本的玩家帳號登入，並確認下方顯示「已存到雲端」後再離開。若登入或播放有問題，可改用 Safari 或 Chrome 開啟。':'請點右上角「⋯」或「↗」→ 選「用預設瀏覽器開啟」（Safari 或 Chrome），進度才會自動保存。暫時要在這裡玩的話，結束前一定要按「立即存檔」截圖 QR Code。';const a=document.createElement('a');a.className='act buy extbtn';a.href=EXT_URL;a.target='_blank';a.rel='noopener';a.textContent='🌐 直接用瀏覽器開啟';w.appendChild(a)}
 if(!STORAGE_OK){$('#savewarn').hidden=false;$('#savefoot').textContent='⚠ 這個瀏覽器無法自動存檔，請使用備份碼保存進度'}
 $('#swbtn').onclick=saveSheet;
 
@@ -3339,6 +3339,6 @@ if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造�
 </script>
 <script src="home-ui.js?v=20261111-follow16"></script>
 <script src="festgames.js?v=20261110-moon-integration1"></script>
-<script src="cloud.js?v=20261111-follow16"></script>
+<script src="cloud.js?v=20261111-cloudsave17"></script>
 </body></html>
 </body></html>
