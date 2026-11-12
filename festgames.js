@@ -10,8 +10,8 @@ window.GAMEF = window.GAMEF || {};
 const FG_RATE=3;
 // 1 個節慶貨幣 = 3 顆星星糖
 
-const TRIAL_PRICE=50;
-// 星宮每次體驗 50 顆星星糖
+const TRIAL_PRICES=Object.freeze([100,200,500]);
+// 每款遊戲各自依當日已開始次數計價。
 
 const TRIAL_DAILY=3;
 // 星宮每一個小遊戲每天可體驗 3 次
@@ -716,19 +716,20 @@ window.festMenu=function(k){
 ========================================================= */
 
 let cur=null;
+const trialPriceFor=k=>TRIAL_PRICES[TS().used[k]|0]??null;
 
 
 function launch(k,trial){
   if(cur||window.CLOUD_GATE&&!window.FS_CLOUD_READY)return;
   if(!GAMEF[k]||GAMEF[k].status!=='ready'){comingSoon(k);return;}
   if(!trial&&(!onNow(k)||FS(k).left<=0))return;
-  if(trial&&((TS().used[k]|0)>=TRIAL_DAILY||S.candy<TRIAL_PRICE))return;
+  if(trial&&trialPriceFor(k)==null)return;
   closeQuiz();try{SND.pause()}catch(e){}
   const session=crypto.randomUUID();
   const box=document.createElement('div');box.id='fgFrame';
-  box.innerHTML=`<iframe src="${GAMEF[k].url}?embed=1&char=${S.char||'f'}&session=${session}&trialPrice=${TRIAL_PRICE}${trial?'&trial=1':''}" title="${GAMEF[k].title}" allow="autoplay"></iframe><div class="fg-loading" id="fgLoading"><div><p id="fgLoadText" role="status">正在載入遊戲，尚未扣除次數或星星糖…</p><button class="big" id="fgLoadBack">${trial?'返回星宮體驗館':'返回活動頁'}</button></div></div>`;
+  box.innerHTML=`<iframe src="${GAMEF[k].url}?embed=1&char=${S.char||'f'}&session=${session}${trial?`&trial=1&trialPrice=${trialPriceFor(k)}&trialUsed=${TS().used[k]|0}&balance=${S.candy}`:`&runsLeft=${FS(k).left}`}" title="${GAMEF[k].title}" allow="autoplay"></iframe><div class="fg-loading" id="fgLoading"><div><p id="fgLoadText" role="status">正在載入遊戲，尚未扣除次數或星星糖…</p><button class="big" id="fgLoadBack">${trial?'返回星宮體驗館':'返回活動頁'}</button></div></div>`;
   document.body.appendChild(box);
-  cur={k,frame:box.querySelector('iframe'),session,got:false,started:false,ready:false,trial:!!trial};
+  cur={k,frame:box.querySelector('iframe'),session,got:false,started:false,ready:false,trial:!!trial,quotedPrice:trial?trialPriceFor(k):null,quotedDay:TS().day};
   cur.loadTimer=setTimeout(()=>{const text=document.getElementById('fgLoadText');if(text)text.textContent='遊戲載入較久或素材無法取得，尚未扣次。可以先返回再試一次。';},12000);
   document.getElementById('fgLoadBack').onclick=closeCurrentGame;
 }
@@ -744,7 +745,7 @@ function closeCurrentGame(){
 /* =========================================================
    🏰 星宮體驗館
    每個節慶遊戲每天可體驗 3 次
-   每次 50 星星糖
+   每款當日依序 100／200／500 星星糖，按開始才扣款
    沒有正式節慶獎勵
 ========================================================= */
 
@@ -838,11 +839,6 @@ window.starPalace=function(panel){
               ${g.n}・${g.title}
             </b>
 
-            <span class="tagx">
-              體驗模式
-            </span>
-
-
             ${
               used>=TRIAL_DAILY
 
@@ -851,8 +847,7 @@ window.starPalace=function(panel){
                   class="act"
                   disabled
                 >
-                  今天已體驗
-                  ${TRIAL_DAILY}/${TRIAL_DAILY}
+                  今日已玩滿
                 </button>
               `
 
@@ -860,11 +855,8 @@ window.starPalace=function(panel){
                 <button
                   class="act buy"
                   data-tp="${k}"
-                  ${S.candy<TRIAL_PRICE?'disabled':''}
                 >
-                  ⭐ ${TRIAL_PRICE}
-                  體驗一次
-                  （${used}/${TRIAL_DAILY}）
+                  查看遊戲・剩 ${TRIAL_DAILY-used} 次
                 </button>
               `
             }
@@ -926,7 +918,7 @@ window.starPalace=function(panel){
 
     +`
 
-    <div class="page-facts"><span>每次 ${TRIAL_PRICE} 糖</span><span>每遊戲每日 ${TRIAL_DAILY} 次</span><span>體驗無獎勵</span><span>不占活動次數</span></div>
+    <p class="hint">每款每日最多 ${TRIAL_DAILY} 次</p>
 
     <div class="fg-bal">
 
@@ -966,15 +958,6 @@ window.starPalace=function(panel){
 
         if(
           (t.used[k]|0)>=TRIAL_DAILY
-          ||
-          S.candy<TRIAL_PRICE
-        )return;
-
-
-        if(
-          !confirm(
-            `花 ${TRIAL_PRICE} 顆星星糖體驗「${g.title}」一次？\n體驗模式沒有任何獎勵喔！`
-          )
         )return;
 
 
@@ -1018,9 +1001,14 @@ addEventListener('message',e=>{
   const d=e.data||{};
   if(d.session!==cur.session||d.fsGame!==cur.k)return;
   const reply=(type,extra={})=>cur.frame.contentWindow.postMessage({type,session:cur.session,...extra},location.origin==='null'?'*':location.origin);
+  const offer=()=>{
+    const k=cur.k,used=TS().used[k]|0,price=trialPriceFor(k);
+    cur.quotedPrice=price;cur.quotedDay=TS().day;
+    reply('fsGameOffer',{trial:cur.trial,used,price,balance:S.candy,remaining:cur.trial?Math.max(0,TRIAL_DAILY-used):FS(k).left,canStart:cur.trial?price!==null&&S.candy>=price:onNow(k)&&FS(k).left>0});
+  };
   const close=closeCurrentGame;
   if(d.type==='fsGameReady'){
-    cur.ready=true;clearTimeout(cur.loadTimer);document.getElementById('fgLoading')?.remove();return;
+    cur.ready=true;clearTimeout(cur.loadTimer);document.getElementById('fgLoading')?.remove();offer();return;
   }
   if(d.type==='fsGameStart'){
     if(!cur.ready||GAMEF[cur.k]?.status!=='ready'){reply('fsGameStarted',{ok:false,message:'遊戲尚未準備完成，請返回後再試。'});return;}
@@ -1028,10 +1016,12 @@ addEventListener('message',e=>{
     const k=cur.k;
     if(cur.trial){
       const t=TS();
-      if((t.used[k]|0)>=TRIAL_DAILY||S.candy<TRIAL_PRICE){reply('fsGameStarted',{ok:false,message:'體驗次數或星星糖不足，請返回體驗館。'});return}
-      S.candy-=TRIAL_PRICE;t.used[k]=(t.used[k]|0)+1;window.FSTAT&&FSTAT('t:'+k);
+      const price=trialPriceFor(k);
+      if(price!==cur.quotedPrice||t.day!==cur.quotedDay){reply('fsGameStarted',{ok:false,message:'已更新本次費用，請確認後再按支付並開始。'});offer();return}
+      if(price===null||S.candy<price){reply('fsGameStarted',{ok:false,message:'體驗次數或星星糖不足，請返回體驗館。'});offer();return}
+      S.candy-=price;t.used[k]=(t.used[k]|0)+1;window.FSTAT&&FSTAT('t:'+k);
     }else{
-      if(!onNow(k)||FS(k).left<=0){reply('fsGameStarted',{ok:false,message:'活動未開放或今日次數已用完，請返回活動頁。'});return}
+      if(!onNow(k)||FS(k).left<=0){reply('fsGameStarted',{ok:false,message:'活動未開放或今日次數已用完，請返回活動頁。'});offer();return}
       FS(k).left--;window.FSTAT&&FSTAT('f:'+k);
     }
     cur.started=true;save();reply('fsGameStarted',{ok:true});return;
@@ -1046,7 +1036,7 @@ addEventListener('message',e=>{
   }
   if(d.type==='fsGameReplay'&&cur.got){
     const {k,trial}=cur;
-    const can=trial?(TS().used[k]|0)<TRIAL_DAILY&&S.candy>=TRIAL_PRICE:onNow(k)&&FS(k).left>0;
+    const can=trial?trialPriceFor(k)!==null:onNow(k)&&FS(k).left>0;
     close();if(can)launch(k,trial);else toast(trial?'今日體驗次數已用完或星星糖不足':'今天的活動次數已用完，或活動已結束');
     return;
   }
