@@ -5,7 +5,7 @@
     halloween: {
       label:'萬聖夜・幽靈捉迷藏', title:'萬聖節找小幽靈',
       lead:'找出藏起來的小幽靈，把萬聖糖果帶回家。',
-      rules:['點擊小幽靈；第三關要點場景中的藏匿處。','三關限時 10／10／20 秒，找齊 5 隻普通幽靈或時間到就換關。','完成第三關後結算；金色幽靈是額外獎勵，不影響過關。'],
+      rules:['第一關 10 秒：點出南瓜田的小幽靈。','第二關 10 秒：抓準時機點會飄動的小幽靈。','第三關 20 秒：點場景藏匿處；各關找齊 5 隻普通幽靈或時間到就換關／結算。'],
       detail:'普通幽靈每隻給 1～5 顆糖果，金色幽靈給 10 顆。想拿金色獎勵，要在找齊普通幽靈前點牠。剩餘秒數不帶到下一關；第三關可留意冒煙與沙沙聲。', art:'.lvls'
     },
     xmas: {
@@ -52,7 +52,7 @@
     }
   };
   window.FSIntro = {
-    prepare(card, {key, start, note, exit, embedded, trial, root}) {
+    prepare(card, {key, start, note, exit, embedded, trial, root, offer}) {
       const data=pages[key]; if(!data||!start)return;
       const overlay=card.parentElement.closest('.overlay,.panel');
       if(overlay&&root&&!root.contains(overlay))root.append(overlay);
@@ -65,9 +65,11 @@
       const heading=document.createElement('header');heading.className='fs-intro-heading';
       const label=document.createElement('div');label.className='fs-intro-label';label.textContent=data.label;
       const title=document.createElement('h1');title.textContent=data.title;heading.append(label,title);
+      const badge=document.createElement('div');badge.className='fs-intro-mode';badge.textContent=embedded?(trial?'星宮體驗':'節慶活動'):'單獨試玩';heading.prepend(badge);
       const scrollHint=document.createElement('div');scrollHint.className='fs-intro-scrollhint';scrollHint.textContent='↕ 下滑查看完整玩法';scrollHint.hidden=true;heading.append(scrollHint);
       const body=document.createElement('div');body.className='fs-intro-body';body.tabIndex=0;body.setAttribute('aria-label','玩法說明，可上下捲動');
       const lead=document.createElement('p');lead.className='fs-intro-lead';lead.textContent=data.lead;body.append(lead);
+      const stages=document.createElement('h2');stages.className='fs-intro-stages';stages.textContent=({halloween:'共 3 關・10／10／20 秒',xmas:'共 1 關・40 秒',newyear:'共 2 關・放鞭炮 → 趕年獸',children:'共 1 關・40 秒',duanwu:'共 2 關・問答 → 龍舟競速',qixi:'共 1 關・記憶築橋',moon:'共 2 關・嫦娥奔月 → 玉兔接月餅',national:'共 1 關・60 秒'})[key];body.append(stages);
       if(mode){
         const h=document.createElement('h2');h.textContent='選擇模式';
         for(const button of mode.querySelectorAll('button')){
@@ -83,15 +85,34 @@
       if(art){art.classList.add('fs-intro-art');details.append(art)}body.append(details,...alerts);
       const footer=document.createElement('footer');footer.className='fs-intro-actions';
       start.classList.add('fs-intro-start');exit.classList.add('fs-intro-return');
-      exit.textContent=embedded?(trial?'返回星宮體驗館':'返回活動頁'):'返回主頁';
-      const buttons=document.createElement('div');buttons.className='fs-intro-buttons';buttons.append(start,exit);
-      footer.append(note);if(load)footer.append(load);footer.append(buttons);
+      exit.textContent=embedded?(trial?'返回體驗館':'返回活動頁'):'返回主頁';
+      const buttons=document.createElement('div');buttons.className='fs-intro-buttons';buttons.append(exit,start);
+      const payment=document.createElement('div');payment.className='fs-intro-payment';payment.setAttribute('aria-live','polite');
+      const error=document.createElement('p');error.className='fs-intro-error';error.hidden=true;error.setAttribute('role','alert');
+      footer.append(payment,note,error);if(load)footer.append(load);footer.append(buttons);
       card.replaceChildren(heading,body,footer);
       const resize=new ResizeObserver(()=>{scrollHint.hidden=body.scrollHeight<=body.clientHeight+1});resize.observe(body);
-      const labelStart=()=>{if(!start.disabled&&start.textContent!=='開始遊戲')start.textContent='開始遊戲'};
+      let blocked=false;
+      const labelStart=()=>{
+        if(blocked){if(!start.disabled)start.disabled=true;const text=offer.remaining<=0?'今日已玩滿':trial?'餘額不足':'活動未開放';if(start.textContent!==text)start.textContent=text;return;}
+        const text=embedded?(trial?'支付並開始':'開始活動'):'開始遊戲';if(!start.disabled&&start.textContent!==text)start.textContent=text;
+      };
       labelStart();const observer=new MutationObserver(labelStart);observer.observe(start,{attributes:true,attributeFilter:['disabled'],childList:true,subtree:true,characterData:true});
       if(load){const status=()=>{load.hidden=!start.disabled&&!/失敗|錯誤|無法|不足|未備妥/.test(load.textContent)};status();new MutationObserver(status).observe(load,{childList:true,subtree:true,characterData:true});new MutationObserver(status).observe(start,{attributes:true,attributeFilter:['disabled']})}
-      return () => {observer.disconnect();resize.disconnect();card.classList.remove('fs-intro-card');overlay?.classList.remove('fs-intro-overlay')};
+      const cleanup=() => {observer.disconnect();resize.disconnect();card.classList.remove('fs-intro-card');overlay?.classList.remove('fs-intro-overlay')};
+      cleanup.updateOffer=value=>{
+        offer=value;const wasBlocked=blocked;blocked=embedded&&offer.canStart===false;
+        payment.replaceChildren();
+        if(trial&&embedded){
+          const price=document.createElement('strong');price.textContent=offer.remaining>0?`第 ${offer.used+1} 次・${offer.price} 星星糖`:'今日體驗次數已用完';
+          const balance=document.createElement('span');balance.textContent=`目前餘額 ${offer.balance} 星星糖`;payment.append(price,balance);
+        }else payment.textContent=embedded?`今日還能玩 ${offer.remaining} 次`:'';
+        payment.hidden=!embedded;
+        if(wasBlocked&&!blocked&&window.fsQuestionsReady!==false)start.disabled=false;
+        labelStart();
+      };
+      cleanup.showError=message=>{error.textContent=message;error.hidden=false};
+      cleanup.updateOffer(offer);return cleanup;
     }
   };
 })();

@@ -7,7 +7,8 @@
   const session = q.get('session');
   const trial = q.get('trial') === '1';
   const ui=window.FS_UI||{};
-  const trialPrice = Number(q.get('trialPrice')) || 50;
+  let offer={trial,price:Number(q.get('trialPrice'))||100,used:Number(q.get('trialUsed'))||0,balance:Number(q.get('balance'))||0,remaining:trial?3-(Number(q.get('trialUsed'))||0):Number(q.get('runsLeft'))||0,canStart:true};
+  if(trial&&embedded)offer.canStart=offer.balance>=offer.price&&offer.remaining>0;
   let phase = 'ready', released = false, startButton, sent = false, releaseIntro;
   let muted = false;
   try { muted = localStorage.getItem('fs-festival-muted') === '1'; } catch {}
@@ -38,7 +39,7 @@
     const result=document.querySelector(ui.result||'#resP .card,#result .modal');
     if(!result)return;
     if(!document.getElementById('fsResultFooter')){const p=document.createElement('p');p.id='fsResultFooter';p.hidden=true;p.innerHTML='<span id="fsStatus"></span>';result.append(p);}
-    document.querySelectorAll('#againBtn,#again').forEach(b=>b.textContent=trial?`再體驗一次（${trialPrice} 星星糖）`:'再玩一次');
+    document.querySelectorAll('#againBtn,#again').forEach(b=>b.textContent=trial?'再體驗一次':'再玩一次');
     document.querySelectorAll('#homeBtn,#out').forEach(b=>b.textContent=trial?'返回星宮體驗館':'返回活動頁');
   }
   function status(text) { const el = document.getElementById('fsStatus'); if (el) el.textContent = text; }
@@ -65,8 +66,9 @@
   addEventListener('message', e => {
     if (!embedded || e.source !== parent || e.origin !== location.origin || e.data?.session !== session) return;
     const d = e.data;
+    if(d.type==='fsGameOffer'){offer={...offer,...d};releaseIntro?.updateOffer?.(offer);return;}
     if (d.type === 'fsGameStarted' && phase === 'starting') {
-      if (!d.ok) { phase = 'ready'; startButton.disabled = false; status(d.message); alert(d.message); return; }
+      if (!d.ok) { phase = 'ready'; startButton.disabled = false; status(d.message);releaseIntro?.showError?.(d.message);return; }
       phase = 'playing'; releaseIntro?.(); released = true; startButton.disabled = false; startButton.click(); released = false;
     }
     if (d.type === 'fsGameSettled' && phase === 'settling') unlock(d.trial ? '體驗完成，本局不發正式獎勵。' : `已入帳：${d.earned} 個活動貨幣`);
@@ -96,9 +98,9 @@
     const result=document.querySelector(ui.result||'#resP .card,#result .modal');
     const title=result.querySelector('h1');if(title&&!ui.samePanel)title.textContent='本局結算';
     const intro=document.querySelector(ui.intro||'#startP .card,#intro .modal');
-    const note = document.createElement('p'); note.className = 'fs-rule'; note.textContent = `${trial ? '星宮體驗・不發正式獎勵。' : '完成遊戲才發獎。'}開始後無法暫停，中途離開不發獎。`; intro.append(note);
+    const note = document.createElement('p'); note.className = 'fs-rule'; note.textContent = trial?'不發活動獎勵・不占活動次數；開始後不暫停，中途離開不退費。':'完成才發獎；開始後不暫停，中途離開不發獎。'; intro.append(note);
     const introExit = document.createElement('button'); introExit.className = 'sub btn alt'; introExit.textContent = trial ? '返回星宮體驗館' : '離開'; introExit.onclick = FSGame.close; intro.append(introExit);
-    releaseIntro=window.FSIntro?.prepare(intro,{key,start:document.getElementById(ui.start||'goBtn')||document.getElementById('go'),note,exit:introExit,embedded,trial,root});
+    releaseIntro=window.FSIntro?.prepare(intro,{key,start:document.getElementById(ui.start||'goBtn')||document.getElementById('go'),note,exit:introExit,embedded,trial,root,offer});
     // Capture before legacy per-game listeners, including their sound/pause handlers.
     document.addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b) return;
@@ -119,6 +121,7 @@
       }
       if (['goBtn','go',ui.start].filter(Boolean).includes(b.id) && !released) {
         e.preventDefault(); e.stopImmediatePropagation(); if (phase !== 'ready' || window.fsQuestionsReady === false) return;
+        if(trial&&embedded&&!offer.canStart)return;
         startButton = b;
         if (embedded) { phase = 'starting'; b.disabled = true; send('fsGameStart'); }
         else { phase = 'playing'; releaseIntro?.(); released = true; b.click(); released = false; }
