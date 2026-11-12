@@ -640,7 +640,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261112-smooth31">
+<link rel="stylesheet" href="home-ui.css?v=20261112-stars33">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -2196,7 +2196,7 @@ function sceneImageReady(src){
   const pending=new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>{if(image.decode)image.decode().then(resolve).catch(resolve);else resolve()};image.onerror=()=>reject(new Error('image-load'));image.src=src;});
   sceneImages.set(src,pending);pending.catch(()=>sceneImages.delete(src));return pending;
 }
-function stopSceneAnimations(){sceneAnimations.forEach(a=>a.cancel());sceneAnimations=[];document.querySelectorAll('#stage .room-previous,#stage .scene-glow').forEach(e=>e.remove());document.querySelectorAll('#stagewrap .ofx,#stagewrap .rfx').forEach(e=>e.remove());}
+function stopSceneAnimations(){sceneAnimations.forEach(a=>a.cancel());sceneAnimations=[];document.querySelectorAll('#stage .room-previous,#stage .scene-previous,#stage .scene-curtains,#stage .scene-stars,#stage .scene-glow').forEach(e=>e.remove());document.querySelectorAll('#stagewrap .ofx,#stagewrap .rfx').forEach(e=>e.remove());}
 addEventListener('fs-player-changing',()=>{sceneVersion++;stopSceneAnimations();const st=document.getElementById('stage');if(st){st.innerHTML='';delete st.dataset.sceneRoom}});
 function stage(anim){
   const version=++sceneVersion;
@@ -2214,20 +2214,18 @@ function stage(anim){
 
   const holder=document.createElement('template');holder.innerHTML=markup;
   const sources=[...new Set([...holder.content.querySelectorAll('image,img')].map(el=>el.getAttribute('href')||el.getAttribute('src')).filter(Boolean))];
-  scenePending=Promise.all(sources.map(sceneImageReady)).then(()=>{
+  scenePending=Promise.all(sources.map(sceneImageReady)).then(async()=>{
     if(version!==sceneVersion)return;
     const st=$('#stage');if(!st)return;
-    const oldBackground=st.querySelector('.room-backdrop')?.cloneNode(true),oldFig=st.querySelector('.fig')?.innerHTML,oldRoom=st.dataset.sceneRoom;
-    stopSceneAnimations();st.classList.remove('pop','morph');st.innerHTML=markup;st.dataset.sceneRoom=R.id||R.img||R.n;
+    const oldFig=st.querySelector('.fig')?.innerHTML,oldRoom=st.dataset.sceneRoom;
+    stopSceneAnimations();const oldScene=st.querySelector(':scope>svg')?.cloneNode(true);
+    st.classList.remove('pop','morph');st.innerHTML=markup;st.dataset.sceneRoom=R.id||R.img||R.n;
     const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(!reduced&&oldBackground&&oldRoom!==st.dataset.sceneRoom){
-      oldBackground.classList.remove('room-backdrop');oldBackground.classList.add('room-previous');oldBackground.setAttribute('aria-hidden','true');
-      st.querySelector('.room-backdrop').after(oldBackground);
-      const animation=oldBackground.animate([{opacity:1},{opacity:0}],{duration:400,easing:'ease-out',fill:'forwards'});sceneAnimations.push(animation);
-      animation.finished.then(()=>oldBackground.remove()).catch(()=>oldBackground.remove());
-    }
-    if(oldFig&&oldFig!==st.querySelector('.fig')?.innerHTML)morphFX();
-  {const m=$('#msin');if(m){const sv=$('#stage svg');if(sv){const preview=sv.cloneNode(true);preview.querySelector('.pet-companion')?.remove();m.innerHTML=preview.outerHTML.replace(/viewBox="[^"]*"/,'viewBox="190 60 220 330" preserveAspectRatio="xMidYMid slice"')}else m.innerHTML=''}}
+    if(!reduced&&oldScene&&oldRoom!==st.dataset.sceneRoom){
+      await roomSceneTransition(st,oldScene,version);
+      if(version!==sceneVersion)return;
+    }else if(oldFig&&oldFig!==st.querySelector('.fig')?.innerHTML)morphFX();
+  {const m=$('#msin');if(m){const sv=$('#stage svg');if(sv){const preview=sv.cloneNode(true);preview.querySelectorAll('.pet-companion,.scene-previous,.scene-curtains,.scene-stars').forEach(el=>el.remove());m.innerHTML=preview.outerHTML.replace(/viewBox="[^"]*"/,'viewBox="190 60 220 330" preserveAspectRatio="xMidYMid slice"')}else m.innerHTML=''}}
 
   }).catch(()=>{if(version===sceneVersion)toast('圖片暫時無法載入，請稍後再試。')});
   return scenePending;
@@ -2455,7 +2453,7 @@ function renderHome(p,L){
 setInterval(()=>{const active=followingPet();if(active){const before=active.gifts||0;petTick(active);if((active.gifts||0)!==before)save();}if(['home','market'].includes(tab)&&$('#modal').hidden)render()},15000);
 ['wardrobe','room','home','market','shop'].forEach(k=>$('#t-'+k).onclick=()=>{tab=k;if(trySp&&k!=='shop'){trySp=null;stage()}render()});
 document.addEventListener('click',e=>{if(e.target.closest('#t-quest')){e.preventDefault();tab='quest';questView='hub';if(trySp){trySp=null;stage()}render();
-  setTimeout(()=>{const p=$('#panel'),w=$('#stagewrap');if(!p||!w)return;const y=p.getBoundingClientRect().top+scrollY-w.offsetHeight-6;if(scrollY>y)scrollTo({top:Math.max(0,y)})},0)}});
+  {const p=$('#panel'),w=$('#stagewrap'),app=document.querySelector('.app');if(p&&w&&app)app.style.setProperty('--quest-entry-offset',Math.max(0,p.getBoundingClientRect().top+scrollY-w.getBoundingClientRect().height-12)+'px');window.FSHomeUI?.scrollPanel()}}});
 
 
 /* ---------- quiz ---------- */
@@ -3068,12 +3066,39 @@ SND.setTheme(baseTheme());
 /* ---------- 換裝變身動畫 ---------- */
 function fxLayer(cls){const w=$('#stagewrap'),st=$('#stage');if(!w||!st)return null;w.querySelectorAll('.'+cls).forEach(x=>x.remove());
   const L=document.createElement('div');L.className='fxl '+cls;L.style.height=st.offsetHeight+'px';w.appendChild(L);return L}
+function sceneAnimate(el,frames,options){
+  const animation=el.animate(frames,{easing:'ease-out',...options});sceneAnimations.push(animation);return animation.finished.catch(()=>{});
+}
+function sceneStars(st,mode){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const svg=st.querySelector(':scope>svg');if(!svg)return;
+  const layer=document.createElementNS('http://www.w3.org/2000/svg','g');layer.setAttribute('class','scene-stars');layer.setAttribute('aria-hidden','true');
+  const points=mode==='room'?[[186,75],[412,94],[260,195],[362,286]]:[[220,103],[374,127],[205,223],[391,252],[238,337],[351,345]];
+  layer.innerHTML=points.map(([x,y],i)=>'<g transform="translate('+x+' '+y+')"><path class="scene-star" d="M0 -9 2.5 -2.5 9 0 2.5 2.5 0 9 -2.5 2.5 -9 0 -2.5 -2.5Z" style="opacity:0"/></g>').join('');svg.appendChild(layer);
+  Promise.all([...layer.querySelectorAll('path')].map((star,i)=>sceneAnimate(star,[{opacity:0,transform:'scale(.35)'},{opacity:.9,transform:'scale(1)',offset:.35},{opacity:0,transform:'scale(.55)'}],{duration:450,delay:i*30}))).then(()=>layer.remove());
+}
+async function roomSceneTransition(st,previous,version){
+  const svg=st.querySelector(':scope>svg'),ns='http://www.w3.org/2000/svg';if(!svg)return;
+  previous.setAttribute('class','scene-previous');previous.setAttribute('aria-hidden','true');previous.removeAttribute('role');previous.removeAttribute('aria-label');previous.setAttribute('x','0');previous.setAttribute('y','0');previous.setAttribute('width','600');previous.setAttribute('height','400');svg.appendChild(previous);
+  const layer=document.createElementNS(ns,'g');layer.setAttribute('class','scene-curtains');layer.setAttribute('aria-hidden','true');
+  const fabric='scene-fabric-'+version,shade='scene-shade-'+version;
+  layer.innerHTML='<defs><linearGradient id="'+fabric+'" gradientUnits="userSpaceOnUse" x1="0" x2="76" spreadMethod="repeat"><stop stop-color="#202d52"/><stop offset=".18" stop-color="#52618b"/><stop offset=".37" stop-color="#686695"/><stop offset=".58" stop-color="#323c68"/><stop offset=".76" stop-color="#1c274e"/><stop offset="1" stop-color="#202d52"/></linearGradient><linearGradient id="'+shade+'" x2="0" y2="1"><stop stop-color="#b9bef0" stop-opacity=".08"/><stop offset=".55" stop-color="#131933" stop-opacity="0"/><stop offset="1" stop-color="#0c142c" stop-opacity=".28"/></linearGradient></defs>';
+  const makePanel=(side)=>{const panel=document.createElementNS(ns,'g');panel.setAttribute('class','scene-curtain-panel '+side);const x=side==='left'?0:298;panel.innerHTML='<rect x="'+x+'" y="0" width="302" height="400" fill="url(#'+fabric+')"/><rect x="'+x+'" y="0" width="302" height="400" fill="url(#'+shade+')"/><path d="M'+x+' 365h302m-302 4h302" stroke="#d6c9a4" stroke-opacity=".5" stroke-width=".8"/><path d="M'+(side==='left'?301:299)+' 0v400" stroke="#d6c9a4" stroke-opacity=".75" stroke-width="1"/>';
+    [[35,48],[91,134],[166,76],[231,212],[67,302],[264,330]].forEach(([cx,cy],i)=>{const dot=document.createElementNS(ns,'circle');dot.setAttribute('cx',x+cx);dot.setAttribute('cy',cy);dot.setAttribute('r',i%2?.7:1);dot.setAttribute('fill','#e3dfc9');dot.setAttribute('opacity','.45');panel.appendChild(dot)});return panel;};
+  const left=makePanel('left'),right=makePanel('right');layer.append(left,right);svg.appendChild(layer);
+  await Promise.all([sceneAnimate(left,[{transform:'translateX(-102%)',opacity:.65},{transform:'translateX(0)',opacity:1}],{duration:280,fill:'forwards',easing:'cubic-bezier(.4,0,.2,1)'}),sceneAnimate(right,[{transform:'translateX(102%)',opacity:.65},{transform:'translateX(0)',opacity:1}],{duration:280,fill:'forwards',easing:'cubic-bezier(.4,0,.2,1)'})]);
+  if(version!==sceneVersion||!layer.isConnected){previous.remove();layer.remove();return;}
+  previous.remove();sceneStars(st,'room');
+  const seam=document.createElementNS(ns,'path');seam.setAttribute('d','M300 8v384');seam.setAttribute('class','scene-seam');layer.appendChild(seam);sceneAnimate(seam,[{opacity:0},{opacity:.75,offset:.3},{opacity:0}],{duration:330});
+  await Promise.all([sceneAnimate(left,[{transform:'translateX(0)',opacity:1},{transform:'translateX(-102%)',opacity:0}],{duration:430,delay:70,fill:'forwards',easing:'cubic-bezier(.4,0,.2,1)'}),sceneAnimate(right,[{transform:'translateX(0)',opacity:1},{transform:'translateX(102%)',opacity:0}],{duration:430,delay:70,fill:'forwards',easing:'cubic-bezier(.4,0,.2,1)'})]);
+  layer.remove();
+}
 function morphFX(){
   const st=$('#stage'),fig=st?.querySelector('.fig');if(!fig||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const animation=fig.animate([{opacity:.35},{opacity:1}],{duration:300,easing:'ease-out'});sceneAnimations.push(animation);
   const glow=document.createElement('i');glow.className='scene-glow';glow.setAttribute('aria-hidden','true');st.appendChild(glow);
   const light=glow.animate([{opacity:0},{opacity:.45,offset:.25},{opacity:0}],{duration:340,easing:'ease-out'});sceneAnimations.push(light);light.finished.then(()=>glow.remove()).catch(()=>glow.remove());
-  SND.play('magic');
+  sceneStars(st,'outfit');SND.play('magic');
 }
 function roomFX(apply,name){SND.play('open');apply();}
 
@@ -3418,7 +3443,7 @@ function savePop(){saveBoard();const ok=S.lastBackup&&S.backupSig===progSig();
   <button class="big" id="sp1" style="width:100%">💾 立即存檔</button><button class="ghost" id="sp2" style="width:100%">📂 讀取存檔</button>`);
   $('#sp1').onclick=saveSheet;$('#sp2').onclick=()=>openRestore(false)}
 $('#saveicon').onclick=savePop;
-$('.tabs').addEventListener('click',()=>setTimeout(()=>{const p=$('#panel'),w=$('#stagewrap');if(!p||!w)return;const y=p.getBoundingClientRect().top+scrollY-w.offsetHeight-6;if(scrollY>y)scrollTo({top:Math.max(0,y)})},0));
+$('.tabs').addEventListener('click',()=>{const p=$('#panel'),w=$('#stagewrap'),app=document.querySelector('.app');if(p&&w&&app)app.style.setProperty('--quest-entry-offset',Math.max(0,p.getBoundingClientRect().top+scrollY-w.getBoundingClientRect().height-12)+'px');window.FSHomeUI?.scrollPanel()});
 $('#svbtn').onclick=saveSheet;
 $('#ldbtn').onclick=()=>openRestore(false);
 setInterval(saveBoard,30000);

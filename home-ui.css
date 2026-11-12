@@ -410,3 +410,21 @@ html{background:radial-gradient(ellipse at 16% 10%,#393365 0,transparent 52%) fi
 #stage .scene-glow{position:absolute;left:28%;right:28%;top:30%;bottom:8%;pointer-events:none;border-radius:50%;background:radial-gradient(ellipse,#d5dcff44,transparent 68%);opacity:0}
 #stage .room-previous{pointer-events:none}
 @media(prefers-reduced-motion:reduce){#stage .scene-glow{display:none}}
+
+/* Short, scene-bound curtain and star effects; controls remain outside the SVG overlay. */
+#stage :is(.scene-curtains,.scene-previous,.scene-stars){pointer-events:none}
+#stage .scene-curtain-panel{transform-box:fill-box;transform-origin:center;will-change:transform,opacity}
+#stage .scene-star{fill:#fff0c6;stroke:#f3f1ff;stroke-width:.7;transform-box:fill-box;transform-origin:center;pointer-events:none}
+#stage .scene-seam{stroke:#f1e6c7;stroke-width:1.5;fill:none;opacity:0;pointer-events:none}
+@media(prefers-reduced-motion:reduce){#stage :is(.scene-curtains,.scene-stars){display:none}}
+
+/* Category identity lives in the accent lines, leaving the card surface light. */
+#panel .portal-main{--entry-ink:#3f659e;--entry-tint:#e0eafb;border-color:#b8cce7}
+#panel .portal-practice{--entry-ink:#2e7a80;--entry-tint:#dceff0;border-color:#b5d6d7}
+#panel .portal-competition{--entry-ink:#7b5b9b;--entry-tint:#e9e0f3;border-color:#cebedf}
+#panel .quest-portal{border-left:3px solid var(--entry-ink);box-shadow:inset 0 1px 0 #fff,0 2px 6px #334b7210}
+#panel .quest-portal::after{content:'';position:absolute;top:7px;left:64px;right:36px;height:1px;pointer-events:none;background:linear-gradient(90deg,transparent,var(--entry-ink),transparent);opacity:.16}
+#panel .portal-icon{border-color:color-mix(in srgb,var(--entry-ink) 25%,transparent);background:linear-gradient(135deg,#fffe,#ffffff65)}
+#panel .portal-arrow{color:var(--entry-ink);font-weight:500}
+/* Allow the short hub to reach the same header position without a delayed jump. */
+.app:has(#panel>.quest-portals){min-height:calc(100svh + var(--quest-entry-offset,0px))}
