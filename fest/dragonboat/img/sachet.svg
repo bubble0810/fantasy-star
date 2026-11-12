@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 64">
-  <!-- Reuses the green pouch, gold trim, flower and red tassels of index.html's sachet accessory. -->
-  <path d="M24 3v12" stroke="#d7192f" stroke-width="3" fill="none"/>
-  <path d="M10 18Q24 9 38 18L34 43Q24 50 14 43Z" fill="#2bb673" stroke="#efc66b" stroke-width="2.5"/>
-  <path d="M12 19Q24 25 36 19M18 47l-2 14M30 47l2 14" fill="none" stroke="#d7192f" stroke-width="2.5"/>
-  <g fill="#efc66b"><ellipse cx="24" cy="28" rx="3" ry="5"/><ellipse cx="24" cy="37" rx="3" ry="5"/><ellipse cx="19.5" cy="32.5" rx="5" ry="3"/><ellipse cx="28.5" cy="32.5" rx="5" ry="3"/></g>
-  <circle cx="24" cy="32.5" r="3" fill="#fff9d8"/>
-</svg>
