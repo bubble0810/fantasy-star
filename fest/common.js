@@ -8,7 +8,7 @@
   const trial = q.get('trial') === '1';
   const ui=window.FS_UI||{};
   const trialPrice = Number(q.get('trialPrice')) || 50;
-  let phase = 'ready', released = false, startButton, sent = false;
+  let phase = 'ready', released = false, startButton, sent = false, releaseIntro;
   let muted = false;
   try { muted = localStorage.getItem('fs-festival-muted') === '1'; } catch {}
   const outputs = new Map();
@@ -67,7 +67,7 @@
     const d = e.data;
     if (d.type === 'fsGameStarted' && phase === 'starting') {
       if (!d.ok) { phase = 'ready'; startButton.disabled = false; status(d.message); alert(d.message); return; }
-      phase = 'playing'; released = true; startButton.disabled = false; startButton.click(); released = false;
+      phase = 'playing'; releaseIntro?.(); released = true; startButton.disabled = false; startButton.click(); released = false;
     }
     if (d.type === 'fsGameSettled' && phase === 'settling') unlock(d.trial ? '體驗完成，本局不發正式獎勵。' : `已入帳：${d.earned} 個活動貨幣`);
   });
@@ -98,6 +98,7 @@
     const intro=document.querySelector(ui.intro||'#startP .card,#intro .modal');
     const note = document.createElement('p'); note.className = 'fs-rule'; note.textContent = `${trial ? '星宮體驗・不發正式獎勵。' : '完成遊戲才發獎。'}開始後無法暫停，中途離開不發獎。`; intro.append(note);
     const introExit = document.createElement('button'); introExit.className = 'sub btn alt'; introExit.textContent = trial ? '返回星宮體驗館' : '離開'; introExit.onclick = FSGame.close; intro.append(introExit);
+    releaseIntro=window.FSIntro?.prepare(intro,{key,start:document.getElementById(ui.start||'goBtn')||document.getElementById('go'),note,exit:introExit,embedded,trial,root});
     // Capture before legacy per-game listeners, including their sound/pause handlers.
     document.addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b) return;
@@ -120,7 +121,7 @@
         e.preventDefault(); e.stopImmediatePropagation(); if (phase !== 'ready' || window.fsQuestionsReady === false) return;
         startButton = b;
         if (embedded) { phase = 'starting'; b.disabled = true; send('fsGameStart'); }
-        else { phase = 'playing'; released = true; b.click(); released = false; }
+        else { phase = 'playing'; releaseIntro?.(); released = true; b.click(); released = false; }
       }
     }, true);
     const updateTimer = () => {
