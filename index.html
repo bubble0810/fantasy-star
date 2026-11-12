@@ -640,7 +640,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261112-dice36">
+<link rel="stylesheet" href="home-ui.css?v=20261112-pet38">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -1959,14 +1959,14 @@ const SEEDS=[
  {k:'lily',n:'星光百合',lv:14,cost:160,min:180,sell:520,c:'#fff6c8',m:'#ffd166'}
 ];
 const PETS=[
- {k:'bunny',n:'小兔',lv:1,cost:0,gift:'幸運草',gv:47,c:'#ffffff',e:'#ffc6da',img:'pets/bunny.webp'},
- {k:'cat',n:'小貓咪',lv:5,cost:375,gift:'毛線球',gv:60,c:'#ffb36b',e:'#ff9a4d',hide:1},
- {k:'dog',n:'柴犬',lv:5,cost:500,gift:'古錢幣',gv:80,c:'#d9a066',e:'#8b5a2b',img:'pets/dog.webp'},
- {k:'fox',n:'小狐狸',lv:12,cost:1000,gift:'楓葉書籤',gv:120,c:'#ff8c3a',e:'#ffffff',hide:1},
- {k:'uni',n:'獨角獸',lv:20,cost:2000,gift:'彩虹寶石',gv:220,c:'#ffffff',e:'#c9a0ff',img:'pets/uni.webp'},
- {k:'tanuki',n:'狸貓',lv:10,cost:875,gift:'葉子護身符',gv:110,c:'#a87a52',e:'#5a3a22',img:'pets/tanuki.webp'},
- {k:'koi',n:'鯉魚王',lv:15,cost:1375,gift:'幸運珍珠',gv:160,c:'#ff7a45',e:'#ffffff',img:'pets/koi.webp'},
- {k:'dragon',n:'幻影龍',lv:28,cost:3250,gift:'星晶碎片',gv:280,c:'#3a2a5c',e:'#b48cff',img:'pets/dragon.webp'}
+ {k:'bunny',n:'小兔',lv:1,cost:0,feed:10,gift:'幸運草',gv:47,c:'#ffffff',e:'#ffc6da',img:'pets/bunny.webp'},
+ {k:'cat',n:'小貓咪',lv:5,cost:375,feed:20,gift:'毛線球',gv:60,c:'#ffb36b',e:'#ff9a4d',hide:1},
+ {k:'dog',n:'柴犬',lv:5,cost:1200,feed:20,gift:'古錢幣',gv:80,c:'#d9a066',e:'#8b5a2b',img:'pets/dog.webp'},
+ {k:'fox',n:'小狐狸',lv:12,cost:1000,feed:40,gift:'楓葉書籤',gv:120,c:'#ff8c3a',e:'#ffffff',hide:1},
+ {k:'uni',n:'獨角獸',lv:20,cost:12000,feed:80,gift:'彩虹寶石',gv:220,c:'#ffffff',e:'#c9a0ff',img:'pets/uni.webp'},
+ {k:'tanuki',n:'狸貓',lv:10,cost:2800,feed:40,gift:'葉子護身符',gv:110,c:'#a87a52',e:'#5a3a22',img:'pets/tanuki.webp'},
+ {k:'koi',n:'鯉魚王',lv:15,cost:6000,feed:60,gift:'幸運珍珠',gv:160,c:'#ff7a45',e:'#ffffff',img:'pets/koi.webp'},
+ {k:'dragon',n:'幻影龍',lv:28,cost:20000,feed:100,gift:'星晶碎片',gv:280,c:'#3a2a5c',e:'#b48cff',img:'pets/dragon.webp'}
 ];
 const PET_ORDER=['bunny','dog','tanuki','koi','uni','dragon','cat','fox'];
 const PLOT_COST=[0,0,0,0,120,240,400,600,900];
@@ -2394,11 +2394,11 @@ function renderHome(p,L){
   if(homeSub==='pets'){
     const P=S.pets[S.pet]||S.pets[0],def=PETS.find(x=>x.k===P.k),h=petHunger(P),lvp=petLevel(P),canPlay=Date.now()-(P.pT||0)>=10*MIN;
     const mood=h<25?'sad':(P.happyT&&Date.now()-P.happyT<4000)?'happy':'normal';
-    body=`<div class="sub pet-picker">${S.pets.map((x,i)=>`<button aria-pressed="${i===S.pet}" data-pet="${i}">${PETS.find(d=>d.k===x.k).n}</button>`).join('')}</div>
+    body=`<div class="merchant pet-merchant">${merchantSVG('#5aa7ff')}<p><b>寵物飼育員・雪鈴</b>「餵食、陪玩讓寶貝成長；跟隨後還會帶回幸運物喔！」</p></div><div class="sub pet-picker">${S.pets.map((x,i)=>`<button aria-pressed="${i===S.pet}" data-pet="${i}">${PETS.find(d=>d.k===x.k).n}</button>`).join('')}</div>
     <section class="petbox pet-dashboard" aria-label="${def.n}的照護與狀態">
       <header class="pet-heading"><h3>${def.n}</h3><span class="pet-meta">Lv.${lvp} · ${h<25?'肚子餓了':mood==='happy'?'心情愉快':'狀態良好'}</span><span class="pet-follow-badge">${petFollowUnlocked()&&S.petFollowKey===P.k?'跟隨中':'未跟隨'}</span></header>
       <div class="pet-actions" aria-label="寵物操作">
-        <button class="act buy" data-feed ${S.candy<10?'disabled':''}><span>餵食</span><small>10 糖</small></button>
+        <button class="act buy" data-feed ${S.candy<def.feed?'disabled':''} aria-label="餵食，花費 ${def.feed} 星星糖"><span>餵食</span><span class="feed-cost">${def.feed}</span>${mini}</button>
         <button class="act wear" data-play ${canPlay?'':'disabled'}>${canPlay?'陪牠玩':'休息中'}</button>
         <button class="act wear" data-follow ${petFollowUnlocked()?'':'disabled'} aria-pressed="${petFollowUnlocked()&&S.petFollowKey===P.k}">${petFollowUnlocked()&&S.petFollowKey===P.k?'取消跟隨':'跟隨'}</button>
         <button class="act water" data-gift ${P.gifts?'':'disabled'}><span>收禮物</span><small>×${P.gifts||0}</small></button>
@@ -2449,7 +2449,7 @@ function renderHome(p,L){
   p.querySelectorAll('[data-pet]').forEach(b=>b.onclick=()=>{S.pet=+b.dataset.pet;save();render()});
   const P=S.pets[S.pet]||S.pets[0];
   const follow=p.querySelector('[data-follow]');if(follow)follow.onclick=()=>setFollowingPet(S.petFollowKey===P.k?null:P.k);
-  const fd=p.querySelector('[data-feed]');if(fd)fd.onclick=()=>{if(S.candy<10)return;S.candy-=10;setHunger(P,petHunger(P)+35);P.aff+=3;P.happyT=Date.now();save();render()};
+  const fd=p.querySelector('[data-feed]');if(fd)fd.onclick=()=>{const cost=PETS.find(d=>d.k===P.k).feed;if(S.candy<cost)return;S.candy-=cost;setHunger(P,petHunger(P)+35);P.aff+=3;P.happyT=Date.now();save();render()};
   const pl=p.querySelector('[data-play]');if(pl)pl.onclick=()=>{P.pT=Date.now();P.aff+=8;setHunger(P,petHunger(P)-8);P.happyT=Date.now();save();toast('玩得好開心！親密度 +8');render()};
   const gf=p.querySelector('[data-gift]');if(gf)gf.onclick=()=>{const active=followingPet();if(active)petTick(active);const d=PETS.find(x=>x.k===P.k);const n=P.gifts||0,trips=P.giftTrips||0;if(!n)return;bagAdd(d.gift,n);P.gifts=0;P.giftTrips=0;P.aff+=trips;save();toast(`收到 ${n} 個${d.gift}！`);render()};
   p.querySelectorAll('[data-adopt]').forEach(b=>b.onclick=()=>{const d=PETS.find(x=>x.k===b.dataset.adopt);if(S.candy<d.cost||L<d.lv)return;S.candy-=d.cost;S.pets.push({k:d.k,h:80,hT:Date.now(),aff:0,gT:Date.now(),gifts:0,pT:0});S.pet=S.pets.length-1;save();toast(`歡迎${d.n}加入家園！`);render()});

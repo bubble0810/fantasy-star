@@ -486,3 +486,11 @@ html{background:radial-gradient(ellipse at 16% 10%,#393365 0,transparent 52%) fi
 #panel .dice-rules .dtable>span{font:400 12px/1.5 var(--body);padding:5px 8px;border-radius:6px}
 #panel .dice-rules>.hint{margin:0 0 10px}
 #panel #dres:empty{display:none}
+
+/* Food price stays on one line, including on narrow phone screens. */
+#panel .pet-actions>[data-feed]{flex-direction:row;flex-wrap:nowrap;gap:2px;white-space:nowrap;font-size:12px;line-height:1.4;padding-inline:2px}
+#panel .pet-actions>[data-feed] .feed-cost{font-variant-numeric:tabular-nums}
+#panel .pet-actions>[data-feed] svg{display:block;flex:0 0 12px;width:12px;height:12px}
+
+#panel .adopt [data-adopt]{box-sizing:border-box;align-self:stretch;width:100%;min-width:0;flex-wrap:nowrap;white-space:nowrap;overflow-wrap:normal;padding-inline:6px;font-size:13px;font-variant-numeric:tabular-nums}
+#panel .adopt [data-adopt] svg{display:block;flex:0 0 14px;width:14px;height:14px}
