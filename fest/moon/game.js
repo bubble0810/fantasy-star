@@ -30,7 +30,7 @@ function prepareCollisionArt(){
   for(const type of ['normal','gold','branch'])collisionArt.items[type]=MoonCollision.unpack(MOON_COLLISION_ATLAS.items[type]);
 }
 window.fsQuestionsReady=false;
-Promise.all(['rabbit-bg.jpg','moon-bg.jpg','rabbits-alpha-v2.png','moon-atlas-alpha-v2.png'].map(image)).then(()=>{prepareCollisionArt();$('go').disabled=false;$('go').textContent='開始中秋挑戰';window.fsQuestionsReady=true;}).catch(e=>{window.fsQuestionsReady=false;$('go').textContent='素材尚未備妥';$('loadStatus').textContent='素材載入失敗，請重新整理或返回。未開始不扣次。';console.error('Moon asset load failed:',e.message);});
+Promise.all(['rabbit-bg.jpg','moon-bg.jpg','rabbits-alpha-v2.png','moon-atlas-alpha-v2.png'].map(image)).then(()=>{if(!window.MoonAudio||!window.MoonCollision||!window.MOON_COLLISION_ATLAS)throw new Error('必要遊戲程式未載入');prepareCollisionArt();$('go').disabled=false;$('go').textContent='開始中秋挑戰';window.fsQuestionsReady=true;}).catch(e=>{window.fsQuestionsReady=false;$('go').textContent='素材尚未備妥';$('loadStatus').textContent='素材載入失敗，請重新整理或返回。未開始不扣次。';console.error('Moon asset load failed:',e.message);});
 for(let i=0;i<3;i++){
   const lane=document.createElement('div');lane.className='lane';lane.style.left=`${lanes[i].x/W*100-11}%`;
   lane.setAttribute('role','group');lane.setAttribute('aria-label',`${['左','中','右'][i]}玉兔，上滑跳接、下滑神隱`);lane.tabIndex=0;
@@ -125,7 +125,7 @@ function drawRabbits(now){background('rabbit-bg.jpg');
     const shape=rabbitShape(r,now);sprite('rabbits-alpha-v2.png',r.sprite,shape.row,3,3,shape.x,shape.y,shape.w,shape.h,alpha);
     if(now<r.immuneUntil){ctx.save();ctx.globalAlpha=.65;ctx.strokeStyle='#ffe18b';ctx.lineWidth=5;ctx.shadowColor='#ffd25c';ctx.shadowBlur=24;ctx.beginPath();ctx.ellipse(r.x,r.y-RABBIT.height*.48+dy,RABBIT.width*.58,RABBIT.height*.53,0,0,Math.PI*2);ctx.stroke();ctx.restore();text(`免暈 ${Math.ceil((r.immuneUntil-now)/1000)} 秒`,r.x,r.y-RABBIT.height-20+dy,25,'#ffe59a');}
     if(state==='stun'){for(let star=0;star<3;star++){const angle=t*7+star*Math.PI*2/3;text('✦',r.x+Math.cos(angle)*55,r.y-RABBIT.height+Math.sin(angle)*14,26,'#efc9ff');}}
-    const control=$('laneControls').children[i];control.classList.toggle('stunned',state==='stun');control.querySelector('.swipeHint').innerHTML=state==='stun'?'暈眩中…<br>稍等一下':'↑ 上滑跳接<br>↓ 下滑神隱';
+    const control=$('laneControls').children[i];control.classList.toggle('stunned',state==='stun');control.querySelector('.swipeHint').textContent=state==='stun'?'暈眩':'';
   });
   drawEffects(now);
   if(debugCollision)drawCollisionDebug(now);
@@ -151,13 +151,14 @@ function drawMoon(now){background('moon-bg.jpg');let pos=step===0?startPosition:
     ctx.save();ctx.fillStyle='#110e32b8';ctx.beginPath();ctx.arc(cx,cy,RING_VISUAL.backdrop,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle=good?'#ffdf77aa':'#b38d464f';ctx.lineWidth=RING_VISUAL.travel*(spec.max-spec.min);ctx.beginPath();ctx.arc(cx,cy,RING_VISUAL.radius-RING_VISUAL.travel*(spec.min+spec.max)/2,0,Math.PI*2);ctx.stroke();
     for(const edge of [spec.min,spec.max]){ctx.strokeStyle='#ffe09c';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx,cy,RING_VISUAL.radius-RING_VISUAL.travel*edge,0,Math.PI*2);ctx.stroke();}
-    ctx.strokeStyle=good?'#fff8bd':'#fff5e7';ctx.lineWidth=7;ctx.shadowColor='#ffe2aa';ctx.shadowBlur=good?20:0;ctx.beginPath();ctx.arc(cx,cy,outer,0,Math.PI*2);ctx.stroke();ctx.restore();text(good?'現在點！':'等光圈縮入金框',cx,cy+8,good?30:23);text(`${step}/8 次飛升`,cx,cy+156,25);
+    ctx.strokeStyle=good?'#fff8bd':'#fff5e7';ctx.lineWidth=7;ctx.shadowColor='#ffe2aa';ctx.shadowBlur=good?20:0;ctx.beginPath();ctx.arc(cx,cy,outer,0,Math.PI*2);ctx.stroke();ctx.restore();
   }
 }
 function loop(now){update(now);ctx.clearRect(0,0,W,H);if(['moon','between'].includes(mode))drawMoon(now);else if(mode==='intro')background('moon-bg.jpg');else drawRabbits(now);if(now>noticeUntil)$('notice').textContent='';requestAnimationFrame(loop);}
 $('go').addEventListener('click',begin);$('next').addEventListener('click',startRabbits);$('moonTap').addEventListener('click',judge);canvas.addEventListener('pointerdown',judge);
 addEventListener('keydown',e=>{if(e.repeat)return;if(mode==='rabbit'){const k=e.key.toLowerCase(),up='asd',down='zxc';if(up.includes(k)||down.includes(k)){e.preventDefault();act(up.includes(k)?up.indexOf(k):down.indexOf(k),up.includes(k)?'jump':'hide');}}else if(mode==='moon'&&e.code==='Space'){e.preventDefault();judge();}});
 requestAnimationFrame(loop);
+
 
 
 

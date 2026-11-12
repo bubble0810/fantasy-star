@@ -2,18 +2,18 @@
 <html lang="zh-Hant" data-game-key="moon"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#17132f">
 <title>中秋月華祭｜嫦娥奔月・玉兔接月餅</title>
-<link rel="stylesheet" href="game.css?v=20261110-7"><link rel="stylesheet" href="../common.css?v=20261110-shared2">
-<link rel="stylesheet" href="../intro.css?v=20261112-invite3"><script src="../intro.js?v=20261112-invite3"></script><script src="../common.js?v=20261112-invite3"></script><script defer src="music.js?v=20261110-2"></script><script defer src="collision.js?v=20261110-1"></script><script defer src="collision-masks.js?v=20261110-1"></script><script defer src="game.js?v=20261110-11"></script></head>
+<link rel="stylesheet" href="game.css?v=20261112-clean1"><link rel="stylesheet" href="../common.css?v=20261110-shared2">
+<link rel="stylesheet" href="../intro.css?v=20261112-invite3"><script src="../intro.js?v=20261112-invite3"></script><script src="../common.js?v=20261112-invite3"></script><script defer src="music.js?v=20261110-2"></script><script defer src="collision.js?v=20261110-1"></script><script defer src="collision-masks.js?v=20261110-1"></script><script defer src="game.js?v=20261112-clean1"></script></head>
 <body><main id="game">
 <canvas id="scene" width="1024" height="1536" aria-label="中秋月華祭遊戲場景"></canvas>
 <header class="hud"><span id="timeChip">準備開始</span><div class="loot">🥮 <span id="stock">0</span></div></header><button id="sound" aria-label="聲音開關">🔊</button>
-<div id="caption">嫦娥奔月・玉兔接月餅</div><div id="notice" role="status" aria-live="polite"></div><div id="laneControls" hidden></div><button id="moonTap" hidden>點一下・向月宮出發</button><div id="hint"></div>
+<div id="caption">嫦娥奔月・玉兔接月餅</div><div id="notice" role="status" aria-live="polite"></div><div id="laneControls" hidden></div><button id="moonTap" hidden>飛升</button><div id="hint"></div>
 <section id="intro" class="overlay"><div class="modal"><div class="eyebrow">月滿人間・團圓之夜</div><h1>中秋月華祭</h1>
 <h2>第一關・嫦娥奔月</h2><p>光圈進入金色範圍時點一下，<br>完成八次，陪嫦娥飄向月宮。<br>每次飛升的速度與金色範圍隨機變化，沒抓準可以再試。</p><p class="rules">完成越快，第二關金月餅越容易出現：<br>30 秒內 +50%・60 秒內 +30%・90 秒內 +10%<br>超過 90 秒維持預設機率；加成以原機率乘算。</p>
 <h2>第二關・玉兔接月餅</h2><p>照顧左、中、右三隻玉兔，挑戰 30 秒！<br>在兔子的軌道按住往上滑：跳接月餅；<br>往下滑：神隱躲開桂枝。</p>
 <p class="rules">普通月餅 ＋1・金月餅 ＋3，並讓該隻玉兔免暈眩 4 秒。<br>撞到桂枝只會暈眩，暫時無法跳接或神隱，不扣月餅。<br>月餅只停在跳高處，蹲坐和神隱都接不到。</p>
 <p class="rules">本版暫定：留下的月餅每顆兌換 2 活動月餅，最多 60。<br>兩關完成後結算。</p><button id="go" class="btn" disabled>素材載入中…</button><p id="loadStatus" role="status"></p></div></section>
-<section id="between" class="overlay" hidden><div class="modal"><div class="eyebrow">月宮賜福・玉兔接力</div><h1>嫦娥奔月完成</h1><p id="rabbitSummary"></p><p>帶著月宮祝福，開始 30 秒接月餅挑戰！<br>在兔子的軌道上滑跳接、下滑神隱。<br>金月餅還能獲得 4 秒免暈眩守護。</p><button id="next" class="btn">開始玉兔接月餅</button></div></section>
+<section id="between" class="overlay" hidden><div class="modal"><div class="eyebrow">月宮賜福・玉兔接力</div><h1>嫦娥奔月完成</h1><p id="rabbitSummary"></p><button id="next" class="btn">開始玉兔接月餅</button></div></section>
 <section id="result" class="overlay" hidden><div class="modal"><div class="eyebrow">月宮團圓</div><h1>本局結算</h1><div id="summary"></div><button id="again" class="btn">再玩一次</button><button id="out" class="btn alt">返回活動頁</button></div></section>
 </main></body></html>
 
