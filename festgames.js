@@ -918,16 +918,7 @@ window.starPalace=function(panel){
 
     +`
 
-    <p class="hint">每款每日最多 ${TRIAL_DAILY} 次</p>
-
-    <div class="fg-bal">
-
-      ⭐ 我的星星糖
-
-      <span>${S.candy}</span>
-
-    </div>
-
+    <p class="hint">選擇一款節慶遊戲體驗，每款每日最多 ${TRIAL_DAILY} 次。</p>
 
     <div class="tp-grid">
 
