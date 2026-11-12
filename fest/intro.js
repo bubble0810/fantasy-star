@@ -82,6 +82,7 @@
       const details=document.createElement('details');details.className='fs-intro-details';
       const summary=document.createElement('summary');summary.textContent='詳細規則與獎勵';
       const description=document.createElement('p');description.textContent=data.detail;details.append(summary,description);
+      const policy=document.createElement('p');policy.className='fs-intro-policy';policy.textContent=trial?'開始後無法暫停；中途離開不退費。':'開始後無法暫停；中途離開不發獎，也不退還已用次數。';details.append(policy);
       if(art){art.classList.add('fs-intro-art');details.append(art)}body.append(details,...alerts);
       const footer=document.createElement('footer');footer.className='fs-intro-actions';
       start.classList.add('fs-intro-start');exit.classList.add('fs-intro-return');
@@ -104,8 +105,8 @@
         offer=value;const wasBlocked=blocked;blocked=embedded&&offer.canStart===false;
         payment.replaceChildren();
         if(trial&&embedded){
-          const price=document.createElement('strong');price.textContent=offer.remaining>0?`第 ${offer.used+1} 次・${offer.price} 星星糖`:'今日體驗次數已用完';
-          const balance=document.createElement('span');balance.textContent=`目前餘額 ${offer.balance} 星星糖`;payment.append(price,balance);
+          const price=document.createElement('strong');price.textContent=offer.remaining>0?`本次 ${offer.price} 星星糖`:'今日體驗次數已用完';
+          const balance=document.createElement('span');balance.textContent=`餘額 ${offer.balance}`;payment.append(price,document.createTextNode('｜'),balance);
         }else payment.textContent=embedded?`今日還能玩 ${offer.remaining} 次`:'';
         payment.hidden=!embedded;
         if(wasBlocked&&!blocked&&window.fsQuestionsReady!==false)start.disabled=false;

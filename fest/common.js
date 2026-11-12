@@ -98,7 +98,7 @@
     const result=document.querySelector(ui.result||'#resP .card,#result .modal');
     const title=result.querySelector('h1');if(title&&!ui.samePanel)title.textContent='本局結算';
     const intro=document.querySelector(ui.intro||'#startP .card,#intro .modal');
-    const note = document.createElement('p'); note.className = 'fs-rule'; note.textContent = trial?'不發活動獎勵・不占活動次數；開始後不暫停，中途離開不退費。':'完成才發獎；開始後不暫停，中途離開不發獎。'; intro.append(note);
+    const note = document.createElement('p'); note.className = 'fs-rule';note.hidden=true;intro.append(note);
     const introExit = document.createElement('button'); introExit.className = 'sub btn alt'; introExit.textContent = trial ? '返回星宮體驗館' : '離開'; introExit.onclick = FSGame.close; intro.append(introExit);
     releaseIntro=window.FSIntro?.prepare(intro,{key,start:document.getElementById(ui.start||'goBtn')||document.getElementById('go'),note,exit:introExit,embedded,trial,root,offer});
     // Capture before legacy per-game listeners, including their sound/pause handlers.
