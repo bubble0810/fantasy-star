@@ -640,7 +640,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261112-stars33">
+<link rel="stylesheet" href="home-ui.css?v=20261112-pet35">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -2394,15 +2394,23 @@ function renderHome(p,L){
   if(homeSub==='pets'){
     const P=S.pets[S.pet]||S.pets[0],def=PETS.find(x=>x.k===P.k),h=petHunger(P),lvp=petLevel(P),canPlay=Date.now()-(P.pT||0)>=10*MIN;
     const mood=h<25?'sad':(P.happyT&&Date.now()-P.happyT<4000)?'happy':'normal';
-    body=`<div class="merchant">${merchantSVG('#5aa7ff')}<p><b>寵物飼育員・雪鈴</b>「寵物肚子餓了要記得餵喔！陪牠玩會更親近，設為跟隨的寶貝，每兩小時會帶幸運物回來喔～」</p></div><div class="sub">${S.pets.map((x,i)=>`<button aria-pressed="${i===S.pet}" data-pet="${i}">${PETS.find(d=>d.k===x.k).n}</button>`).join('')}</div>
-    <div class="petbox"><div class="petpic ${mood==='happy'?'bounce':''}">${petSVG(def,mood)}</div>
-      <div class="petinfo"><b>${def.n} <small>Lv.${lvp}</small></b>
-      <label>飽足度 <span class="pbar"><i style="width:${h.toFixed(0)}%;background:${h<25?'#f08aa0':'var(--mint)'}"></i></span></label>
-      <label>${lvp>=10?'親密度（已滿級）':'親密度'} <span class="pbar"><i style="width:${lvp>=10?100:(P.aff%50)*2}%;background:var(--rose)"></i></span></label>
-      <p class="hint">玩家達到 Lv.10 才能設定跟隨，之前可先餵食、陪玩及提升寵物等級。跟隨中的寵物每 2 小時帶回 ${lvp} 個「${def.gift}」，離線照常累積。所有寵物合計最多暫存 6 次（滿級共 60 個）；切換保留計時，取消則暫停。目前這隻累積 ${P.gifts||0} 個。餵食與陪玩可提高親密度。</p>
-      <p class="hint pet-follow-status">${!petFollowUnlocked()?'玩家 Lv.10 解鎖跟隨，目前只能進行寵物養成。':S.petFollowKey===P.k?(pendingPetTrips()>=6?'暫存已滿，領取後繼續計時。':'跟隨中・下次帶回約 '+fmtLeft(GIFT_EVERY-(S.petGiftClock?.elapsed||0))):'未跟隨・不會產出新的幸運物'}</p>
-      <div class="petacts"><button class="act wear" data-follow ${petFollowUnlocked()?'':'disabled'} aria-pressed="${petFollowUnlocked()&&S.petFollowKey===P.k}">${!petFollowUnlocked()?'玩家 Lv.10 解鎖跟隨':S.petFollowKey===P.k?'取消跟隨':'設為跟隨'}</button></div>
-      <div class="petacts"><button class="act buy" data-feed ${S.candy<10?'disabled':''}>餵食 ${mini}10</button><button class="act wear" data-play ${canPlay?'':'disabled'}>${canPlay?'陪牠玩':'休息中'}</button><button class="act water" data-gift ${P.gifts?'':'disabled'}>收禮物 ×${P.gifts}</button></div></div></div>
+    body=`<div class="sub pet-picker">${S.pets.map((x,i)=>`<button aria-pressed="${i===S.pet}" data-pet="${i}">${PETS.find(d=>d.k===x.k).n}</button>`).join('')}</div>
+    <section class="petbox pet-dashboard" aria-label="${def.n}的照護與狀態">
+      <header class="pet-heading"><h3>${def.n}</h3><span class="pet-meta">Lv.${lvp} · ${h<25?'肚子餓了':mood==='happy'?'心情愉快':'狀態良好'}</span><span class="pet-follow-badge">${petFollowUnlocked()&&S.petFollowKey===P.k?'跟隨中':'未跟隨'}</span></header>
+      <div class="pet-actions" aria-label="寵物操作">
+        <button class="act buy" data-feed ${S.candy<10?'disabled':''}><span>餵食</span><small>10 糖</small></button>
+        <button class="act wear" data-play ${canPlay?'':'disabled'}>${canPlay?'陪牠玩':'休息中'}</button>
+        <button class="act wear" data-follow ${petFollowUnlocked()?'':'disabled'} aria-pressed="${petFollowUnlocked()&&S.petFollowKey===P.k}">${petFollowUnlocked()&&S.petFollowKey===P.k?'取消跟隨':'跟隨'}</button>
+        <button class="act water" data-gift ${P.gifts?'':'disabled'}><span>收禮物</span><small>×${P.gifts||0}</small></button>
+      </div>
+      <div class="petpic ${mood==='happy'?'bounce':''}">${petSVG(def,mood)}</div>
+      <div class="petinfo">
+        <div class="pet-meter"><div><span>飽足度</span><small>${Math.round(h)}%</small></div><span class="pbar" role="progressbar" aria-label="飽足度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(h)}"><i style="width:${h.toFixed(0)}%;background:${h<25?'#cf718c':'#6aa99c'}"></i></span></div>
+        <div class="pet-meter"><div><span>親密度</span><small>${lvp>=10?'已滿級':Math.round((P.aff%50)*2)+'%'}</small></div><span class="pbar" role="progressbar" aria-label="本級親密度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${lvp>=10?100:Math.round((P.aff%50)*2)}"><i style="width:${lvp>=10?100:(P.aff%50)*2}%;background:#a391c4"></i></span></div>
+        <dl class="pet-gift-facts"><div><dt>幸運物</dt><dd>${def.gift}</dd></div><div><dt>每 2 小時</dt><dd>${lvp} 個</dd></div><div><dt>已累積</dt><dd>${P.gifts||0} 個</dd></div></dl>
+        <p class="hint pet-follow-status">${!petFollowUnlocked()?'玩家 Lv.10 開放跟隨':S.petFollowKey===P.k?(pendingPetTrips()>=6?'暫存已滿，記得領取':'下次帶回約 '+fmtLeft(GIFT_EVERY-(S.petGiftClock?.elapsed||0))):'跟隨後才會帶回幸運物'}</p>
+      </div>
+    </section>
     <h2>領養新寵物</h2><div class="adopt">${PETS.filter(d=>!d.hide&&!S.pets.some(x=>x.k===d.k)).sort((a,b)=>a.lv-b.lv).map(d=>`<div class="ad ${L<d.lv?'locked':''}">${petSVG(d,'normal')}<b>${d.n}</b><small>會帶回：${d.gift}</small><button class="act buy" data-adopt="${d.k}" ${L<d.lv||S.candy<d.cost?'disabled':''}>${L<d.lv?'Lv.'+d.lv+' 解鎖':mini+d.cost}</button></div>`).join('')||'<p class="hint">所有寵物都領養了！</p>'}</div>`;
   }
   if(homeSub==='dice'){
