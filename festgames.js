@@ -918,7 +918,7 @@ window.starPalace=function(panel){
 
     +`
 
-    <p class="hint">選擇一款節慶遊戲體驗，每款每日最多 ${TRIAL_DAILY} 次。</p>
+    <p class="hint">每款每日 ${TRIAL_DAILY} 次，依序收費 ${TRIAL_PRICES.join('／')} 星星糖。<br>體驗不發活動獎勵，也不占活動次數。</p>
 
     <div class="tp-grid">
 
