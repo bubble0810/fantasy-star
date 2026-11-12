@@ -640,7 +640,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261112-code29">
+<link rel="stylesheet" href="home-ui.css?v=20261112-smooth31">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -2189,7 +2189,17 @@ function hud(){
   window.FSHomeUI?.updateHud();
 }
 function stBadge(){try{if(!hwOn())return '';const H=hwS();return `<button class="stbadge" data-hwgo>🎃 南瓜燈夜巡<small>${H.run?'進行中':'剩 '+H.left+' 次'}</small></button>`}catch(e){return ''}}
+let sceneVersion=0,scenePending=Promise.resolve(),sceneAnimations=[];
+const sceneImages=new Map();
+function sceneImageReady(src){
+  if(sceneImages.has(src))return sceneImages.get(src);
+  const pending=new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>{if(image.decode)image.decode().then(resolve).catch(resolve);else resolve()};image.onerror=()=>reject(new Error('image-load'));image.src=src;});
+  sceneImages.set(src,pending);pending.catch(()=>sceneImages.delete(src));return pending;
+}
+function stopSceneAnimations(){sceneAnimations.forEach(a=>a.cancel());sceneAnimations=[];document.querySelectorAll('#stage .room-previous,#stage .scene-glow').forEach(e=>e.remove());document.querySelectorAll('#stagewrap .ofx,#stagewrap .rfx').forEach(e=>e.remove());}
+addEventListener('fs-player-changing',()=>{sceneVersion++;stopSceneAnimations();const st=document.getElementById('stage');if(st){st.innerHTML='';delete st.dataset.sceneRoom}});
 function stage(anim){
+  const version=++sceneVersion;
   const e=eqObj();
   const ch=S.char||'f',B=BASES[ch],R=curHome();
   const spi=e.special&&(e.special.src?[e.special.src,e.special.w,e.special.h]:SPIMG[e.special.img]);
@@ -2200,16 +2210,34 @@ function stage(anim){
     fig=`<image href="${src}" x="${W0/2-W2/2}" y="${FOOT-H2}" width="${W2}" height="${H2}"/>`;label=e.special.n}
   else{const Hf=BASE_H[ch]*K,vh=B.H+290,vw=B.W+520,h=Hf*vh/B.H,w=h*vw/vh,y0=FOOT-h*(B.floor+240)/vh;fw=w*.4;
     fig=`<svg x="${W0/2-w/2}" y="${y0}" width="${w}" height="${h}" viewBox="${vb3(ch,'all')}">${ONLY_SETS?plainDoll(ch):doll3(ch,e,'main')}</svg>`;label=ONLY_SETS?'基本服':(e.top.set||e.top.n)}
-  $('#stage').innerHTML=`<svg viewBox="0 0 ${W0} ${H0}" role="img" aria-label="${R.n}裡${spi?'穿著'+label+'的':'的'}${B.n}角色">${bg}<ellipse cx="${W0/2}" cy="${FOOT-2}" rx="${Math.max(48,fw*.42)}" ry="9" fill="#3b2853" opacity=".22"/><g class="fig">${fig}</g>${petFollowScene()}</svg><div class="tag"><b>${label}</b><span>· ${R.n}</span></div>${window.FSHomeUI?FSHomeUI.stageActions():''}`;
+  const markup=`<svg viewBox="0 0 ${W0} ${H0}" role="img" aria-label="${R.n}裡${spi?'穿著'+label+'的':'的'}${B.n}角色"><g class="room-backdrop">${bg}</g><ellipse cx="${W0/2}" cy="${FOOT-2}" rx="${Math.max(48,fw*.42)}" ry="9" fill="#3b2853" opacity=".22"/><g class="fig">${fig}</g>${petFollowScene()}</svg><div class="tag"><b>${label}</b><span>· ${R.n}</span></div>${window.FSHomeUI?FSHomeUI.stageActions():''}`;
+
+  const holder=document.createElement('template');holder.innerHTML=markup;
+  const sources=[...new Set([...holder.content.querySelectorAll('image,img')].map(el=>el.getAttribute('href')||el.getAttribute('src')).filter(Boolean))];
+  scenePending=Promise.all(sources.map(sceneImageReady)).then(()=>{
+    if(version!==sceneVersion)return;
+    const st=$('#stage');if(!st)return;
+    const oldBackground=st.querySelector('.room-backdrop')?.cloneNode(true),oldFig=st.querySelector('.fig')?.innerHTML,oldRoom=st.dataset.sceneRoom;
+    stopSceneAnimations();st.classList.remove('pop','morph');st.innerHTML=markup;st.dataset.sceneRoom=R.id||R.img||R.n;
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(!reduced&&oldBackground&&oldRoom!==st.dataset.sceneRoom){
+      oldBackground.classList.remove('room-backdrop');oldBackground.classList.add('room-previous');oldBackground.setAttribute('aria-hidden','true');
+      st.querySelector('.room-backdrop').after(oldBackground);
+      const animation=oldBackground.animate([{opacity:1},{opacity:0}],{duration:400,easing:'ease-out',fill:'forwards'});sceneAnimations.push(animation);
+      animation.finished.then(()=>oldBackground.remove()).catch(()=>oldBackground.remove());
+    }
+    if(oldFig&&oldFig!==st.querySelector('.fig')?.innerHTML)morphFX();
   {const m=$('#msin');if(m){const sv=$('#stage svg');if(sv){const preview=sv.cloneNode(true);preview.querySelector('.pet-companion')?.remove();m.innerHTML=preview.outerHTML.replace(/viewBox="[^"]*"/,'viewBox="190 60 220 330" preserveAspectRatio="xMidYMid slice"')}else m.innerHTML=''}}
-  if(anim){const el=$('#stage');el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}
+
+  }).catch(()=>{if(version===sceneVersion)toast('圖片暫時無法載入，請稍後再試。')});
+  return scenePending;
 }
 addEventListener('resize',()=>{if(S?.char)stage()});
 function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
 const own=id=>S.items.includes(id);
 const mini=`${CANDY.replace('<svg','<svg width="14" height="14"')}`;
 function buy(it){if(it.slot==='special'){if(it.fest&&!festState(FESTS.find(f=>f.k===it.fest)).on)return;trySp=null}const L=levelOf(S.exp);if(own(it.id)||S.candy<it.cost||L<it.lv)return;if(it.fest&&!festState(FESTS.find(f=>f.k===it.fest)).on)return;
-  S.candy-=it.cost;S.items.push(it.id);S.eq[it.slot]=it.id;save();toast(`買到「${it.n}」！`);stage(true);render();SND.play('coin');setTimeout(morphFX,180)}
+  S.candy-=it.cost;S.items.push(it.id);S.eq[it.slot]=it.id;save();toast(`買到「${it.n}」！`);stage(true);render();SND.play('coin');/* Scene transition runs after image decoding. */}
 function itemCard(it,mode){
   const L=levelOf(S.exp),o=own(it.id),on=S.eq[it.slot]===it.id,lock=L<it.lv;let btn;
   if(mode==='wear'){btn=on?(OPTIONAL.includes(it.slot)?`<button class="act ghost2" data-off="${it.slot}">脫下</button>`:`<button class="act worn" disabled>穿著中</button>`):`<button class="act wear" data-wear="${it.id}">穿上</button>`}
@@ -2222,7 +2250,7 @@ function itemCard(it,mode){
   return `<div class="card ${on?'on':''}"><div class="thumb">${thumb(it)}<span class="rg">${tag}</span>${lock&&!o&&mode!=='wear'?`<div class="lock">Lv.${it.lv} 解鎖</div>`:''}</div><div class="meta"><b>${it.set&&!['hair','back','outfit'].includes(it.slot)?it.set+'・'+SLOT_ALL.find(s=>s[0]===it.slot)[1]:it.n}</b>${btn}</div></div>`;
 }
 function bindCards(p){
-  p.querySelectorAll('[data-wear]').forEach(b=>b.onclick=()=>{const it=IT[b.dataset.wear];S.eq[it.slot]=it.id;save();stage(true);render();morphFX()});
+  p.querySelectorAll('[data-wear]').forEach(b=>b.onclick=()=>{const it=IT[b.dataset.wear];S.eq[it.slot]=it.id;save();stage(true);render()});
   p.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>{delete S.eq[b.dataset.off];save();stage(true);render();morphFX()});
   p.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>buy(IT[b.dataset.buy]));
 }
@@ -2243,7 +2271,7 @@ function render(){
   }
   else if(ONLY_SETS&&(tab==='wardrobe'||tab==='shop')){
     const ch=S.char||'f',isShop=tab==='shop',festTab=isShop&&shopSub==='fest',allMine=ITEMS.filter(i=>i.slot==='special'&&i.sx===ch&&!i.hide);
-    const sps=allMine.filter(i=>!i.coming&&(isShop?(festTab?!!i.fest:!i.fest):true)),soon=allMine.filter(i=>i.coming&&(isShop?(festTab?!!i.fest:!i.fest):true)),cur=S.eq.special;
+    const sps=allMine.filter(i=>!i.coming&&(isShop?(festTab?!!i.fest:!i.fest):own(i.id))),soon=isShop?allMine.filter(i=>i.coming&&(festTab?!!i.fest:!i.fest)):[],cur=S.eq.special;
     const fOn=i=>!i.fest||festState(FESTS.find(f=>f.k===i.fest)).on,fName=i=>i.fest?FESTS.find(f=>f.k===i.fest).n:'';
     const card=i=>{const o=own(i.id),lock=L<i.lv,on=cur===i.id,tr=trySp===i.id;
       const fOff=!fOn(i),hid=!o&&(lock||fOff),why=lock?`🔒 Lv.${i.lv} 解鎖`:fOff?`🔒 ${fmtMD(festState(FESTS.find(f=>f.k===i.fest)).next)} 開賣`:'';
@@ -2252,13 +2280,13 @@ function render(){
       else if(!fOn(i)){const st=festState(FESTS.find(f=>f.k===i.fest));btns+=`<button class="act" disabled>${fmtMD(st.next)} 開賣</button>`} else if(window.GAMEF&&GAMEF[i.fest]&&/SP0/.test(i.code))btns+=`<button class="act buy" data-fgo="${i.fest}">用${GAMEF[i.fest].cur}兌換</button>`
       else btns+=`<button class="act buy" data-buy="${i.id}" ${lock||S.candy<i.cost?'disabled':''}>${lock?'Lv.'+i.lv+' 解鎖':mini+i.cost}</button>`;
       return `<div class="spc ${on||tr?'on':''} ${hid?'locked':''}"><div class="silwrap"><span class="code image-code">${i.code.replace('B','').replace(/^[MF]SP/,'SP')}${i.code.endsWith('B')?'+':''}</span>${thumb(i)}${hid?`<span class="lockbadge">${why}</span>`:''}</div><b>${i.n}</b><small>${i.ser}${i.fest?`・<b class="fbadge">${fName(i)}限定</b>`:''}</small><small>${o?(on?'✦ 穿著中':(i.cost===0?'免費贈送・已擁有':'已擁有')):(i.lv>1?`需要 Lv.${i.lv} · ${i.cost} 星星糖`:`${i.cost} 星星糖・不限等級`)}</small><div class="petacts">${btns}</div></div>`};
-    const head2=tab==='wardrobe'?`<div class="fh"><h2>我的衣櫥 <span class="hint">（${sps.filter(i=>own(i.id)).length}/${sps.length} 套）</span></h2><button class="act ghost2" id="swc">切換成${ch==='m'?'女生':'男生'}角色</button></div><p class="hint">穿上套裝，角色就會整個變身；脫下後回到白色基本服。</p>`
+    const head2=tab==='wardrobe'?`<div class="fh"><h2>我的衣櫥 <span class="hint">（${sps.length} 套）</span></h2><button class="act ghost2" id="swc">切換成${ch==='m'?'女生':'男生'}角色</button></div><p class="hint">穿上套裝，角色就會整個變身；脫下後回到白色基本服。</p>`
       :`${shopTabs(festTab?'fest':'normal')}
       ${festTab?`<div class="merchant">${merchantSVG('#c2185b')}<p><b>節日應援商人</b>「我只在節日期間開賣限定造型！平常先存好星星糖，節日到了再來買喔。」</p></div><div class="festcal">${FESTS.map(f=>({f,st:festState(f)})).sort((a,b)=>(b.st.on-a.st.on)||((a.st.next||0)-(b.st.next||0))).map(({f,st})=>`<span class="${st.on?'on':''}" style="--fc:${f.c}"><b>${f.n}</b>${st.on?`販售中・剩 ${daysTo(st.end)} 天`:`${fmtMD(st.next)} 開賣`}</span>`).join('')}</div>`
         :`<div class="merchant">${merchantSVG('#e2508f')}<p><b>造型商人</b>「這裡有最精緻的${ch==='m'?'男生':'女生'}套裝！存夠星星糖就能買回家喔。」</p></div>`}`;
-    p.innerHTML=`${head2}<div class="spshow">${''?'<div class="fh"><span class="hint">試穿中，往上看看舞台</span><button class="act ghost2" id="tryoff">結束試穿</button></div>':''}${sps.length?(festTab?[...new Set(sps.map(i=>i.fest))].sort((a,b)=>fOn({fest:b})-fOn({fest:a})).map(fk=>`<h3 class="serh">${FESTS.find(f=>f.k===fk).n}限定</h3><div class="sprow">${sps.filter(i=>i.fest===fk).map(card).join('')}</div>`).join(''):[...new Set(sps.map(i=>i.ser))].map(se=>`<h3 class="serh">${se}</h3><div class="sprow">${sps.filter(i=>i.ser===se).map(card).join('')}</div>`).join('')):`<div class="empty"><b>新造型準備中</b><small>設計師正在製作${ch==='m'?'男生':'女生'}的新套裝，很快就會上架！先去闖關、種花、養寵物，存好星星糖吧。</small></div>`}
+    p.innerHTML=`${head2}<div class="spshow">${''?'<div class="fh"><span class="hint">試穿中，往上看看舞台</span><button class="act ghost2" id="tryoff">結束試穿</button></div>':''}${sps.length?(festTab?[...new Set(sps.map(i=>i.fest))].sort((a,b)=>fOn({fest:b})-fOn({fest:a})).map(fk=>`<h3 class="serh">${FESTS.find(f=>f.k===fk).n}限定</h3><div class="sprow">${sps.filter(i=>i.fest===fk).map(card).join('')}</div>`).join(''):[...new Set(sps.map(i=>i.ser))].map(se=>`<h3 class="serh">${se}</h3><div class="sprow">${sps.filter(i=>i.ser===se).map(card).join('')}</div>`).join('')):`<div class="empty"><b>${isShop?'新造型準備中':'尚未擁有這個角色的造型'}</b><small>${isShop?'設計師正在準備新套裝，敬請期待。':'取得造型後就會出現在這裡；可以切換角色，或到商城看看。'}</small></div>`}
       ${soon.length?`<details class="soon"><summary>即將推出（${soon.length} 款）</summary><div class="soonlist">${soon.map(i=>`<span><i>${i.code}</i>${i.n}<small>${i.fest?fName(i)+'限定':i.ser}</small></span>`).join('')}</div></details>`:''}
-      ${ITEMS.some(i=>i.slot==='special'&&!i.hide&&!i.coming&&i.sx!==ch)?`<p class="hint">${ch==='m'?'女生':'男生'}角色另有 ${ITEMS.filter(i=>i.slot==='special'&&!i.hide&&!i.coming&&i.sx!==ch).length} 套專屬套裝，切換角色就能看到。</p>`:''}${festTab&&HOMES.some(h=>h.fest)?`<h3 class="serh">節日限定小屋</h3><div class="hgrid">${HOMES.filter(h=>h.fest).map(h=>homeCard(h,L,'shop')).join('')}</div>`:''}</div>`;
+      ${ITEMS.some(i=>i.slot==='special'&&!i.hide&&!i.coming&&i.sx!==ch&&(isShop||own(i.id)))?`<p class="hint">${ch==='m'?'女生':'男生'}角色另有 ${ITEMS.filter(i=>i.slot==='special'&&!i.hide&&!i.coming&&i.sx!==ch&&(isShop||own(i.id))).length} 套${isShop?'專屬':'已擁有'}套裝，切換角色就能看到。</p>`:''}${festTab&&HOMES.some(h=>h.fest)?`<h3 class="serh">節日限定小屋</h3><div class="hgrid">${HOMES.filter(h=>h.fest).map(h=>homeCard(h,L,'shop')).join('')}</div>`:''}</div>`;
     bindCards(p);
     bindHomes(p,L);p.querySelectorAll('[data-sub]').forEach(b=>b.onclick=()=>{shopSub=b.dataset.sub;render()});
     p.querySelectorAll('[data-try]').forEach(b=>b.onclick=()=>{trySp=trySp===b.dataset.try?null:b.dataset.try;stage(true);render();if(trySp){window.scrollTo({top:0,behavior:'smooth'});toast('試穿中，往上看看舞台！')}});
@@ -3041,23 +3069,13 @@ SND.setTheme(baseTheme());
 function fxLayer(cls){const w=$('#stagewrap'),st=$('#stage');if(!w||!st)return null;w.querySelectorAll('.'+cls).forEach(x=>x.remove());
   const L=document.createElement('div');L.className='fxl '+cls;L.style.height=st.offsetHeight+'px';w.appendChild(L);return L}
 function morphFX(){
-  const st=$('#stage');if(!st)return;SND.play('magic');
-  st.classList.remove('morph');void st.offsetWidth;st.classList.add('morph');
-  const e=eqObj(),name=e.special?e.special.n:'基本服';
-  const L=fxLayer('ofx');if(!L)return;
-  const stars=Array.from({length:22},(_,i)=>{const x0=(Math.random()*36-18).toFixed(0),x1=(-x0*1.4).toFixed(0),c=['#ffd23f','#ff9fc6','#b48cff','#7fe0ff','#ffffff'][i%5];
-    return `<svg class="rise" viewBox="0 0 40 40" style="--x0:${x0}vw;--x1:${x1}vw;--d:${(Math.random()*.7).toFixed(2)}s;--s:${(.5+Math.random()*.9).toFixed(2)}"><path d="${star(20,20,18)}" fill="${c}"/></svg>`}).join('');
-  const burst=Array.from({length:16},(_,i)=>{const a=i/16*Math.PI*2,r=34+Math.random()*16;return `<svg class="burst" viewBox="0 0 40 40" style="--dx:${(Math.cos(a)*r).toFixed(1)}vw;--dy:${(Math.sin(a)*r*.6).toFixed(1)}vw"><path d="${star(20,20,18)}" fill="${['#ffd23f','#fff','#ff9fc6'][i%3]}"/></svg>`}).join('');
-  L.innerHTML=`<i class="dim"></i><svg class="mcircle" viewBox="0 0 200 200"><g fill="none" stroke="#ffe28a" stroke-width="3"><circle cx="100" cy="100" r="92"/><circle cx="100" cy="100" r="74" stroke-dasharray="6 6"/><path d="${star(100,100,70)}" stroke-width="2.5"/></g><g fill="#fff">${Array.from({length:12},(_,i)=>{const a=i/12*Math.PI*2;return `<circle cx="${(100+83*Math.cos(a)).toFixed(1)}" cy="${(100+83*Math.sin(a)).toFixed(1)}" r="3"/>`}).join('')}</g></svg><i class="beam"></i>${stars}<i class="wflash"></i>${burst}<div class="fxban"><b>✨ 變身成功！</b><span>${name}</span></div>`;
-  setTimeout(()=>L.remove(),2300);setTimeout(()=>st.classList.remove('morph'),1500);
+  const st=$('#stage'),fig=st?.querySelector('.fig');if(!fig||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const animation=fig.animate([{opacity:.35},{opacity:1}],{duration:300,easing:'ease-out'});sceneAnimations.push(animation);
+  const glow=document.createElement('i');glow.className='scene-glow';glow.setAttribute('aria-hidden','true');st.appendChild(glow);
+  const light=glow.animate([{opacity:0},{opacity:.45,offset:.25},{opacity:0}],{duration:340,easing:'ease-out'});sceneAnimations.push(light);light.finished.then(()=>glow.remove()).catch(()=>glow.remove());
+  SND.play('magic');
 }
-function roomFX(apply,name){
-  const L=fxLayer('rfx');if(!L){apply();return}SND.play('open');
-  L.innerHTML=`<i class="cur l"></i><i class="cur r"></i><i class="valance"></i>`;
-  setTimeout(()=>{apply();L.classList.add('open');SND.play('win');
-    L.insertAdjacentHTML('beforeend',`<div class="fxban room"><b>🏠 搬進新家！</b><span>${name}</span></div>`+Array.from({length:18},()=>`<svg class="confetti" viewBox="0 0 10 14" style="left:${(Math.random()*100).toFixed(0)}%;--d:${(Math.random()*.5).toFixed(2)}s;--r:${(Math.random()*720-360).toFixed(0)}deg"><rect width="10" height="14" rx="2" fill="${['#ff9fc6','#ffd23f','#7fe0ff','#b48cff','#3fd98b'][Math.floor(Math.random()*5)]}"/></svg>`).join(''))},620);
-  setTimeout(()=>L.remove(),2600);
-}
+function roomFX(apply,name){SND.play('open');apply();}
 
 /* ---------- 萬聖節特別活動：南瓜燈夜巡 ---------- */
 const HWF=()=>FESTS.find(f=>f.k==='halloween');

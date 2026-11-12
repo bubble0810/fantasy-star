@@ -400,3 +400,13 @@ html{background:radial-gradient(ellipse at 16% 10%,#393365 0,transparent 52%) fi
 /* Item identifiers stay readable on both bright and dark artwork. */
 #panel :is(.spc,.hc) .silwrap{position:relative;isolation:isolate}
 #panel .silwrap>.image-code{position:absolute;top:6px;left:6px;z-index:1;display:block;width:max-content;max-width:calc(100% - 12px);box-sizing:border-box;padding:2px 5px;margin:0;border:1px solid #ffffff35;border-radius:5px;background:#19263cb8;color:#fff;font:400 11px/1.35 ui-monospace,Menlo,monospace;letter-spacing:.02em;white-space:nowrap;pointer-events:none;box-shadow:0 1px 3px #18203026}
+
+/* Keep card actions visible without outweighing the outfit artwork. */
+#panel :is(.spc,.hc) :is([data-wear],[data-off],[data-home],.act.worn){font-size:13px;font-weight:400;min-height:44px}
+#panel :is(.spc,.hc) :is([data-wear],[data-home]){background:linear-gradient(120deg,#7669a8,#5f779f);border-color:#7883ae;box-shadow:inset 0 1px 0 #ffffff25;color:#fff}
+#panel :is(.spc,.hc) [data-off]{background:linear-gradient(120deg,#f8f7ff,#e9eef8);border-color:#c5cce1;color:#5a6181}
+#panel :is(.spc,.hc) .act.worn:disabled{background:linear-gradient(120deg,#edf6f3,#e0eee9);border-color:#c2d8cf;color:#4d7064}
+#stage.pop,#stage.morph .fig{animation:none!important}
+#stage .scene-glow{position:absolute;left:28%;right:28%;top:30%;bottom:8%;pointer-events:none;border-radius:50%;background:radial-gradient(ellipse,#d5dcff44,transparent 68%);opacity:0}
+#stage .room-previous{pointer-events:none}
+@media(prefers-reduced-motion:reduce){#stage .scene-glow{display:none}}
