@@ -640,7 +640,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261112-tools28">
+<link rel="stylesheet" href="home-ui.css?v=20261112-code29">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -1497,7 +1497,7 @@ function homeCard(h,L,mode){const o=(S.homes||[]).includes(h.id),on=curHome().id
   else if(lock)btn=`<button class="act" disabled>Lv.${h.lv} 解鎖</button>`;
   else if(h.fest&&!festState(FESTS.find(f=>f.k===h.fest)).on)btn=`<button class="act" disabled>${fmtMD(festState(FESTS.find(f=>f.k===h.fest)).next)} 開賣</button>`; else if(h.fest&&window.GAMEF&&GAMEF[h.fest])btn=`<button class="act buy" data-fgo="${h.fest}">用${GAMEF[h.fest].cur}兌換</button>`;
   else btn=`<button class="act buy" data-hbuy="${h.id}" ${S.candy<h.cost?'disabled':''}>${mini}${h.cost}</button>`;
-  return `<div class="hc ${on?'on':''} ${dark&&h.img?'locked':''}"><div class="silwrap">${pic}${dark&&h.img?`<span class="lockbadge">${why}</span>`:''}</div><b><span class="code">${h.fest?h.id.replace(/^SP/,'RSP'):h.id.slice(1)}</span>${h.n}</b><small>${h.st}${h.fest?`・<b class="fbadge">${FESTS.find(f=>f.k===h.fest).n}限定</b>`:''}</small><small>${o?(on?'✦ 目前的家':'已擁有'):h.cost===0?'預設':h.lv>1?`需要 Lv.${h.lv} · ${h.cost} 星星糖`:`${h.cost} 星星糖・不限等級`}</small><div class="petacts">${btn}</div></div>`}
+  return `<div class="hc ${on?'on':''} ${dark&&h.img?'locked':''}"><div class="silwrap"><span class="code image-code">${h.fest?h.id.replace(/^SP/,'RSP'):h.id.slice(1)}</span>${pic}${dark&&h.img?`<span class="lockbadge">${why}</span>`:''}</div><b>${h.n}</b><small>${h.st}${h.fest?`・<b class="fbadge">${FESTS.find(f=>f.k===h.fest).n}限定</b>`:''}</small><small>${o?(on?'✦ 目前的家':'已擁有'):h.cost===0?'預設':h.lv>1?`需要 Lv.${h.lv} · ${h.cost} 星星糖`:`${h.cost} 星星糖・不限等級`}</small><div class="petacts">${btn}</div></div>`}
 function bindHomes(p,L){
   p.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>{const id=b.dataset.home;if(id===S.home)return;S.home=id;save();render();roomFX(()=>stage(),HM[id].n)});
   p.querySelectorAll('[data-hbuy]').forEach(b=>b.onclick=()=>{const h=HM[b.dataset.hbuy];if(!h.img||S.candy<h.cost||L<h.lv)return;if(h.fest&&!festState(FESTS.find(f=>f.k===h.fest)).on)return;S.candy-=h.cost;(S.homes=S.homes||['R00']).push(h.id);S.home=h.id;save();render();SND.play('coin');roomFX(()=>stage(),h.n);setTimeout(()=>toast('買到新房間了！'),2200)});
@@ -2251,7 +2251,7 @@ function render(){
       if(o)btns+=on?`<button class="act ghost2" data-off="special">脫下</button>`:`<button class="act wear" data-wear="${i.id}">穿上</button>`;
       else if(!fOn(i)){const st=festState(FESTS.find(f=>f.k===i.fest));btns+=`<button class="act" disabled>${fmtMD(st.next)} 開賣</button>`} else if(window.GAMEF&&GAMEF[i.fest]&&/SP0/.test(i.code))btns+=`<button class="act buy" data-fgo="${i.fest}">用${GAMEF[i.fest].cur}兌換</button>`
       else btns+=`<button class="act buy" data-buy="${i.id}" ${lock||S.candy<i.cost?'disabled':''}>${lock?'Lv.'+i.lv+' 解鎖':mini+i.cost}</button>`;
-      return `<div class="spc ${on||tr?'on':''} ${hid?'locked':''}"><div class="silwrap">${thumb(i)}${hid?`<span class="lockbadge">${why}</span>`:''}</div><b><span class="code">${i.code.replace('B','').replace(/^[MF]SP/,'SP')}${i.code.endsWith('B')?'+':''}</span>${i.n}</b><small>${i.ser}${i.fest?`・<b class="fbadge">${fName(i)}限定</b>`:''}</small><small>${o?(on?'✦ 穿著中':(i.cost===0?'免費贈送・已擁有':'已擁有')):(i.lv>1?`需要 Lv.${i.lv} · ${i.cost} 星星糖`:`${i.cost} 星星糖・不限等級`)}</small><div class="petacts">${btns}</div></div>`};
+      return `<div class="spc ${on||tr?'on':''} ${hid?'locked':''}"><div class="silwrap"><span class="code image-code">${i.code.replace('B','').replace(/^[MF]SP/,'SP')}${i.code.endsWith('B')?'+':''}</span>${thumb(i)}${hid?`<span class="lockbadge">${why}</span>`:''}</div><b>${i.n}</b><small>${i.ser}${i.fest?`・<b class="fbadge">${fName(i)}限定</b>`:''}</small><small>${o?(on?'✦ 穿著中':(i.cost===0?'免費贈送・已擁有':'已擁有')):(i.lv>1?`需要 Lv.${i.lv} · ${i.cost} 星星糖`:`${i.cost} 星星糖・不限等級`)}</small><div class="petacts">${btns}</div></div>`};
     const head2=tab==='wardrobe'?`<div class="fh"><h2>我的衣櫥 <span class="hint">（${sps.filter(i=>own(i.id)).length}/${sps.length} 套）</span></h2><button class="act ghost2" id="swc">切換成${ch==='m'?'女生':'男生'}角色</button></div><p class="hint">穿上套裝，角色就會整個變身；脫下後回到白色基本服。</p>`
       :`${shopTabs(festTab?'fest':'normal')}
       ${festTab?`<div class="merchant">${merchantSVG('#c2185b')}<p><b>節日應援商人</b>「我只在節日期間開賣限定造型！平常先存好星星糖，節日到了再來買喔。」</p></div><div class="festcal">${FESTS.map(f=>({f,st:festState(f)})).sort((a,b)=>(b.st.on-a.st.on)||((a.st.next||0)-(b.st.next||0))).map(({f,st})=>`<span class="${st.on?'on':''}" style="--fc:${f.c}"><b>${f.n}</b>${st.on?`販售中・剩 ${daysTo(st.end)} 天`:`${fmtMD(st.next)} 開賣`}</span>`).join('')}</div>`

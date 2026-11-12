@@ -385,3 +385,18 @@ html{background:radial-gradient(ellipse at 16% 10%,#393365 0,transparent 52%) fi
 #panel :is(.shop-local-tabs,.home-local-tabs)>button>.dot{position:absolute;right:2px;top:-6px;min-width:18px;max-width:30px;height:18px;box-sizing:border-box;padding:0 4px;border-radius:9px;font:400 11px/18px var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #panel .sub:has(>[data-pet]){display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px;margin:0}
 #panel .sub>[data-pet]{min-width:0;min-height:44px;padding:8px;font:400 14px/1.4 var(--body)}
+
+/* Market sections follow the same spacing rhythm as the other information pages. */
+#panel .market-view,#panel #marketBody{display:flex;flex-direction:column;gap:var(--space-section,14px);min-width:0}
+#panel .market-view>.sub,#panel #marketBody>.pending-card{margin:0}
+#panel .mklist{grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:10px;min-width:0}
+#panel .mkc{min-width:0;gap:8px}
+#panel .mkq{display:grid;grid-template-columns:repeat(4,minmax(44px,1fr));gap:8px;align-items:center}
+#panel .mkq>span{grid-column:1/-1;grid-row:1;min-width:0;text-align:left;font:400 14px/1.5 var(--body);overflow-wrap:anywhere}
+#panel .mkq>button{box-sizing:border-box;min-width:44px;min-height:44px;padding:8px 4px;border:1px solid #cbd3e5;border-radius:10px;background:linear-gradient(125deg,#fff,#eef2fa);color:#535e7c;font:400 14px/1.4 var(--body)}
+#panel .mkc>.petacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#panel .mkc>.petacts>button{min-width:0}
+
+/* Item identifiers stay readable on both bright and dark artwork. */
+#panel :is(.spc,.hc) .silwrap{position:relative;isolation:isolate}
+#panel .silwrap>.image-code{position:absolute;top:6px;left:6px;z-index:1;display:block;width:max-content;max-width:calc(100% - 12px);box-sizing:border-box;padding:2px 5px;margin:0;border:1px solid #ffffff35;border-radius:5px;background:#19263cb8;color:#fff;font:400 11px/1.35 ui-monospace,Menlo,monospace;letter-spacing:.02em;white-space:nowrap;pointer-events:none;box-shadow:0 1px 3px #18203026}
