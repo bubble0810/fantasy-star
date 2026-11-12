@@ -640,7 +640,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261112-pet35">
+<link rel="stylesheet" href="home-ui.css?v=20261112-dice36">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -2415,11 +2415,11 @@ function renderHome(p,L){
   }
   if(homeSub==='dice'){
     const D=diceState(),left=D.free+D.bonus;
-    body=`<div class="dicebox"><div class="dice" id="dice">${dieSVG(S.lastDice?S.lastDice[0]:6)}${dieSVG(S.lastDice?S.lastDice[1]:6)}</div>
-      <p class="hint" style="text-align:center">每天免費擲 3 次，點數越大糖果越多，擲出一樣的點數加倍！不用下注，不會輸掉任何東西。<br>答題拿到 100 分滿分，可以多得 1 次擲骰機會。</p>
+    body=`<div class="merchant dice-merchant">${merchantSVG('#7b8cff')}<p><b>幸運商人</b>「今天的好運會是多少呢？擲出相同點數，還有額外驚喜！」</p></div><div class="dicebox"><div class="dice" id="dice">${dieSVG(S.lastDice?S.lastDice[0]:6)}${dieSVG(S.lastDice?S.lastDice[1]:6)}</div>
+      <p class="hint dice-note">免費遊玩・不需下注</p>
       <button class="big" id="roll" ${left?'':'disabled'}>${left?`擲骰子（今天還有 ${D.free} 次${D.bonus?`，獎勵 ${D.bonus} 次`:''}）`:'今天的次數用完了，明天再來'}</button>
-      <div class="dtable"><span class="big1">雙 6 超級大獎 2000 糖（1%）</span><span>其他一樣點數 400 糖（4%）</span><span>10～11 點 200 糖</span><span>7～9 點 120 糖</span><span>2～6 點 80 糖</span></div>
-      <div id="dres"></div></div>`;
+      <div id="dres" aria-live="polite"></div>
+      <details class="page-rules dice-rules"><summary>查看獎勵規則</summary><div class="dtable"><span class="big1">雙 6 超級大獎 2000 糖（1%）</span><span>其他一樣點數 400 糖（4%）</span><span>10～11 點 200 糖</span><span>7～9 點 120 糖</span><span>2～6 點 80 糖</span></div><p class="hint">每天免費 3 次；答題滿分 100 分，可再獲得 1 次擲骰機會。</p></details></div>`;
   }
   if(homeSub==='market')body=mkBody();
   if(homeSub==='sell'){

@@ -476,3 +476,13 @@ html{background:radial-gradient(ellipse at 16% 10%,#393365 0,transparent 52%) fi
 #panel:has(.pet-dashboard) :is(.pet-actions>.act,.adopt .act,.sale-section .act):is(.buy,.wear),#panel:has(.pet-dashboard) .sale-total{--pet-button-bg:linear-gradient(120deg,#7669a8,#5f779f);--pet-button-edge:#7883ae}
 #panel:has(.pet-dashboard) .pet-actions>.act.water{--pet-button-bg:linear-gradient(125deg,#f6fcff,#e6f1f9);--pet-button-edge:#bfd2e2}
 #panel:has(.pet-dashboard) :is(.pet-actions>.act,.adopt .act,.sale-section .act,.sale-total):disabled{--pet-button-bg:#eef0f5;--pet-button-edge:#d5d8e3;background:none}
+
+/* Lucky dice uses the same NPC introduction as the garden, with optional detail. */
+#panel .dicebox{gap:10px;padding:12px;border:1px solid #d4d9e8;border-radius:14px;background:linear-gradient(140deg,#f8fbff,#f1eef8)}
+#panel .dice-note{margin:0;text-align:center}
+#panel .dice-rules{box-sizing:border-box;width:100%;padding:0 10px;background:#ffffff80}
+#panel .dice-rules>summary{box-sizing:border-box;min-height:44px;padding:11px 0;font:400 13px/22px var(--body)}
+#panel .dice-rules .dtable{display:grid;grid-template-columns:1fr;gap:6px;margin:0 0 8px}
+#panel .dice-rules .dtable>span{font:400 12px/1.5 var(--body);padding:5px 8px;border-radius:6px}
+#panel .dice-rules>.hint{margin:0 0 10px}
+#panel #dres:empty{display:none}
