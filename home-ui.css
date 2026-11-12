@@ -494,3 +494,10 @@ html{background:radial-gradient(ellipse at 16% 10%,#393365 0,transparent 52%) fi
 
 #panel .adopt [data-adopt]{box-sizing:border-box;align-self:stretch;width:100%;min-width:0;flex-wrap:nowrap;white-space:nowrap;overflow-wrap:normal;padding-inline:6px;font-size:13px;font-variant-numeric:tabular-nums}
 #panel .adopt [data-adopt] svg{display:block;flex:0 0 14px;width:14px;height:14px}
+
+/* Garden, pets and dice keep identical header, navigation and NPC geometry. */
+#panel:has(>.home-local-tabs){gap:12px}
+#panel:has(>.home-local-tabs)>.merchant{box-sizing:border-box;display:flex;align-items:center;gap:10px;min-height:92px;padding:10px;border-radius:14px}
+#panel:has(>.home-local-tabs)>.merchant .merimg{box-sizing:border-box;flex:0 0 52px;width:52px;height:52px;border-width:2px}
+#panel:has(>.home-local-tabs)>.merchant p{flex:1;min-width:0;margin:0;font:400 13px/1.6 var(--body);overflow-wrap:anywhere}
+#panel:has(>.home-local-tabs)>.merchant b{display:block;margin:0 0 2px;font:500 15px/1.4 var(--body)}

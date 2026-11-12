@@ -640,7 +640,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261112-pet38">
+<link rel="stylesheet" href="home-ui.css?v=20261112-home39">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -2381,7 +2381,7 @@ function renderHome(p,L){
   let body='';
   if(homeSub==='garden'){
     if(!S.seedSel)S.seedSel='daisy';
-    body=`<div class="merchant">${merchantSVG('#8bc34a')}<p><b>花園小園丁・花花</b>「種子種下去就會慢慢長大喔！記得來澆水，花開了就可以收成賣給收購商人～」</p></div><p class="hint">花會照真實時間慢慢長大，關掉頁面也會繼續長。每株可以澆一次水，讓剩下時間縮短 25%，收成時多一朵。</p>
+    body=`<div class="merchant">${merchantSVG('#8bc34a')}<p><b>花園小園丁・花花</b>「種花、澆水等開花，收成後就能換星星糖！」</p></div><p class="hint">花會照真實時間慢慢長大，關掉頁面也會繼續長。每株可以澆一次水，讓剩下時間縮短 25%，收成時多一朵。</p>
     <div class="seeds">${SEEDS.map(s=>`<button class="seed" aria-pressed="${S.seedSel===s.k}" data-seed="${s.k}" ${L<s.lv?'disabled':''}><b>${s.n}</b><small>${L<s.lv?'Lv.'+s.lv+' 解鎖':`種子 ${s.cost} 糖 · ${s.min>=60?s.min/60+' 小時':s.min+' 分'}`}</small><small>賣 ${s.sell} 糖</small></button>`).join('')}</div>
     <div class="plots">${S.plots.map((pl,i)=>{const st=plantState(pl);let act,info;
       if(!pl){const sd=SEEDS.find(s=>s.k===S.seedSel);info='空地';act=`<button class="act buy" data-plant="${i}" ${S.candy<sd.cost?'disabled':''}>種${sd.n} ${sd.cost}</button>`}
@@ -2394,7 +2394,7 @@ function renderHome(p,L){
   if(homeSub==='pets'){
     const P=S.pets[S.pet]||S.pets[0],def=PETS.find(x=>x.k===P.k),h=petHunger(P),lvp=petLevel(P),canPlay=Date.now()-(P.pT||0)>=10*MIN;
     const mood=h<25?'sad':(P.happyT&&Date.now()-P.happyT<4000)?'happy':'normal';
-    body=`<div class="merchant pet-merchant">${merchantSVG('#5aa7ff')}<p><b>寵物飼育員・雪鈴</b>「餵食、陪玩讓寶貝成長；跟隨後還會帶回幸運物喔！」</p></div><div class="sub pet-picker">${S.pets.map((x,i)=>`<button aria-pressed="${i===S.pet}" data-pet="${i}">${PETS.find(d=>d.k===x.k).n}</button>`).join('')}</div>
+    body=`<div class="merchant pet-merchant">${merchantSVG('#5aa7ff')}<p><b>寵物飼育員・雪鈴</b>「餵食、陪玩讓寶貝成長，跟隨後會帶回幸運物！」</p></div><div class="sub pet-picker">${S.pets.map((x,i)=>`<button aria-pressed="${i===S.pet}" data-pet="${i}">${PETS.find(d=>d.k===x.k).n}</button>`).join('')}</div>
     <section class="petbox pet-dashboard" aria-label="${def.n}的照護與狀態">
       <header class="pet-heading"><h3>${def.n}</h3><span class="pet-meta">Lv.${lvp} · ${h<25?'肚子餓了':mood==='happy'?'心情愉快':'狀態良好'}</span><span class="pet-follow-badge">${petFollowUnlocked()&&S.petFollowKey===P.k?'跟隨中':'未跟隨'}</span></header>
       <div class="pet-actions" aria-label="寵物操作">
@@ -2415,7 +2415,7 @@ function renderHome(p,L){
   }
   if(homeSub==='dice'){
     const D=diceState(),left=D.free+D.bonus;
-    body=`<div class="merchant dice-merchant">${merchantSVG('#7b8cff')}<p><b>幸運商人</b>「今天的好運會是多少呢？擲出相同點數，還有額外驚喜！」</p></div><div class="dicebox"><div class="dice" id="dice">${dieSVG(S.lastDice?S.lastDice[0]:6)}${dieSVG(S.lastDice?S.lastDice[1]:6)}</div>
+    body=`<div class="merchant dice-merchant">${merchantSVG('#7b8cff')}<p><b>幸運商人</b>「每天試試好手氣，相同點數還有額外驚喜！」</p></div><div class="dicebox"><div class="dice" id="dice">${dieSVG(S.lastDice?S.lastDice[0]:6)}${dieSVG(S.lastDice?S.lastDice[1]:6)}</div>
       <p class="hint dice-note">免費遊玩・不需下注</p>
       <button class="big" id="roll" ${left?'':'disabled'}>${left?`擲骰子（今天還有 ${D.free} 次${D.bonus?`，獎勵 ${D.bonus} 次`:''}）`:'今天的次數用完了，明天再來'}</button>
       <div id="dres" aria-live="polite"></div>
