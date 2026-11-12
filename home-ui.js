@@ -55,6 +55,7 @@
       panel.insertAdjacentHTML('afterbegin',pageHeader(title));
       if(old){old.tabIndex=-1;panel.querySelector('.content-page-head h2').replaceWith(old);if(parent!==panel&&parent?.classList.contains('fh')&&!parent.children.length)parent.remove();}
     }
+    panel.querySelectorAll('#swc,#godecor').forEach(b=>b.parentElement.classList.add('page-tools'));
     panel.querySelectorAll('h2').forEach(h=>{if(h.closest('.content-page-head'))return;const section=document.createElement('h3');for(const a of h.attributes)section.setAttribute(a.name,a.value);while(h.firstChild)section.append(h.firstChild);h.replaceWith(section);});
   }
   function scrollPanel(){
@@ -78,7 +79,7 @@
     if(!['hub','main','practice','competition'].includes(questView))questView='hub';
     panel.dataset.questView=questView;
     if(questView==='hub'){
-      panel.innerHTML=`${pageHeader('闖關')}<div class="quest-portals"><button class="quest-portal portal-main" data-quest-view="main"><span class="portal-icon" aria-hidden="true">✦</span><span class="portal-copy"><b>一般闖關</b><span>九大章節・108 關主線</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-practice" data-quest-view="practice"><span class="portal-icon" aria-hidden="true">✎</span><span class="portal-copy"><b>自由練習</b><span>自選題型與難度・不限次數</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-competition" data-quest-view="competition"><span class="portal-icon" aria-hidden="true">◇</span><span class="portal-copy"><b>競賽挑戰</b><span>急急棒・翻牌・顏色陷阱</span></span><span class="portal-arrow" aria-hidden="true">→</span></button></div>`;
+      panel.innerHTML=`${pageHeader('闖關')}<div class="quest-portals"><button class="quest-portal portal-main" data-quest-view="main"><span class="portal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Z"/><path d="M9 3v16m6-14v16"/></svg></span><span class="portal-copy"><b>一般闖關</b><span>九大章節・108 關主線</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-practice" data-quest-view="practice"><span class="portal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 4 5 5M4 20l4-1 13-13a2.1 2.1 0 0 0-5-3L3 16l-1 6Z"/><path d="M13 20h8"/></svg></span><span class="portal-copy"><b>自由練習</b><span>自選題型與難度・不限次數</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-competition" data-quest-view="competition"><span class="portal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10v6a5 5 0 0 1-10 0Z"/><path d="M7 5H3v3a4 4 0 0 0 4 4m10-7h4v3a4 4 0 0 1-4 4m-5 2v6m-4 1h8"/></svg></span><span class="portal-copy"><b>競賽挑戰</b><span>急急棒・翻牌・顏色陷阱</span></span><span class="portal-arrow" aria-hidden="true">→</span></button></div>`;
       return;
     }
     if(questView==='main')panel.innerHTML=pageHeader('一般闖關')+mapHTML();

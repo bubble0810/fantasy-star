@@ -640,7 +640,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261112-welcome25">
+<link rel="stylesheet" href="home-ui.css?v=20261112-tools28">
 
 <div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
@@ -1489,7 +1489,7 @@ const HOMES=[
 const HM=Object.fromEntries(HOMES.map(h=>[h.id,h]));
 function curHome(){const h=HM[S.home];return h&&h.img&&(S.homes||[]).includes(h.id)?h:HOMES[0]}
 const homeImg=h=>`<img src="${h.img}" alt="${h.n}" style="display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px">`;
-function shopTabs(sub){const fo=FESTS.filter(f=>festState(f).on);return `<div class="sub"><button aria-pressed="${sub==='normal'}" data-sub="normal">造型商人</button><button aria-pressed="${sub==='fest'}" data-sub="fest">節日應援商人${fo.length?` <span class="dot">${fo.map(f=>f.n).join('、')}</span>`:''}</button><button aria-pressed="${sub==='decor'}" data-sub="decor">裝潢商人</button></div>`}
+function shopTabs(sub){const fo=FESTS.filter(f=>festState(f).on);return `<div class="sub shop-local-tabs"><button aria-pressed="${sub==='normal'}" data-sub="normal">造型商人</button><button aria-pressed="${sub==='fest'}" data-sub="fest" title="${fo.length?fo.map(f=>f.n).join('、'):'節慶限定商品'}" aria-label="節慶商人${fo.length?'，當期活動：'+fo.map(f=>f.n).join('、'):''}">節慶商人${fo.length?`<span class="dot" aria-hidden="true">${fo.length}</span>`:''}</button><button aria-pressed="${sub==='decor'}" data-sub="decor">裝潢商人</button></div>`}
 function homeCard(h,L,mode){const o=(S.homes||[]).includes(h.id),on=curHome().id===h.id,lock=L<h.lv&&!o,fst=h.fest?festState(FESTS.find(f=>f.k===h.fest)):null,dark=!o&&(lock||(fst&&!fst.on)),why=lock?`🔒 Lv.${h.lv} 解鎖`:fst&&!fst.on?`🔒 ${fmtMD(fst.next)} 開賣`:'';
   let pic=h.img?homeImg(h):`<div class="hsoon"><b>設計中</b><small>${h.st}</small></div>`,btn='';
   if(!h.img)btn=`<button class="act" disabled>即將推出</button>`;
@@ -2307,7 +2307,7 @@ function render(){
   if(tab==='rank')FSHomeUI.renderRank(p);
   if(tab==='room'){
     const mine=HOMES.filter(h=>(S.homes||[]).includes(h.id));
-    p.innerHTML=`<div class="fh"><h2>我的小屋 <span class="hint">（${mine.length}/${HOMES.filter(h=>h.img).length} 間）</span></h2><button class="act buy" id="godecor">去找裝潢商人</button></div><p class="hint">點「搬進去」就能換房間背景。想要新的小屋，到商店找裝潢商人購買。</p>
+    p.innerHTML=`<div class="fh"><h2>我的小屋 <span class="hint">（${mine.length}/${HOMES.filter(h=>h.img).length} 間）</span></h2><button class="act ghost2" id="godecor">去找裝潢商人</button></div><p class="hint">點「搬進去」就能換房間背景。想要新的小屋，到商店找裝潢商人購買。</p>
       <div class="hgrid">${mine.map(h=>homeCard(h,L,'room')).join('')}</div>`;
     bindHomes(p,L);$('#godecor').onclick=()=>{tab='shop';shopSub='decor';render()};
   }
@@ -3409,7 +3409,7 @@ stage();render();
 if(!window.CLOUD_GATE){if(!checkHashRestore()&&!S.char)pickChar(true)}
 if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造型已下架，已退回 350 星星糖'),800)}
 </script>
-<script src="home-ui.js?v=20261112-welcome25"></script>
+<script src="home-ui.js?v=20261112-tools28"></script>
 <script src="festgames.js?v=20261111-national1"></script>
 <script src="cloud.js?v=20261112-welcome25"></script>
 </body></html>
