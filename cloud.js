@@ -188,7 +188,7 @@ async function finishRegistration(){
   if(regCreating)return;regCreating=true;let createdUser=null;const b=$c('clRegCreate');if(b){b.disabled=true;b.textContent='建立中…'}err('');
   try{
     const cred=await auth.createUserWithEmailAndPassword(emailOf(regDraft.code),pwStr(regDraft.pin)),user=cred.user;createdUser=user;
-    const uid=user.uid,now=FV.serverTimestamp(),d={code:regDraft.code,name:regDraft.name,createdAt:now,lastLogin:now,updatedAt:now,adminRev:0,disabled:false,sj:'',exp:0,candy:0,char:regDraft.char,maxLv:0,looks:0,homes:1};
+    const uid=user.uid,now=FV.serverTimestamp(),d={code:regDraft.code,name:regDraft.name,createdAt:now,lastLogin:now,updatedAt:now,adminRev:0,disabled:false,saveSchema:1,saveVersion:0,sj:'',exp:0,candy:0,char:regDraft.char,maxLv:0,looks:0,homes:1};
     await db.doc('players/'+uid).set(d);await db.doc('private/'+uid).set({pw:regDraft.pin,at:now});
     ME=user;justMade=null;newChar=regDraft.char;pinMem={code:regDraft.code,pin:regDraft.pin};regDraft=null;regCreating=false;enter(user,d,true);
   }catch(e){
@@ -235,7 +235,7 @@ function nameView(user){
     busy(true);err('');
     try{
       const uid=user.uid,now=FV.serverTimestamp(),code=(user.email||'').split('@')[0];
-      const d={code,name,createdAt:now,lastLogin:now,updatedAt:now,adminRev:0,disabled:false,sj:'',exp:0,candy:0,char:newChar,maxLv:0,looks:0,homes:1};
+      const d={code,name,createdAt:now,lastLogin:now,updatedAt:now,adminRev:0,disabled:false,saveSchema:1,saveVersion:0,sj:'',exp:0,candy:0,char:newChar,maxLv:0,looks:0,homes:1};
       await db.doc('players/'+uid).set(d);
       if(pinMem&&pinMem.code===code)await db.doc('private/'+uid).set({pw:pinMem.pin,at:now}).catch(()=>{});
       justMade=null;enter(user,d,true);
@@ -245,6 +245,71 @@ function nameView(user){
 
 /* ---------- 雲端存檔 ---------- */
 let ME=null,adminRev=0,timer=0,ready=false,unsubs=[],saveRevision=0,saveAttempt=0;
+let saveSession=null;
+const saveClient=crypto.randomUUID(),pendingSaveKey=uid=>'fs-save-pending-v1:'+uid;
+const saveVersion=d=>Number.isSafeInteger(d?.saveVersion)&&d.saveVersion>=0?d.saveVersion:0;
+const parsedSave=sj=>{try{const x=JSON.parse(sj);return x&&typeof x==='object'&&!Array.isArray(x)?x:null}catch(_){return null}};
+function pendingSaveRead(uid){
+  let raw;try{raw=localStorage.getItem(pendingSaveKey(uid));if(!raw)return null;const p=JSON.parse(raw);
+    if(p.schemaVersion!==1||p.uid!==uid||!Number.isSafeInteger(p.baseVersion)||p.baseVersion<0||!Number.isInteger(p.baseAdminRev)||typeof p.baseSj!=='string'||!parsedSave(p.draft?.sj||p.op?.sj||'{}'))throw Error('invalid-save-envelope');
+    if(p.op&&(!/^[0-9a-f-]{36}$/i.test(p.op.id)||!Number.isSafeInteger(p.op.baseVersion)||typeof p.op.baseSj!=='string'||!parsedSave(p.op.sj)))throw Error('invalid-save-operation');
+    return p;
+  }catch(_){return {invalid:true,raw:raw||''};}
+}
+function saveSessionCurrent(s){return saveSession===s&&ME?.uid===s.uid;}
+function persistSave(s){
+  if(!s)return false;
+  try{
+    if(!s.draft&&!s.op&&!s.blocked)localStorage.removeItem(pendingSaveKey(s.uid));
+    else localStorage.setItem(pendingSaveKey(s.uid),JSON.stringify({schemaVersion:1,uid:s.uid,baseVersion:s.baseVersion,baseAdminRev:s.baseAdminRev,baseSj:s.baseSj,draft:s.draft,op:s.op,unverified:!!s.unverified,brokenPending:s.brokenPending||null}));
+    return true;
+  }catch(_){foot('同步失敗：此裝置無法保留未同步資料，請保持連線');return false;}
+}
+function saveSummary(sj){const x=parsedSave(sj)||{};return 'Lv.'+levelOf(Number(x.exp)||0)+' · '+(Number(x.candy)||0)+' 星星糖 · '+(x.items||[]).filter(i=>String(i).startsWith('L-')).length+' 套造型';}
+function showSaveConflict(s,remote,reason='另一台裝置已更新進度，這台裝置已暫停上傳。'){
+  if(!saveSessionCurrent(s))return;
+  s.blocked=true;clearTimeout(timer);timer=0;persistSave(s);window.FS_CLOUD_READY=false;
+  try{closeQuiz()}catch(_){}
+  foot('進度衝突：已保留此裝置資料，請確認雲端最新進度');
+  mask.hidden=false;mask.style.zIndex='20000';mask.dataset.step='0';
+  const local=s.draft?.sj||s.op?.sj||s.baseSj;
+  card().innerHTML=`<div class="cl-brand">進度保護<small>避免舊存檔蓋掉新進度</small></div><p class="cl-note">${esc(reason)}</p><div class="cl-mail"><small>雲端目前進度</small><p>${esc(saveSummary(remote?.sj||''))}</p></div><div class="cl-mail"><small>此裝置未同步進度</small><p>${esc(saveSummary(local))}</p></div><p class="cl-note">不會自動合併星星糖或覆蓋雲端。你可以先下載此裝置備份。</p><button class="cl-sub" id="cloudDraftDownload">下載此裝置未同步備份</button><button class="cl-go" id="cloudUseLatest" ${remote?.sj&&!parsedSave(remote.sj)?'disabled':''}>載入雲端最新進度</button><p class="cl-err" id="cloudConflictError" role="alert"></p>`;
+  let downloaded=false;
+  document.getElementById('cloudDraftDownload').onclick=()=>{
+    const content={format:'fantasy-star-unsynced-v1',uid:s.uid,exportedAt:Date.now(),state:s.draft?.sj||s.op?.sj||s.baseSj,pending:pendingSaveRead(s.uid)};
+    const url=URL.createObjectURL(new Blob([JSON.stringify(content,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='fantasy-star-unsynced-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);downloaded=true;
+  };
+  document.getElementById('cloudUseLatest').onclick=()=>{
+    try{localStorage.setItem('fs-save-recovery-v1:'+s.uid+':'+crypto.randomUUID(),JSON.stringify({schemaVersion:1,uid:s.uid,at:Date.now(),state:s.draft?.sj||s.op?.sj||s.baseSj,pending:pendingSaveRead(s.uid)}));}
+    catch(_){if(!downloaded){document.getElementById('cloudConflictError').textContent='此裝置無法保留備份，請先下載未同步備份，再載入雲端進度。';return;}}
+    s.resolving=true;ready=false;clearTimeout(timer);timer=0;
+    try{localStorage.removeItem(pendingSaveKey(s.uid));localStorage.removeItem(skey('u_'+s.uid));}catch(_){document.getElementById('cloudConflictError').textContent='無法清除暫存，請先下載備份並檢查瀏覽器儲存空間。';return;}
+    location.reload();
+  };
+}
+function beginSaveSession(user,d){
+  const pending=pendingSaveRead(user.uid),serverSj=d.sj||'',version=saveVersion(d),revision=d.adminRev||0;
+  const s=saveSession={uid:user.uid,baseVersion:version,baseAdminRev:revision,baseSj:serverSj,draft:null,op:null,writing:null,blocked:false};
+  if(pending&&!pending.invalid){
+    Object.assign(s,{baseVersion:pending.baseVersion,baseAdminRev:pending.baseAdminRev,baseSj:pending.baseSj,draft:pending.draft||null,op:pending.op||null,unverified:!!pending.unverified,brokenPending:pending.brokenPending||null});
+    if(s.op&&d.saveCommitId===s.op.id&&version===s.op.baseVersion+1&&revision===s.op.baseAdminRev){
+      if(s.draft?.sj===s.op.sj)s.draft=null;
+      s.op=null;s.baseVersion=version;s.baseAdminRev=revision;s.baseSj=serverSj;
+    }
+    if(s.unverified||s.brokenPending||version!==s.baseVersion||revision!==s.baseAdminRev||serverSj!==s.baseSj){showSaveConflict(s,d,'這台裝置有未同步資料，但雲端已是另一個版本；已停止覆蓋。');return null;}
+    persistSave(s);
+    return {sj:s.draft?.sj||s.op?.sj||serverSj};
+  }
+  let local=null;try{local=localStorage.getItem(skey('u_'+user.uid))}catch(_){}
+  const old=parsedSave(local),cloud=parsedSave(serverSj);
+  const important=x=>JSON.stringify(Object.fromEntries(Object.entries(x||{}).filter(([k])=>!['savedAt','st'].includes(k)).sort(([a],[b])=>a.localeCompare(b))));
+  if(pending?.invalid||(old&&Number(old.savedAt)>Number(cloud?.savedAt||0)&&important(old)!==important(cloud))){
+    s.draft={sj:local||serverSj,revision:0};s.unverified=true;s.brokenPending=pending?.invalid?pending.raw:null;
+    showSaveConflict(s,d,'此裝置留下較新的舊版存檔，無法確認是否與雲端來自同一版本；已先保留，避免覆蓋。');return null;
+  }
+  if(serverSj&&!cloud){s.blocked=true;showSaveConflict(s,d,'雲端存檔格式異常，已停止寫入；請保留備份並聯絡管理員。');return null;}
+  return {sj:serverSj};
+}
 function applyState(sj,name){
   lbStop();
   dispatchEvent(new Event('fs-player-changing'));
@@ -256,37 +321,67 @@ function applyState(sj,name){
   try{closeQuiz()}catch(e){}
   ownBase=null;stage(true);render();
 }
-function snapshot(){
-  return {sj:JSON.stringify(S),exp:S.exp|0,candy:S.candy|0,char:S.char||null,maxLv:S.maxLv|0,
-    looks:(S.items||[]).filter(x=>x.startsWith('L-')).length,homes:(S.homes||[]).length,updatedAt:FV.serverTimestamp()};
+function snapshot(sj=JSON.stringify(S)){
+  const value=JSON.parse(sj);
+  return {sj,exp:value.exp|0,candy:value.candy|0,char:value.char||null,maxLv:value.maxLv|0,
+    looks:(value.items||[]).filter(x=>x.startsWith('L-')).length,homes:(value.homes||[]).length,updatedAt:FV.serverTimestamp()};
 }
 async function push(){
-  clearTimeout(timer);timer=0;if(!ME||!ready)return;
-  const owner=ME.uid,revision=saveRevision,attempt=++saveAttempt;
-  const current=()=>ME?.uid===owner&&ready&&revision===saveRevision&&attempt===saveAttempt;
-  if(navigator.onLine===false){foot('同步失敗：目前離線，連線恢復後會再試');return;}
+  clearTimeout(timer);timer=0;
+  const s=saveSession;if(!s||!ME||!ready||!saveSessionCurrent(s)||s.blocked)return false;
+  if(s.writing)return s.writing;
+  if(!s.op&&!s.draft)return true;
+  if(navigator.onLine===false){foot('同步失敗：目前離線，未同步資料已保留');return false;}
   foot('儲存中…');
-  try{
-    await db.doc('players/'+owner).set(snapshot(),{merge:true});
-    // A completed older write must not mark newer or another player's progress as saved.
-    if(current())foot('已存到雲端');
-    if(ME?.uid===owner&&ready)void lbFlush();
-  }catch(e){if(current())foot('同步失敗，網路恢復後會再試');}
+  s.writing=(async()=>{
+    try{
+      while(saveSessionCurrent(s)&&ready&&!s.blocked&&(s.op||s.draft)){
+        if(!s.op){s.op={id:crypto.randomUUID(),writer:saveClient,baseVersion:s.baseVersion,baseAdminRev:s.baseAdminRev,baseSj:s.baseSj,sj:s.draft.sj};persistSave(s);}
+        const op=s.op,ref=db.doc('players/'+s.uid);
+        const result=await db.runTransaction(async tx=>{
+          if(!saveSessionCurrent(s)||!ready||s.blocked)throw Object.assign(new Error('session-changed'),{code:'save-session-changed'});
+          const snap=await tx.get(ref),remote=snap.exists?snap.data():null;
+          if(!saveSessionCurrent(s)||!ready||s.blocked)throw Object.assign(new Error('session-changed'),{code:'save-session-changed'});
+          const version=saveVersion(remote),revision=remote?.adminRev||0;
+          if(remote?.saveCommitId===op.id&&version===op.baseVersion+1&&revision===op.baseAdminRev)return {version,sj:remote.sj,adminRev:revision};
+          if(!remote||remote.disabled||version!==op.baseVersion||revision!==op.baseAdminRev||(remote.sj||'')!==op.baseSj)throw Object.assign(new Error('save-conflict'),{code:'save-conflict',remote});
+          tx.set(ref,{...snapshot(op.sj),saveSchema:1,saveVersion:version+1,saveCommitId:op.id,saveWriter:op.writer},{merge:true});
+          return {version:version+1,sj:op.sj,adminRev:revision};
+        });
+        if(!saveSessionCurrent(s)||!ready)return false;
+        s.baseVersion=result.version;s.baseAdminRev=result.adminRev;s.baseSj=result.sj;s.op=null;
+        if(s.draft?.sj===op.sj)s.draft=null;
+        persistSave(s);
+      }
+      if(saveSessionCurrent(s)&&ready&&!s.blocked){if(!s.draft&&!s.op)foot('已存到雲端');void lbFlush();return true;}
+      return false;
+    }catch(e){
+      if(saveSessionCurrent(s)&&ready){
+        if(e.code==='save-conflict'){showSaveConflict(s,e.remote);}
+        else if(e.code!=='save-session-changed'){persistSave(s);foot('同步失敗，未同步資料已保留；連線恢復後會再試');clearTimeout(timer);timer=setTimeout(()=>{if(saveSessionCurrent(s)&&!s.blocked)void push()},10000);}
+      }
+      return false;
+    }finally{s.writing=null;}
+  })();
+  return s.writing;
 }
 function queue(){
-  if(!ME||!ready)return;saveRevision++;
-  foot(navigator.onLine===false?'同步失敗：目前離線，連線恢復後會再試':'儲存中…');
-  clearTimeout(timer);timer=setTimeout(push,2500);
+  const s=saveSession;if(!ME||!ready||!s||!saveSessionCurrent(s))return;saveRevision++;
+  s.draft={sj:JSON.stringify(S),revision:saveRevision};const stored=persistSave(s);
+  if(s.blocked){foot('進度衝突：已保留此裝置資料，請確認雲端最新進度');return;}
+  if(stored)foot(navigator.onLine===false?'同步失敗：目前離線，未同步資料已保留':'儲存中…');
+  clearTimeout(timer);if(!s.writing)timer=setTimeout(push,2500);
 }
 addEventListener('online',()=>{if(ME&&ready)queue()});
-function foot(t){const f=document.getElementById('savefoot');if(f){f.setAttribute('role','status');f.setAttribute('aria-live','polite');f.dataset.cloudSave=t==='已存到雲端'?'saved':t.startsWith('同步失敗')?'error':'saving';f.textContent=`☁ ${t}（${new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）`}}
+function foot(t){const f=document.getElementById('savefoot');if(f){f.setAttribute('role','status');f.setAttribute('aria-live','polite');f.dataset.cloudSave=t==='已存到雲端'?'saved':t.startsWith('進度衝突')?'conflict':t.startsWith('同步失敗')?'error':'saving';f.textContent=`☁ ${t}（${new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）`}}
 const _save=window.save;
-window.save=function(){try{ownCheck();lbCollectionCheck()}catch(e){}_save.apply(this,arguments);queue()};
-addEventListener('pagehide',()=>{if(ME&&ready)seen(true);if(timer)push()});
+window.save=function(){if(!ME||!ready||saveSession?.resolving)return;try{ownCheck();lbCollectionCheck()}catch(e){}_save.apply(this,arguments);queue()};
+addEventListener('pagehide',()=>{if(ME&&ready)seen(true);if(timer)void push()});
 ['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{if(ME&&ready)seen()},{passive:true}));
 document.addEventListener('visibilitychange',()=>{if(ME&&ready&&document.visibilityState==='hidden')seen(true)});
 setInterval(()=>{if(ME&&ready&&document.visibilityState==='visible')seen(true)},60000);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&timer)push()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&timer)void push()});
+
 
 /* ---------- Private leaderboard history and durable per-account outbox ---------- */
 let lbSession=null;
@@ -410,7 +505,7 @@ function ownCheck(){if(!ME||!ready||!S)return;const now=ownSet();if(ownBase){for
 auth.onAuthStateChanged(async user=>{
   if(regCreating)return;
   lbStop();window.FS_CLOUD_READY=false;dispatchEvent(new Event('fs-player-changing'));
-  unsubs.forEach(f=>f());unsubs=[];ready=false;clearTimeout(timer);timer=0;saveAttempt++;saveRevision=0;ME=user;
+  unsubs.forEach(f=>f());unsubs=[];ready=false;clearTimeout(timer);timer=0;saveAttempt++;saveRevision=0;saveSession=null;ME=user;
   const restored=firstAuth;firstAuth=false;
   if(!user){mask.hidden=false;loginView();fab(false);return}
   // 只接受玩家帳號（帳號@fantasystar.game）。舊的匿名登入、管理員信箱等 → 不能直接進遊戲
@@ -423,12 +518,13 @@ auth.onAuthStateChanged(async user=>{
   if(restored){const last=+lsGet(K_SEEN)||0,newVer=lsGet(K_VER)!==LOGIN_VER;
     if(newVer||!last||Date.now()-last>AWAY_MIN*60000){
       outMsg=newVer?'遊戲更新了，請重新輸入帳號和密碼':'離開超過 30 分鐘，已經自動登出，請重新登入';
-      ME=null;try{localStorage.removeItem(skey('u_'+user.uid))}catch(e){}
+      ME=null; // Keep any per-account local or pending progress through forced reauthentication.
       try{await auth.signOut()}catch(e){}return}}
   mask.hidden=false;
   card().innerHTML=`<div class="cl-brand">幻想智慧星<small>正在讀取你的進度…</small></div>`;
   try{
-    const snap=await db.doc('players/'+user.uid).get();
+    const snap=await db.doc('players/'+user.uid).get({source:'server'});
+    if(ME?.uid!==user.uid)return;
     if(!snap.exists){charView(user);return}   // 新玩家（或上次沒建完）
     enter(user,snap.data()||{},false);
   }catch(e){card().innerHTML=`<div class="cl-brand">幻想智慧星</div><p class="cl-err">讀取進度失敗：${e.code||e.message}</p><button class="cl-go" onclick="location.reload()">重新整理</button>`;mask.hidden=false}
@@ -438,17 +534,27 @@ function enter(user,d,isNew){
   if(d.disabled){card().innerHTML=`<div class="cl-brand">幻想智慧星</div><p class="cl-err">這個帳號暫停使用中，請找老師或管理員。</p><button class="cl-sub" id="clOut">換一個帳號</button>`;
     $c('clOut').onclick=()=>auth.signOut();mask.hidden=false;return}
   adminRev=d.adminRev||0;ME.name=d.name||'玩家';ME.code=d.code||'';
-  applyState(d.sj||'',ME.name);
+  const recovery=beginSaveSession(user,d);if(!recovery)return;
+  applyState(recovery.sj,ME.name);
   if(isNew&&d.char){S.char=d.char;try{_save()}catch(e){}stage(true);render()}
   ready=true;window.FS_CLOUD_READY=true;lbStart(user.uid,isNew);lsSet(K_VER,LOGIN_VER);seen(true);ownBase=ownSet();markDay();mask.hidden=true;fab(true);
   if(!isNew)ref.update({lastLogin:FV.serverTimestamp()}).catch(()=>{});
   if(!S.char)pickChar(true);else toast(isNew?`歡迎來到幻想智慧星，${ME.name}！`:`歡迎回來，${ME.name}！`);
   if(!d.sj)push();
   dispatchEvent(new Event('fs-player-ready'));
-  // 管理員修改了資料 → 自動重新讀取
-  unsubs.push(ref.onSnapshot(s=>{const x=s.data();if(!x){if(ready){ready=false;outMsg='這個帳號已經被刪除，請找老師或管理員';auth.signOut()}return}
-    if(x.disabled){auth.signOut();return}
-    if((x.adminRev||0)>adminRev){const previous=lbSession?{collection:lbSession.collection,quest:JSON.stringify(FSGameRecords.questValue())}:null;adminRev=x.adminRev;ME.name=x.name||ME.name;applyState(x.sj||'',ME.name);lbStart(user.uid,false,previous);ownBase=ownSet();toast('管理員更新了你的資料');fab(true)}}));
+  // A change from another device pauses this copy instead of silently overwriting it.
+  const activeSave=saveSession;
+  unsubs.push(ref.onSnapshot(snap=>{
+    if(!saveSessionCurrent(activeSave)||!ready)return;
+    const x=snap.data();if(!x){ready=false;outMsg='這個帳號已經被刪除，請找老師或管理員';auth.signOut();return;}
+    if(x.disabled){auth.signOut();return;}
+    if(snap.metadata?.hasPendingWrites)return;
+    const version=saveVersion(x),revision=x.adminRev||0,op=activeSave.op;
+    if(op&&x.saveCommitId===op.id&&version===op.baseVersion+1&&revision===op.baseAdminRev)return;
+    if(version!==activeSave.baseVersion||revision!==activeSave.baseAdminRev||(x.sj||'')!==activeSave.baseSj){
+      showSaveConflict(activeSave,x,revision!==activeSave.baseAdminRev?'管理員已更新進度，請載入雲端最新資料；此裝置未同步內容已保留。':undefined);
+    }
+  }));
   // 信箱
   cleaned=false;popped=false;mailA=[];mailB=[];listenMail(ref);
   syncBroadcasts();
@@ -617,7 +723,7 @@ window.FSAccountSettings=function(){
     document.getElementById('logoutCancel').onclick=window.FSAccountSettings;
     document.getElementById('logoutConfirm').onclick=async function(){
       this.disabled=true;this.textContent='正在儲存…';
-      try{const stateKey=skey(PL.cur);save();await db.doc('players/'+ME.uid).set(snapshot(),{merge:true});await lbFlush();closeQuiz();await auth.signOut();try{localStorage.removeItem(stateKey);localStorage.removeItem(K_SEEN)}catch(_){}} 
+      try{const stateKey=skey(PL.cur);save();if(!await push())throw new Error('save-not-confirmed');await lbFlush();closeQuiz();await auth.signOut();try{localStorage.removeItem(stateKey);localStorage.removeItem(K_SEEN)}catch(_){}} 
       catch(e){this.disabled=false;this.textContent='重新嘗試登出';toast('尚未完成雲端儲存，請確認連線後重試。');}
     };
   };
