@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-Hant" data-game-key="duanwu">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>端午節・粽力龍舟賽</title>
+  <link rel="stylesheet" href="game.css?v=20261109-1"><link rel="stylesheet" href="../common.css?v=20261110-shared2">
+  <link rel="stylesheet" href="../intro.css?v=20261112-invite3"><script src="../intro.js?v=20261112-invite3"></script><script src="../common.js?v=20261112-invite3"></script><script src="questions.js?v=20261109-1"></script><script src="engine.js?v=20261109-1"></script><script src="music.js?v=20261109-1"></script><script defer src="game.js?v=20261109-1"></script>
+</head>
+<body><main class="shell"><section id="game" class="game">
+  <div class="shade"></div>
+  <div class="hud"><div id="timeChip">30 秒</div><div class="loot"><img src="img/zongzi.png" alt="攻擊粽子"><span id="ammo">0</span></div></div>
+  <button id="sound" aria-label="聲音">🔊</button>
+  <div id="chapter"><span>端午挑戰</span><b>粽力龍舟賽</b></div>
+  <section id="quiz" hidden>
+    <div class="quiz-card"><div class="eyebrow">第一關 · 粽子問答大賽</div>
+      <div class="question-meta"><span id="questionNo">第 1 題</span><span>本題 <b id="questionSeconds">5</b> 秒</span></div>
+      <div class="timer-track"><i id="questionBar"></i></div>
+      <h2 id="question"></h2><div id="answers"></div>
+      <button id="pass" type="button">PASS 跳過 · 不扣分</button>
+      <div class="score-line"><span>目前成績 <b id="score">0</b></span><span id="feedback" role="status">答對 +1 · 答錯 −1 · 未答不扣分</span></div>
+    </div>
+  </section>
+  <section id="race" hidden>
+    <div class="race-heading"><span class="eyebrow">第二關 · 龍舟競速戰</span><b>千米爭先 · 一舟抵達即結算</b></div>
+    <div id="leaderboard"></div><div id="course"><div class="finish-line">🏁 終點</div><div id="boats"></div></div>
+    <div id="raceMessage" role="status">連續抓準 3 次節奏可大幅加速！</div>
+    <div class="controls"><div class="rhythm"><span>跟著鼓點 · 白色游標進入金色區域時按划船</span><div class="beat-track"><i id="beat"></i><b></b></div></div>
+      <div class="action-row">
+        <button id="attack1" class="attack red" aria-label="發射粽子攻擊紅舟">攻擊紅舟<span><img class="item-icon" src="img/zongzi.png" alt=""><b class="attack-status">發射</b></span></button>
+        <button id="paddle">划船<span>空白鍵 / 點擊</span></button>
+        <button id="attack2" class="attack blue" aria-label="發射粽子攻擊藍舟">攻擊藍舟<span><img class="item-icon" src="img/zongzi.png" alt=""><b class="attack-status">發射</b></span></button>
+      </div>
+      <p id="attackHelp"><img class="item-icon" src="img/zongzi.png" alt="粽子"><span>每次發射消耗 × 1</span></p>
+    </div>
+  </section>
+  <div id="intro" class="overlay"><div class="modal">
+    <div class="eyebrow">DRAGON BOAT FESTIVAL</div><h1>粽力龍舟賽</h1><p class="subtitle">先比智慧，再乘風破浪。</p>
+    <div class="rule-row"><b>壹</b><div><strong>30 秒粽子問答</strong><small>每題 5 秒，答對 +1、答錯 −1。<br>PASS 或未答不扣分，最多帶入 5 顆粽子。</small></div></div>
+    <div class="rule-row"><b>貳</b><div><strong>1000 公尺龍舟競速</strong><small>一般約 40 秒，熟練者約 15～20 秒。<br>金色區域按划船，連續 3 次大幅加速。<br>按「攻擊紅舟／藍舟」發射粽子水浪。</small></div></div>
+    <div class="prizes">🥇 55　🥈 35　🥉 25 <span>個香包</span></div>
+    <p class="fine">任一艘抵達即依剩餘距離排名；同距離並列。<br>題庫介紹歷史民俗；雄黃有毒，不可飲用雄黃酒。</p>
+    <p id="loadStatus" role="status">正在載入素材…</p><button id="go" class="btn" disabled>開始挑戰</button>
+  </div></div>
+  <div id="transition" class="overlay" hidden><div class="modal"><div class="eyebrow">第一關完成</div><h1>準備下水！</h1><p id="quizSummary"></p><div id="carry"></div><p>白色游標進入金色區域時按划船。<br>划船兩側的攻擊按鈕可發射粽子水浪。</p><p id="countdown">即將出發…</p></div></div>
+  <div id="result" class="overlay" hidden><div class="modal"><div class="eyebrow">端午 · 競渡成績</div><h1>本局結算</h1><div id="medal"></div><h2 id="placing"></h2><div id="resultRows"></div><p id="resultQuiz"></p><div class="reward"><img class="item-icon" src="img/sachet.svg" alt="香包"> 獲得 <strong id="earned">0</strong> 個香包</div><p class="fine">香包為節慶貨幣，攻擊粽子不另換獎勵。</p><button id="again" class="btn" disabled>再玩一次</button><button id="out" class="btn alt" disabled>返回活動頁</button></div></div>
+</section></main></body></html>
