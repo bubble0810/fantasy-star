@@ -25,30 +25,15 @@ service cloud.firestore {
             && v.count == v.lookIds.size() + v.roomIds.size())
       );
     }
-    // Public rows contain only u (uid), n (name), l (level); list position is rank.
-    function lbMetric(v, type) {
-      return v is map && (
-        (type == 'stroop' && v.keys().hasOnly(['score']) && lbInt(v.score))
-        || (type == 'memory' && v.keys().hasOnly(['tries']) && lbInt(v.tries) && v.tries >= 8)
-        || (type == 'maze' && v.keys().hasOnly(['durationMs']) && lbInt(v.durationMs) && v.durationMs > 0)
-        || (type == 'quest' && v.keys().hasOnly(['cleared','stars']) && lbInt(v.cleared)
-          && v.cleared <= 108 && lbInt(v.stars) && v.stars <= v.cleared * 3)
-        || (type == 'looks' && v.keys().hasOnly(['count']) && lbInt(v.count))
-      );
-    }
-    function lbRow(row, type) {
-      return row.keys().hasOnly(['u','n','l','m']) && row.u is string && row.n is string && row.l is int
-        && (!('m' in row) || (type != 'total' && lbMetric(row.m, type)));
-    }
-    function lbRows(rows, type) {
-      let n = rows.size();
-      let first = n > 0 ? rows[0] : null;
-      let second = n > 1 ? rows[1] : null;
-      let third = n > 2 ? rows[2] : null;
-      return rows is list && n <= 3
-        && (n < 1 || lbRow(first, type))
-        && (n < 2 || lbRow(second, type))
-        && (n < 3 || lbRow(third, type));
+    // Public rows contain only u (uid), n (name), l (level), m (shown metric); list position is rank.
+    // Only admins publish, so each row is checked by its key whitelist alone (privacy guard).
+    // Six full boards = 18 rows; any per-value check pushes the request past the
+    // 1,000-expression rules limit and the whole publication is denied.
+    function lbRows(rows) {
+      return rows is list && rows.size() <= 3
+        && (rows.size() < 1 || rows[0].keys().hasOnly(['u','n','l','m']))
+        && (rows.size() < 2 || rows[1].keys().hasOnly(['u','n','l','m']))
+        && (rows.size() < 3 || rows[2].keys().hasOnly(['u','n','l','m']));
     }
     function lbResetTimes(r) {
       return r is map && r.keys().hasOnly(['stroop','memory','maze','quest','looks'])
@@ -161,8 +146,8 @@ service cloud.firestore {
         && d.schemaVersion == 1 && d.publishedAt == request.time
         && d.enabled == c.enabled && d.startsAt == c.startsAt && d.configUpdatedAt == c.updatedAt
         && b is map && b.keys().hasOnly(['total','stroop','memory','maze','quest','looks'])
-        && lbRows(b.total, 'total') && lbRows(b.stroop, 'stroop') && lbRows(b.memory, 'memory')
-        && lbRows(b.maze, 'maze') && lbRows(b.quest, 'quest') && lbRows(b.looks, 'looks');
+        && lbRows(b.total) && lbRows(b.stroop) && lbRows(b.memory)
+        && lbRows(b.maze) && lbRows(b.quest) && lbRows(b.looks);
     }
     match /leaderboardPublic/{id} {
       allow read: if id == 'current' && signedIn();
@@ -192,6 +177,5 @@ service cloud.firestore {
     match /adminlog/{id} {
       allow read, create: if isAdmin();
       allow update, delete: if false;
-    }
-  }
+    }  }
 }
