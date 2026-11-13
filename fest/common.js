@@ -1,0 +1,139 @@
+/* Shared festival lifecycle. The host owns attempts, rewards, and replay. */
+(() => {
+  'use strict';
+  const q = new URLSearchParams(location.search);
+  const key = document.documentElement.dataset.gameKey || location.pathname.split('/').slice(-2)[0];
+  const embedded = q.get('embed') === '1' && parent !== window;
+  const session = q.get('session');
+  const trial = q.get('trial') === '1';
+  const ui=window.FS_UI||{};
+  let offer={trial,price:Number(q.get('trialPrice'))||100,used:Number(q.get('trialUsed'))||0,balance:Number(q.get('balance'))||0,remaining:trial?3-(Number(q.get('trialUsed'))||0):Number(q.get('runsLeft'))||0,canStart:true};
+  if(trial&&embedded)offer.canStart=offer.balance>=offer.price&&offer.remaining>0;
+  let phase = 'ready', released = false, startButton, sent = false, releaseIntro;
+  let muted = false;
+  try { muted = localStorage.getItem('fs-festival-muted') === '1'; } catch {}
+  const outputs = new Map();
+  const send = (type, extra = {}) => parent.postMessage({ type, fsGame: key, session, ...extra }, location.origin === 'null' ? '*' : location.origin);
+  window.FS_EMBED = true;
+  window.FS_CHAR = q.get('char') || 'f';
+  window.FSGame = {
+    get phase() { return phase; },
+    output(ctx) {
+      if (!outputs.has(ctx)) {
+        const gain = ctx.createGain(), limit = ctx.createDynamicsCompressor();
+        gain.gain.value = muted ? 0 : 0.65;
+        limit.threshold.value = -18; limit.knee.value = 12;
+        limit.ratio.value = 8; limit.attack.value = .003; limit.release.value = .18;
+        limit.connect(gain).connect(ctx.destination); outputs.set(ctx, { input: limit, gain });
+      }
+      return outputs.get(ctx).input;
+    },
+    close() {
+      if (phase === 'settling') return;
+      ui.onClose?.();
+      if (embedded) send('fsGameClose', { fsClose: true });
+      else location.href = '../../index.html';
+    }
+  };
+  function prepareResult(){
+    const result=document.querySelector(ui.result||'#resP .card,#result .modal');
+    if(!result)return;
+    if(!document.getElementById('fsResultFooter')){const p=document.createElement('p');p.id='fsResultFooter';p.hidden=true;p.innerHTML='<span id="fsStatus"></span>';result.append(p);}
+    document.querySelectorAll('#againBtn,#again').forEach(b=>b.textContent=trial?'再體驗一次':'再玩一次');
+    document.querySelectorAll('#homeBtn,#out').forEach(b=>b.textContent=trial?'返回星宮體驗館':'返回活動頁');
+  }
+  function status(text) { const el = document.getElementById('fsStatus'); if (el) el.textContent = text; }
+  function unlock(text) {
+    phase = 'result'; status(text);
+    document.querySelectorAll('#againBtn,#again,#homeBtn,#out').forEach(b => { b.disabled = false; });
+  }
+  window.fsClose = FSGame.close;
+  window.fsResult = () => {};
+  window.fsReport = n => {
+    if (sent || phase !== 'playing') return;
+    sent = true; phase = 'settling';prepareResult();
+    document.getElementById('fsQuit').hidden = true;
+    document.querySelectorAll('#againBtn,#again,#homeBtn,#out').forEach(b => { b.disabled = true; });
+    const over = document.getElementById('fsOver'); over.hidden = false;
+    status('正在確認本局結果…');
+    setTimeout(() => {
+      over.hidden = true;
+      document.getElementById('fsResultFooter').hidden = false;
+      if (embedded) send('fsGameResult', { completed: true, earned: Math.max(0, n | 0) });
+      else unlock('單獨試玩：不發正式獎勵。');
+    }, 1000);
+  };
+  addEventListener('message', e => {
+    if (!embedded || e.source !== parent || e.origin !== location.origin || e.data?.session !== session) return;
+    const d = e.data;
+    if(d.type==='fsGameOffer'){offer={...offer,...d};releaseIntro?.updateOffer?.(offer);return;}
+    if (d.type === 'fsGameStarted' && phase === 'starting') {
+      if (!d.ok) { phase = 'ready'; startButton.disabled = false; status(d.message);releaseIntro?.showError?.(d.message);return; }
+      phase = 'playing'; releaseIntro?.(); released = true; startButton.disabled = false; startButton.click(); released = false;
+    }
+    if (d.type === 'fsGameSettled' && phase === 'settling') unlock(d.trial ? '體驗完成，本局不發正式獎勵。' : `已入帳：${d.earned} 個活動貨幣`);
+  });
+  document.addEventListener('DOMContentLoaded', () => {
+    const root = document.getElementById('stage') || document.getElementById('game') || document.querySelector('.app');
+    const hud = document.querySelector('.hud');
+    hud?.classList.add('fs-hud');
+    const exit = document.createElement('button'); exit.id = 'fsExit'; exit.textContent = '× 離開'; hud.prepend(exit);
+    const time = (ui.time&&document.querySelector(ui.time)) || document.getElementById('timeChip') || document.getElementById('timeN') || document.getElementById('time')?.parentElement;
+    time.classList.add('fs-time'); hud.append(time);
+    const sound = document.getElementById('musBtn') || document.getElementById('sound');
+    sound.classList.add('fs-sound'); root.append(sound);
+    const paintSound = () => { sound.textContent = muted ? '🔇' : '🔊'; sound.setAttribute('aria-label', muted ? '開啟聲音' : '關閉聲音'); sound.setAttribute('aria-pressed', String(!muted)); };
+    paintSound();ui.onMute?.(muted);
+    const currency = document.querySelector('.hudR,.hr,.loot');
+    currency?.classList.add('fs-currency');
+    document.getElementById('exit')?.remove();
+    const quit = document.createElement('div'); quit.id = 'fsQuit'; quit.className = 'fs-overlay'; quit.hidden = true;
+    quit.innerHTML = '<div class="fs-card"><h2>要離開嗎？</h2><p>遊戲持續進行中，現在離開不會獲得本局獎勵，已用次數不退還。</p><button id="fsStay">繼續遊戲</button><button id="fsLeave">確定離開</button></div>';
+    const over = document.createElement('div'); over.id = 'fsOver'; over.className = 'fs-overlay'; over.hidden = true; over.innerHTML = '<div class="fs-card"><h1>遊戲結束</h1><p>正在統計本局成果…</p></div>';
+    root.append(quit, over);
+    exit.onclick = () => { if (phase === 'playing') quit.hidden = false; else FSGame.close(); };
+    document.getElementById('fsStay').onclick = () => quit.hidden = true;
+    document.getElementById('fsLeave').onclick = FSGame.close;
+    prepareResult();
+    const result=document.querySelector(ui.result||'#resP .card,#result .modal');
+    const title=result.querySelector('h1');if(title&&!ui.samePanel)title.textContent='本局結算';
+    const intro=document.querySelector(ui.intro||'#startP .card,#intro .modal');
+    const note = document.createElement('p'); note.className = 'fs-rule';note.hidden=true;intro.append(note);
+    const introExit = document.createElement('button'); introExit.className = 'sub btn alt'; introExit.textContent = trial ? '返回星宮體驗館' : '離開'; introExit.onclick = FSGame.close; intro.append(introExit);
+    releaseIntro=window.FSIntro?.prepare(intro,{key,start:document.getElementById(ui.start||'goBtn')||document.getElementById('go'),note,exit:introExit,embedded,trial,root,offer});
+    // Capture before legacy per-game listeners, including their sound/pause handlers.
+    document.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b === sound) {
+        e.preventDefault(); e.stopImmediatePropagation(); muted = !muted;
+        try { localStorage.setItem('fs-festival-muted', muted ? '1' : '0'); } catch {}
+        for (const [ctx, out] of outputs) out.gain.gain.setTargetAtTime(muted ? 0 : .65, ctx.currentTime, .02);
+        paintSound();ui.onMute?.(muted); return;
+      }
+      if (['homeBtn','out','againBtn','again'].includes(b.id)) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        if (phase !== 'result') return;
+        if (b.id === 'againBtn' || b.id === 'again') {
+          if (embedded) { phase = 'replaying'; send('fsGameReplay'); }
+          else location.reload();
+        } else FSGame.close();
+        return;
+      }
+      if (['goBtn','go',ui.start].filter(Boolean).includes(b.id) && !released) {
+        e.preventDefault(); e.stopImmediatePropagation(); if (phase !== 'ready' || window.fsQuestionsReady === false) return;
+        if(trial&&embedded&&!offer.canStart)return;
+        startButton = b;
+        if (embedded) { phase = 'starting'; b.disabled = true; send('fsGameStart'); }
+        else { phase = 'playing'; releaseIntro?.(); released = true; b.click(); released = false; }
+      }
+    }, true);
+    const updateTimer = () => {
+      const text = time.textContent.trim(); const m = text.match(/^(?:⏱️\s*|剩\s*)?(\d+)\s*秒$/);
+      time.classList.toggle('fs-countdown', !!m);
+      time.classList.toggle('fs-urgent', !!m && +m[1] <= 10);
+    };
+    updateTimer();
+    const observer = new MutationObserver(updateTimer); observer.observe(time, { childList: true, subtree: true, characterData: true });
+    if(embedded)send('fsGameReady');
+  });
+})();
