@@ -1,0 +1,4 @@
+/* 電流急急棒：底色跟著關卡配色（game.js 設定 --page） */
+#miniBody{justify-content:flex-start}
+.maze{width:100%;aspect-ratio:1;display:block;border-radius:5cqw;touch-action:none;background:#1b1d45;box-shadow:0 2cqw 6cqw #0005}
+#mst{font-weight:700}

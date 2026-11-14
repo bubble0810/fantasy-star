@@ -1,0 +1,26 @@
+/* 記憶翻牌：主線與競賽都用競賽牌面；底色跟著關卡（memory-tier-N） */
+.tier-1{--memory-a:#355d76;--memory-b:#232f4b;--memory-edge:#86c7dc}
+.tier-2{--memory-a:#6d5287;--memory-b:#302b4e;--memory-edge:#c0a1e4}
+.tier-3{--memory-a:#79516b;--memory-b:#322940;--memory-edge:#e2a1bd}
+.tier-4{--memory-a:#7a5a3a;--memory-b:#33283a;--memory-edge:#e8c08a}
+.tier-5{--memory-a:#8a3f52;--memory-b:#2a1f3c;--memory-edge:#ffb3c4}
+#stage{background:radial-gradient(circle at 20% 0%,#ffffff14,transparent 50%),linear-gradient(170deg,var(--memory-a),var(--memory-b))}
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:2.4cqw;width:100%;padding:2.4cqw;border:1px solid #ffffff30;border-radius:4cqw;background:#ffffff14;box-shadow:inset 0 1px 4px #0002}
+.mem.cols-5{grid-template-columns:repeat(5,1fr);gap:1.8cqw}
+.mem.cols-6{grid-template-columns:repeat(6,1fr);gap:1.5cqw}
+.mc{aspect-ratio:4/5;border:0;border-radius:2.6cqw;padding:0;position:relative;background:none;perspective:600px;outline-offset:2px}
+.mc .in{position:absolute;inset:0;transition:transform .35s;transform-style:preserve-3d}
+.mc.up .in,.mc.done .in{transform:rotateY(180deg)}
+.mc .f,.mc .b{position:absolute;inset:0;border-radius:2.6cqw;-webkit-backface-visibility:hidden;backface-visibility:hidden;display:grid;place-items:center}
+.mc .b{border:1px solid transparent;background:linear-gradient(145deg,var(--memory-a),var(--memory-b)) padding-box,linear-gradient(125deg,#ffffffbf,var(--memory-edge),#6d74a877,var(--memory-edge)) border-box;box-shadow:inset 0 1px 0 #ffffff33,0 3px 5px #21203d50;overflow:hidden}
+.mc .b::before{content:"";position:absolute;inset:6%;border:1px solid #d5ddff30;border-radius:1.6cqw}
+.mc .b::after{content:"";position:absolute;inset:0;background:linear-gradient(140deg,#ffffff1c,transparent 45%,#ffffff08 70%,transparent);pointer-events:none}
+.mc .b svg{width:63%;filter:drop-shadow(0 2px 2px #15162c50)}
+.mc .f{transform:rotateY(180deg);border:1px solid #d6c5df;background:radial-gradient(circle at 30% 20%,#ffffff,#fcf7f1 54%,#e9def0);box-shadow:inset 0 1px 0 #fff,0 3px 6px #28213b33}
+.mc .f svg{width:84%;filter:drop-shadow(0 2px 1px #60497516)}
+.mc.done .f{border-color:#5b9d91;background:linear-gradient(135deg,#f2fffa,#dcefe8)}
+.mc.done .f::after{content:"✓";position:absolute;right:4%;bottom:4%;width:3.4cqw;height:3.4cqw;border-radius:50%;background:#3c8a78;color:#fff;font:2.4cqw/3.4cqw sans-serif;text-align:center}
+.mc:focus-visible{outline:2px solid var(--memory-edge)}
+.mactions{display:flex;justify-content:center;margin-top:auto}
+.mactions .mbtn{min-width:40cqw}
+@media(prefers-reduced-motion:reduce){.mc .in{transition:none}}

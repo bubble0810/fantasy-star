@@ -1,0 +1,18 @@
+/* 顏色陷阱：底色跟著關卡（game.js 依 STROOP_SKINS 設定），字卡固定白底 */
+#stage{background:var(--page);color:var(--stage-ink)}
+#stage .mbtn{border-color:var(--edge);background:#ffffff66;color:var(--stage-ink)}
+#stage.tier-5 .mbtn{background:#ffffff14}
+#stage .mgoal{background:#ffffff80;color:var(--stage-ink)}
+#stage.tier-5 .mgoal{background:#ffffff14}
+.stroop{flex:1;display:flex;flex-direction:column;gap:4cqw;align-items:center;justify-content:center}
+.scard{position:relative;width:100%;aspect-ratio:5/3;display:grid;place-items:center;border-radius:6cqw;background:var(--card);border:2px solid var(--edge);box-shadow:0 2cqw 6cqw #0002}
+.sword{font-family:var(--display);font-size:22cqw;line-height:1.1;color:#3b2853}
+.sword.rev{text-decoration:underline wavy #e0a800 1cqw;text-underline-offset:4cqw}
+.srev{margin:0;padding:1.6cqw 4cqw;border-radius:999px;background:#fff1c2;border:1px solid #e0a800;color:#7a5200;font-weight:700;text-align:center;font-size:3.8cqw}
+.srev.off{visibility:hidden}
+.sfx{position:absolute;right:5cqw;top:4cqw;font-size:9cqw;font-weight:700;opacity:0;transition:opacity .12s}
+.sfx.ok{opacity:1;color:#1f9d55}.sfx.no{opacity:1;color:#e53950}
+.sbtns{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:2cqw;width:100%}
+.sbtns button{border:2px solid var(--edge);background:#fff;border-radius:3.5cqw;min-height:16cqw;font-size:5.4cqw;font-weight:700;color:#3b2853}
+.sbtns button:active{background:#ffe1ee}
+.sscore{font-family:var(--display);font-size:8cqw;line-height:1}

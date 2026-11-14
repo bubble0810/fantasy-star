@@ -1,0 +1,37 @@
+/* 三個競賽小遊戲的共用外框：直式 2:3，置中填滿視窗 */
+:root{
+  --ink:#3b2853;--muted:#7d6a94;--line:#e5d8f2;--rose:#e2508f;--rose-soft:#ffe1ee;--mint:#3fb39a;--mint-soft:#dcf6ef;
+  --display:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --page:#1b1530;--stage-ink:#f3f0ff;--stage-muted:#c9c2e6;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:var(--page);overflow:hidden;font-family:var(--body);color:var(--stage-ink);-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
+#miniShell{position:fixed;inset:0;display:grid;place-items:center;background:var(--page)}
+#stage{position:relative;width:min(100vw,calc(100dvh*2/3));height:min(100dvh,calc(100vw*1.5));container-type:size;display:flex;flex-direction:column;overflow:hidden;
+  padding:max(2.5cqw,env(safe-area-inset-top,0px)) 4cqw max(3cqw,env(safe-area-inset-bottom,0px));font-size:4cqw;line-height:1.5}
+.mhud{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:2cqw;min-height:11cqw}
+.mhud b{font-family:var(--display);font-weight:400;font-size:4.6cqw;text-align:center;line-height:1.2}
+.mbtn{border:1px solid #ffffff55;background:#ffffff1f;border-radius:999px;padding:1.6cqw 3.4cqw;font-size:3.6cqw;min-height:9.5cqw;backdrop-filter:blur(4px)}
+.mbtn.primary{background:var(--rose);border-color:var(--rose);color:#fff}
+#miniSound{width:10cqw;padding:0}
+#miniBody{flex:1;min-height:0;display:flex;flex-direction:column;gap:3cqw;padding-top:2cqw}
+.mstat{display:flex;justify-content:space-between;gap:2cqw;font-variant-numeric:tabular-nums;font-size:3.8cqw;color:var(--stage-muted)}
+.mstat b{color:var(--stage-ink)}
+.mhint{margin:0;font-size:3.4cqw;color:var(--stage-muted);text-align:center}
+.mgoal{margin:0;padding:2cqw 3cqw;border-radius:3cqw;background:#ffffff1a;font-size:3.3cqw;text-align:center;color:var(--stage-ink)}
+.moverlay{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:6cqw;background:#120d24b3}
+.mcard{width:100%;padding:6cqw;border-radius:5cqw;background:#fff;color:var(--ink);text-align:center;box-shadow:0 8px 30px #0006}
+.mcard h2{margin:0 0 2cqw;font-family:var(--display);font-weight:400;font-size:6cqw}
+.mcard p{margin:0 0 3cqw;font-size:4cqw}
+.mcard .msmall{font-size:3.3cqw;color:var(--muted)}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:3cqw}
+.mcard .mbtn{border-color:var(--line);background:#f6f0fc;color:var(--ink);min-height:12cqw;font-size:4cqw}
+.mcard .mbtn.primary{background:var(--rose);border-color:var(--rose);color:#fff}
+.shake{animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@media(prefers-reduced-motion:reduce){.shake{animation:none}}
