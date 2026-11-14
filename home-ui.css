@@ -501,3 +501,457 @@ html{background:radial-gradient(ellipse at 16% 10%,#393365 0,transparent 52%) fi
 #panel:has(>.home-local-tabs)>.merchant .merimg{box-sizing:border-box;flex:0 0 52px;width:52px;height:52px;border-width:2px}
 #panel:has(>.home-local-tabs)>.merchant p{flex:1;min-width:0;margin:0;font:400 13px/1.6 var(--body);overflow-wrap:anywhere}
 #panel:has(>.home-local-tabs)>.merchant b{display:block;margin:0 0 2px;font:500 15px/1.4 var(--body)}
+
+/* 自由練習：難度解鎖列 + 九大領域 3x3 九宮格 */
+#panel .prtiers{display:flex;flex-wrap:wrap;align-items:center}
+#panel .prtiers>span{flex:0 0 auto}
+#panel .prtiers button{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1 1 0;min-width:0;padding:8px 4px}
+#panel .prtiers button b{font-weight:500}
+#panel .prtiers button small{font-size:11px;line-height:1.3;opacity:.85}
+#panel .prtiers button:disabled{opacity:.5;cursor:default}
+#panel .prtiers>small{flex-basis:100%;font-size:12px;color:#6b5b7d}
+#panel .prgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+#panel .prcell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:104px;padding:12px 6px;border:1px solid #ccd2e5;border-radius:14px;background:linear-gradient(160deg,#fff,#f4f1fb);color:#3b2853;font:inherit;text-align:center;cursor:pointer}
+#panel .prcell .pric{font-size:28px;line-height:1}
+#panel .prcell b{font-size:var(--type-section);font-weight:500;line-height:1.4}
+#panel .prcell small{font-size:12px;line-height:1.35;color:#6b5b7d}
+#panel .prcell.hot{border-color:#e0a63a;background:linear-gradient(160deg,#fff8e6,#ffefc9)}
+#panel .prcell:active{transform:scale(.97)}
+@media (max-width:380px){#panel .prcell small{display:none}#panel .prcell{min-height:84px}}
+/* 2026-11 版面：拿掉最上方標題列，房間置頂；右上角 HUD 依序為 信件・聲音・設定，星空榜在下方 */
+.app>.top{display:none!important}
+#stagewrap .hud-icons{display:flex;gap:4px;justify-content:flex-end;align-items:center}
+#stagewrap .hud-ico{width:30px;height:30px;min-height:30px;flex:0 0 30px;padding:0;display:grid;place-items:center;cursor:pointer;--hud-top:#3c5068;--hud-mid:#2c3c52;--hud-bottom:#1b2638;--hud-edge:#7fa6c4;color:#d6f2f6;font:400 17px/1 var(--body)}
+#stagewrap .hud-ico svg{width:17px;height:17px;display:block}
+#stagewrap .hud-ico .snd-mute{display:none}
+#stagewrap .hud-ico.off{color:#a9b2c2}
+#stagewrap .hud-ico.off .snd-wave{display:none}
+#stagewrap .hud-ico.off .snd-mute{display:inline}
+
+/* 登入卡片（新版結構，視覺設計待正式圖片後再調整） */
+.cl-sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.cl-mask .cl-form{display:flex;flex-direction:column;gap:6px}
+.cl-mask .cl-card .cl-field{position:relative;flex-direction:row;align-items:center;gap:0}
+.cl-mask .cl-field .cl-ico{position:absolute;left:12px;width:20px;height:20px;color:#8a83b8;pointer-events:none}
+.cl-mask .cl-field .cl-ico svg,.cl-mask .cl-eye svg{width:100%;height:100%;display:block}
+.cl-mask .cl-card .cl-field input{padding-left:42px;padding-right:44px}
+.cl-mask .cl-eye{position:absolute;right:6px;width:36px;height:36px;padding:7px;border:0;background:none;color:#8a83b8;cursor:pointer;border-radius:10px}
+.cl-mask .cl-eye[aria-pressed=true]{color:#5654a3}
+.cl-mask .cl-hint{font-size:12px;color:#77738c;margin:0 4px 6px}
+.cl-mask .cl-forgot{display:flex;justify-content:flex-end}
+.cl-mask .cl-link{border:0;background:none;color:#5654a3;font:inherit;font-size:13px;padding:4px;cursor:pointer;text-decoration:underline}
+.cl-mask .cl-go,.cl-mask .cl-alt{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2}
+.cl-mask .cl-go small,.cl-mask .cl-alt small{font-size:10px;letter-spacing:.2em;opacity:.8}
+.cl-mask .cl-alt{min-height:48px}
+.cl-mask .cl-brand{text-align:center}
+.cl-mask .cl-shield{margin-right:4px}
+
+/* 字級平衡：標題 24／英文副標 11／輸入與內容 16／主按鈕 17／次按鈕 15／連結 13／說明 12 */
+.cl-mask .cl-brand{font:500 24px/1.3 var(--body);letter-spacing:.06em}
+.cl-mask .cl-brand small{margin-top:2px;font-size:11px;line-height:1.4;letter-spacing:.2em;color:#8a86a0}
+.cl-mask .cl-card .cl-field input{min-height:48px;font-size:16px}
+.cl-mask .cl-card .cl-field input::placeholder{color:#9a96b0;font-size:15px}
+.cl-mask .cl-hint{font-size:12px;line-height:1.5;color:#7c7893;margin:2px 6px 8px}
+.cl-mask .cl-forgot{margin-top:-4px}
+.cl-mask .cl-link{font-size:13px}
+.cl-mask .cl-go{min-height:52px;gap:1px}
+.cl-mask .cl-go span{font-size:17px;font-weight:500;letter-spacing:.12em}
+.cl-mask .cl-alt{gap:1px}
+.cl-mask .cl-alt span{font-size:15px;letter-spacing:.08em}
+.cl-mask .cl-go small,.cl-mask .cl-alt small{font-size:10px;letter-spacing:.22em;opacity:.75}
+.cl-mask .cl-note{font-size:12px;line-height:1.6;color:#7c7893}
+.cl-mask .cl-err{font-size:13px;line-height:1.5}
+
+/* 設定：帳號資料 */
+.acct{margin:0 0 14px}
+.acct-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:10px;padding:12px 0;border-bottom:1px solid #ece8f4}
+.acct-row:first-child{padding-top:4px}
+.acct-main{display:flex;align-items:baseline;gap:12px;min-width:0}
+.acct-label{flex:0 0 2.6em;font-size:13px;color:#7c7893}
+.acct-val{min-width:0;font-size:16px;font-weight:500;color:#393855;word-break:break-all}
+.acct-hint{grid-column:1/-1;margin:4px 0 0 calc(2.6em + 12px);font-size:12px;line-height:1.5;color:#8a86a0}
+.acct-btn{min-width:64px;height:34px;padding:0 14px;border:1px solid #c9c4e6;border-radius:10px;background:#f6f4fd;color:#5654a3;font:500 14px/1 var(--body);cursor:pointer}
+.acct-btn:disabled{opacity:.45;cursor:default}
+.acct-show{margin-left:6px;padding:2px 8px;border:1px solid #d6d2ea;border-radius:8px;background:#fff;color:#6b6883;font:400 12px/1.4 var(--body);vertical-align:2px;cursor:pointer}
+.acct-note{margin:0 0 10px;font-size:12px;line-height:1.6;color:#8a86a0;text-align:center}
+#sheet .acct-label{flex:0 0 34px}
+#sheet .acct-hint{margin:4px 0 0 46px}
+
+/* =====================================================================
+   星空主題 v2（2026-11-14）
+   色彩：夜空深藍、星雲紫、星光藍、金色（重點／已選）、銀白（表面／文字）
+   按鈕狀態（全站一致）：
+     1. 可按・主要   紫→藍漸層＋金色細邊，銀白字
+     2. 可按・次要   月光銀白底＋銀灰邊，靛藍字
+     3. 已選／使用中 金色底＋金邊，深金字（aria-pressed / aria-selected / .worn）
+     4. 暫時不能按   灰底灰字、無陰影（條件不符：糖不夠、沒有可賣的…）
+     5. 未解鎖       深靛底＋虛線銀邊＋🔒（文字含「解鎖」時由 home-ui.js 自動標記 .is-locked）
+   ===================================================================== */
+:root{
+  --sky-0:#0a0f26;--sky-1:#151a3f;--sky-2:#232a5c;--sky-3:#343c78;
+  --nebula:#7b62e0;--nebula-2:#5a46b8;--starblue:#4c86d8;--starcyan:#9fdcff;
+  --gold:#f0cd78;--gold-2:#c99a3e;--gold-ink:#6a4a12;--gold-soft:#fff5d9;
+  --silver:#eef0fa;--silver-2:#dfe3f3;--silver-line:#c6cce6;--indigo-ink:#2d2f6b;--indigo-muted:#6c6f99;
+  --off-bg:#e7e8ef;--off-ink:#8f93a6;--off-line:#d4d6e0;
+}
+
+/* 內容面板與對話框：月光銀白表面＋細小星點＋頂部金色光線 */
+#panel,.sheet{
+  background:
+    linear-gradient(90deg,transparent 6%,#e9c97680 50%,transparent 94%) top/100% 1px no-repeat,
+    radial-gradient(1.2px 1.2px at 8% 14%,#b7a6f2 70%,transparent),
+    radial-gradient(1px 1px at 86% 9%,#9fc3f0 70%,transparent),
+    radial-gradient(1.3px 1.3px at 64% 38%,#e3c97f 70%,transparent),
+    radial-gradient(1px 1px at 22% 72%,#a9b5e8 70%,transparent),
+    radial-gradient(1px 1px at 92% 64%,#c2b3f5 70%,transparent),
+    linear-gradient(172deg,#f9f9ff 0%,#f1f2fc 55%,#eaedf9 100%)!important;
+  border:1px solid var(--silver-line)!important;
+  box-shadow:inset 0 1px 0 #fff,0 10px 30px -12px #0a0f2680!important;
+  color:var(--indigo-ink);
+}
+#panel h2,#sheet .qtag{color:var(--indigo-ink)}
+#panel .content-page-head h2::before{content:"✦";margin-right:6px;color:var(--gold-2);font-size:.8em;vertical-align:.08em}
+#panel .content-page-head{border-bottom-color:var(--silver-2)}
+#panel h3{color:#3b3d77}
+
+/* ---- 狀態 2：可按・次要（預設） ---- */
+:is(#panel,#sheet) :is(.act,.ghost,.page-back,.filters button,.sub button,.diffpick button,.act.water,.act.ghost2),
+.cl-mask .cl-sub{
+  border:1px solid var(--silver-line)!important;
+  background:linear-gradient(160deg,#ffffff,var(--silver) 60%,var(--silver-2))!important;
+  color:var(--indigo-ink)!important;
+  box-shadow:inset 0 1px 0 #fff,0 1px 3px #23295c1a!important;
+  cursor:pointer;transition:filter .12s,transform .08s,box-shadow .12s;
+}
+/* ---- 狀態 1：可按・主要 ---- */
+:is(#panel,#sheet) :is(.act.buy,.act.wear,.big),
+.cl-mask .cl-go{
+  border:1px solid #8f7fe0!important;
+  background:linear-gradient(118deg,var(--nebula) 0%,#6567d6 45%,var(--starblue) 100%)!important;
+  color:#f7f8ff!important;
+  box-shadow:inset 0 1px 0 #ffe7a8b0,inset 0 -1px 0 #2a2a7a66,0 4px 12px -4px #4b4bb899!important;
+  text-shadow:0 1px 1px #1d1a5a66;
+}
+/* ---- 狀態 3：已選／使用中 ---- */
+:is(#panel,#sheet) :is(button[aria-pressed="true"],button[aria-selected="true"],.act.worn,.seed[aria-pressed="true"]){
+  border:1px solid var(--gold-2)!important;
+  background:linear-gradient(160deg,#fffaf0,var(--gold-soft) 45%,#f6e2a8)!important;
+  color:var(--gold-ink)!important;
+  box-shadow:inset 0 1px 0 #fff,0 0 0 2px #f0cd7833!important;
+  opacity:1!important;
+}
+/* ---- 狀態 4：暫時不能按 ---- */
+:is(#panel,#sheet) button:disabled:not(.is-locked):not(.act.worn):not([aria-pressed="true"]),
+.cl-mask .cl-go:disabled{
+  border:1px solid var(--off-line)!important;
+  background:var(--off-bg)!important;
+  color:var(--off-ink)!important;
+  box-shadow:none!important;text-shadow:none!important;
+  opacity:1!important;cursor:not-allowed!important;filter:grayscale(.35);
+}
+/* ---- 狀態 5：未解鎖 ---- */
+:is(#panel,#sheet) button.is-locked.is-locked.is-locked{
+  border:1px dashed #7d86bd!important;
+  background:linear-gradient(160deg,var(--sky-2),var(--sky-1))!important;
+  color:#c3c9ea!important;
+  box-shadow:inset 0 1px 0 #ffffff14!important;text-shadow:none!important;
+  opacity:1!important;cursor:not-allowed!important;
+}
+:is(#panel,#sheet) button.is-locked :is(b,small,span){color:inherit!important}
+:is(#panel,#sheet) .act.is-locked::before{content:"🔒";margin-right:4px;font-size:.9em}
+:is(#panel,#sheet) .seed.is-locked::after{content:"🔒";position:absolute;top:6px;right:8px;font-size:12px}
+:is(#panel,#sheet) .seed{position:relative}
+
+/* 按下回饋（所有可按的按鈕一致） */
+:is(#panel,#sheet,.cl-mask,#stagewrap) button:not(:disabled):not(.is-locked):active{transform:translateY(1px) scale(.985);filter:brightness(.95)}
+@media(hover:hover){:is(#panel,#sheet,.cl-mask) button:not(:disabled):not(.is-locked):hover{filter:brightness(1.05)}}
+:is(#panel,#sheet,.cl-mask,#stagewrap) button:focus-visible{outline:2px solid var(--gold)!important;outline-offset:2px}
+
+/* 主分頁列與 HUD：深色科技面板，選中＝金色 */
+#stagewrap .tabs{border-color:#3a4575!important;background:linear-gradient(120deg,#121a3a,#1a1d45)!important;box-shadow:inset 0 1px 0 #c8d2ff14,0 0 0 1px #e9c97614,0 3px 8px #0a0f2633!important}
+#stagewrap .tabs button{border-color:#36407a!important;background:linear-gradient(135deg,#1c2552,#191d44)!important;color:#c5cbe8!important}
+#stagewrap .tabs button[aria-selected=true]{border-color:var(--gold-2)!important;background:linear-gradient(120deg,#2c2a62,#3a2f6c)!important;color:var(--gold)!important;box-shadow:inset 0 -2px 0 var(--gold),0 0 8px #f0cd7826!important}
+#stagewrap .hud-cell{border-color:#c6cce655}
+#stagewrap .hud-ico{--hud-top:#2e3570;--hud-mid:#232a5c;--hud-bottom:#161b43;--hud-edge:#9aa6e0;color:#e6eaff}
+#stagewrap .hud-ico.off{--hud-edge:#6b7096;color:#8f93a6}
+#stagewrap .stbtn[aria-pressed=true],#stagewrap .hud-rank[aria-pressed=true]{border-color:var(--gold)!important;color:var(--gold)!important;box-shadow:0 0 8px #f0cd7840}
+#stagewrap #hudMailSlot button:disabled{opacity:.55;cursor:not-allowed}
+
+/* 登入卡片的金色細線與星點，與面板一致 */
+.cl-mask .cl-card{background:
+    linear-gradient(90deg,transparent 8%,#e9c97699 50%,transparent 92%) top/100% 1px no-repeat,
+    radial-gradient(1.2px 1.2px at 10% 16%,#b7a6f2 70%,transparent),
+    radial-gradient(1px 1px at 88% 12%,#9fc3f0 70%,transparent),
+    linear-gradient(170deg,#fbfbff,#eef0fb)!important;border-color:var(--silver-line)!important}
+.cl-mask .cl-brand{color:var(--indigo-ink)!important}
+.cl-mask .cl-link{color:var(--nebula-2)}
+
+/* 按鈕尺寸三級（高度／字級）：大 46／16 主要動作；中 40／15 卡片動作；小 32／13 工具鈕。分段切換 38／14。 */
+#panel :is(.act,.ghost){min-height:40px;padding:6px 12px;font-size:15px;line-height:1.35;border-radius:10px}
+:is(#panel,#sheet) .big,.sheet .petacts .act{min-height:46px;padding:8px 16px;font-size:16px;line-height:1.35;border-radius:12px}
+#panel :is(.filters button,.sub button,.diffpick button){min-height:38px;padding:6px 12px;font-size:14px}
+#panel .page-back,#sheet .acct-btn{height:32px;min-height:32px;padding:0 12px;font-size:13px;border-radius:9px}
+/* 「使用中」是狀態不是動作：降低高度、加勾號，避免整排大色塊太突兀 */
+#panel .act.worn{min-height:34px;font-size:14px}
+#panel .act.worn::before{content:"✓";margin-right:4px}
+/* 商城、衣櫥卡片內的按鈕與卡片寬度一致但不過高 */
+#panel :is(.spc,.hc,.bi,.card,.item) .act{min-height:38px;font-size:14px}
+
+/* 星星市場數量：−10 −1 +1 +10 最多（小尺寸工具鈕，與次要按鈕同色） */
+#panel .mkq{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+#panel .mkq>button{min-width:0;min-height:36px;padding:4px 2px;border:1px solid var(--silver-line);background:linear-gradient(160deg,#fff,var(--silver) 60%,var(--silver-2));color:var(--indigo-ink);font:500 14px/1.2 var(--body);font-variant-numeric:tabular-nums;box-shadow:inset 0 1px 0 #fff,0 1px 3px #23295c1a}
+#panel .mkq>button[data-max]{color:var(--gold-ink);border-color:var(--gold-2);background:linear-gradient(160deg,#fffaf0,var(--gold-soft))}
+#panel :is(.spc,.hc) :is([data-wear],[data-off],[data-home],.act.worn){min-height:38px;font-size:14px}
+#panel :is(.spc,.hc,.bi) .act.worn.worn{min-height:34px}
+
+/* 星空主題：卡片與區塊（取代舊的粉紅、粉綠、淺藍色塊） */
+/* 商人介紹：夜空卡片，名字金色，頭像金框 */
+#panel .merchant{border:1px solid #4a5294;border-radius:14px;color:#e4e7fb;
+  background:
+    radial-gradient(1.2px 1.2px at 14% 22%,#fff 70%,transparent),
+    radial-gradient(1px 1px at 78% 18%,#cfd8ff 70%,transparent),
+    radial-gradient(1.4px 1.4px at 90% 70%,#f0cd78 70%,transparent),
+    radial-gradient(1px 1px at 40% 82%,#bfb2ff 70%,transparent),
+    linear-gradient(135deg,#1d2457,#2c2568 60%,#1a2150);
+  box-shadow:inset 0 1px 0 #ffffff18,0 4px 14px -6px #0a0f2680}
+#panel .merchant p{color:#dfe3f8}
+#panel .merchant b{color:var(--gold)!important}
+#panel .merimg{border:2px solid var(--gold-2)!important;box-shadow:0 0 0 3px #f0cd7826,0 4px 10px #0a0f2666;background:#2a3170}
+
+/* 套裝分類盒（衣櫥、商城）：月光卡片＋金色細框 */
+#panel .spshow{border:1px solid #e2c47e!important;background:linear-gradient(165deg,#ffffff,#f3f4fd 60%,#eceffa)!important;box-shadow:inset 0 1px 0 #fff,0 2px 8px -4px #23295c33}
+#panel .spshow>h3,#panel .spshow>b{color:var(--indigo-ink)}
+/* 造型圖片底：舞台聚光 */
+#panel .silwrap{background:radial-gradient(circle at 50% 28%,#ffffff 0,#eceefb 45%,#d9ddf2 100%)!important}
+
+/* 花園：空地與擴建 */
+#panel .plot{border:1px solid var(--silver-line)!important;background:linear-gradient(180deg,#f2f3fc,#ffffff)!important}
+#panel .plot.add{border:1px dashed #9ea6cf!important;background:linear-gradient(180deg,#f7f8fe,#eef0fa)!important;color:var(--indigo-muted)}
+#panel .sale-section{border:1px solid var(--silver-line)!important;background:linear-gradient(170deg,#fbfbff,#f1f2fb)!important}
+
+/* 市場：狀態、快訊、突發 */
+#panel .mkst{border:1px solid var(--silver-line);background:linear-gradient(160deg,#fbfbff,#eef0fa)!important;color:var(--indigo-ink)!important}
+#panel .mkst.open{border-color:#9cc6e6;background:linear-gradient(160deg,#f4fbff,#e3effa)!important;color:#1f4f78!important}
+#panel .mknews{border:1px solid var(--silver-line)!important;background:linear-gradient(170deg,#fbfbff,#f0f2fb)!important}
+#panel .hot{background:linear-gradient(160deg,#fffaf0,var(--gold-soft))!important;border-left:3px solid var(--gold-2)}
+#panel .mkhot{background:linear-gradient(120deg,var(--gold),#e0a94a)!important;color:var(--gold-ink)!important}
+#panel .plot .act{padding:6px 4px;white-space:nowrap;overflow-wrap:normal}
+
+/* HUD 工具群組（信件・聲音・設定）：與名牌、闖關、星空榜同一套科技外觀（切角、亮邊、細光線） */
+#stagewrap .hud-ico{
+ position:relative;border-radius:3px!important;border:1px solid transparent!important;
+ background:linear-gradient(125deg,color-mix(in srgb,var(--hud-edge) 18%,#101b2c) 0%,color-mix(in srgb,var(--hud-top) 24%,#0c1627) 52%,#0a1221f5 100%) padding-box,linear-gradient(115deg,color-mix(in srgb,var(--hud-edge) 75%,#d9f8ff) 0%,#3a476160 48%,var(--hud-edge) 100%) border-box!important;
+ clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));
+ box-shadow:inset 0 1px 0 #d3edff12,inset 0 -1px 0 #00000048,0 2px 5px #060d2140!important;
+ backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+#stagewrap .hud-ico::before{content:"";position:absolute;left:7px;top:1px;width:12px;height:1px;background:var(--hud-edge);box-shadow:0 0 4px color-mix(in srgb,var(--hud-edge) 35%,transparent);pointer-events:none;opacity:.85}
+#stagewrap #hudMailSlot,#stagewrap .hud-ico{--hud-top:#3a4a8a;--hud-edge:#a7b4ee;color:#e8ecff}
+#stagewrap #hudMailSlot button{color:#e8ecff}
+#stagewrap .hud-ico.off{--hud-top:#2a3048;--hud-edge:#6b7096;color:#8f93a6}
+#stagewrap .hud-ico svg,#stagewrap .hud-ico>span{width:16px;height:16px;font-size:16px;line-height:16px}
+
+/* 今日星訊：星星市場快訊（取代市場頁的快訊區塊） */
+#panel .lobby-market>span:nth-child(2){display:flex;flex-direction:column;gap:3px;min-width:0}
+#panel .lobby-news-line{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:baseline;gap:6px;font-size:12px!important;line-height:1.5;color:var(--indigo-muted)}
+#panel .lobby-news-line i{font-style:normal;color:var(--gold-2);white-space:nowrap}
+#panel .lobby-news-line em{font-style:normal;font-variant-numeric:tabular-nums;white-space:nowrap}
+#panel .lobby-news-line em.u{color:#d24b5a}
+#panel .lobby-news-line em.d{color:#2f9a6b}
+
+/* 切換頁面不跳動：
+   1. 永遠保留捲軸位置，短頁（今日星訊、房間）和長頁（商城、市場）寬度一致，畫面不會左右位移
+   2. 內容面板保留最小高度，頁面高度不會忽長忽短 */
+html{scrollbar-gutter:stable}
+#panel{min-height:max(420px,calc(100svh - 340px));box-sizing:border-box}
+
+/* NPC 介紹：名字一行＋介紹最多兩行，卡片高度固定，切換商人時不會忽高忽低 */
+#panel .merchant{display:flex;align-items:center;gap:12px;min-height:84px;box-sizing:border-box;padding:10px 12px}
+#panel .merchant .merimg,#panel .merchant>svg{flex:0 0 56px;width:56px;height:56px}
+#panel .merchant p{margin:0;min-width:0;font-size:13px;line-height:1.55;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden}
+#panel .merchant p>b{display:block;font-size:14px;line-height:1.5;margin-bottom:1px}
+#panel .merchant.merchant{min-height:84px}
+
+/* =====================================================================
+   按鈕高度統一（取代前面各處零散的 38／40／44／46）
+   大 42／15：一頁只有一個的主要動作（擲骰子、確定、登出）
+   中 36／14：卡片動作、分段切換、寵物選擇、花園、買賣（大多數按鈕）
+   小 32／13：工具鈕（返回主頁、切換角色、去找商人、數量 −10…最多、更改）
+   ===================================================================== */
+#panel :is(.act,.ghost,.sub button,.filters button,.diffpick button,.market-tabs button,button[data-pet],.lobby-footer button),
+#sheet :is(.act,.ghost){
+  min-height:36px!important;height:auto!important;padding:5px 10px!important;
+  font-size:14px!important;line-height:1.3!important;border-radius:10px!important}
+#panel .big,#sheet .big,.sheet .petacts .act{
+  min-height:42px!important;height:auto!important;padding:7px 14px!important;
+  font-size:15px!important;line-height:1.3!important;border-radius:11px!important}
+#panel :is(.page-back,.act.ghost2,.mkq>button),#sheet .acct-btn{
+  min-height:32px!important;height:32px!important;padding:0 12px!important;
+  font-size:13px!important;line-height:1!important;border-radius:9px!important}
+#panel .mkq>button{padding:0 2px!important;font-size:14px!important;font-variant-numeric:tabular-nums}
+#panel .act.ghost2{width:auto;justify-self:start;align-self:flex-start}
+/* 花園格子內的按鈕：圖示縮小、不換行，和其他中型按鈕一樣高 */
+#panel .plot .act{padding:5px 4px!important;white-space:nowrap}
+#panel .plot .act :is(svg,img){width:16px;height:16px;vertical-align:-3px}
+#panel .petacts .act{padding:5px 4px!important;white-space:nowrap;overflow-wrap:normal}
+#panel .pet-actions .act{display:inline-flex!important;flex-direction:row!important;align-items:center;justify-content:center;gap:4px;padding:5px 4px!important;white-space:nowrap}#panel .pet-actions .act small{font-size:12px;opacity:.85}
+:is(#panel,#sheet) .act.is-locked::before{content:"🔒"!important;position:static!important;inset:auto!important;width:auto!important;height:auto!important;background:none!important;border:0!important;box-shadow:none!important;display:inline!important;margin-right:4px}
+
+/* 造型卡片三個一列（商城、衣櫥共用 .sprow）：文字縮一級、名稱最多兩行，按鈕對齊卡片底部 */
+#panel .sprow{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+#panel .sprow .spc{display:flex;flex-direction:column;min-width:0;padding:6px!important;gap:2px}
+#panel .sprow .silwrap{border-radius:9px}
+#panel .sprow .silwrap img{padding:4px 6px 0!important}
+#panel .sprow .code{font-size:10px!important;padding:1px 5px!important}
+#panel .sprow .lockbadge{font-size:10px!important;padding:2px 6px!important;white-space:nowrap}
+#panel .sprow .spc>b{margin-top:4px;font-size:13px!important;line-height:1.4!important;min-height:2.8em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+#panel .sprow .spc>small{font-size:11px!important;line-height:1.45!important;color:var(--indigo-muted)}
+#panel .sprow .spc>small:last-of-type{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+#panel .sprow .petacts{margin-top:auto;padding-top:6px;display:block!important}
+#panel .sprow .petacts .act{width:100%;padding:5px 2px!important;font-size:13px!important;white-space:nowrap}
+#panel .sprow .act.is-locked::before{margin-right:2px!important}
+@media(max-width:374px){#panel .sprow .petacts .act{font-size:12px!important;padding:5px 1px!important}#panel .sprow .act.is-locked::before{content:none!important;display:none!important}}
+
+/* 排列：衣櫥／商城造型 三個一列；裝潢商人、我的小屋、我的家園（花園格、種子、領養） 兩個一列 */
+#panel .plots{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+#panel .hgrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+#panel .hgrid .hc{display:flex;flex-direction:column;min-width:0;padding:6px!important;gap:2px}
+#panel .hgrid .hc>b{margin-top:4px;font-size:14px!important;line-height:1.4!important}
+#panel .hgrid .hc>small,#panel .hgrid .hc>p{font-size:11px!important;line-height:1.45!important;color:var(--indigo-muted);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;margin:0}
+#panel .hgrid .hc .petacts,#panel .hgrid .hc>.act{margin-top:auto}
+#panel .hgrid .hc .petacts{padding-top:6px;display:block!important}
+#panel .hgrid .hc .act{width:100%;padding:5px 2px!important;font-size:13px!important;white-space:nowrap}
+@media(max-width:374px){#panel .sprow .lockbadge{font-size:9px!important;padding:1px 4px!important}#panel .hgrid .hc .act{font-size:12px!important}}
+/* 目前使用中的小屋：金框（取代舊的綠框） */
+#panel .hc.on{border-color:var(--gold-2)!important;box-shadow:0 0 0 3px #f0cd7833!important}
+
+/* 節慶檔期：一列橫向滑動（不換行、不自動跑動）。第一個＝販售中或下一檔，金色標示；節日顏色只留小圓點 */
+#panel .festcal{display:flex!important;flex-wrap:nowrap!important;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;padding:2px 2px 4px;margin:0 -2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+#panel .festcal::-webkit-scrollbar{display:none}
+#panel .festcal span{flex:0 0 auto;scroll-snap-align:start;display:inline-flex;align-items:center;gap:4px;height:28px;box-sizing:border-box;padding:0 10px!important;border:1px solid var(--silver-line)!important;border-radius:999px;background:linear-gradient(160deg,#fff,var(--silver))!important;color:var(--indigo-muted)!important;font:400 12px/1 var(--body)!important;white-space:nowrap}
+#panel .festcal span b{display:inline-flex;align-items:center;gap:4px;margin:0!important;color:var(--indigo-ink)!important;font-weight:500}
+#panel .festcal span b::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--fc);box-shadow:0 0 0 1.5px #fff}
+#panel .festcal span:first-child{border-color:var(--gold-2)!important;background:linear-gradient(160deg,#fffaf0,var(--gold-soft))!important;color:var(--gold-ink)!important}
+#panel .festcal span:first-child b{color:var(--gold-ink)!important}
+#panel .festcal span:not(.on):first-child::before{content:"下一檔";margin-right:2px;padding:1px 6px;border-radius:999px;background:var(--gold-2);color:#fff;font-size:10px;line-height:16px}
+#panel .festcal span.on::before{content:"販售中";margin-right:2px;padding:1px 6px;border-radius:999px;background:var(--nebula);color:#fff;font-size:10px;line-height:16px}
+
+/* 節慶檔期＝次次分頁（按鈕）：選中＝金色，其他＝銀白；第一個加「販售中／下一檔」小標 */
+#panel .festcal button{flex:0 0 auto;scroll-snap-align:start;display:inline-flex;align-items:center;gap:4px;height:32px!important;min-height:32px!important;box-sizing:border-box;padding:0 10px!important;border:1px solid var(--silver-line)!important;border-radius:999px!important;background:linear-gradient(160deg,#fff,var(--silver))!important;color:var(--indigo-muted)!important;font:400 12px/1 var(--body)!important;white-space:nowrap;cursor:pointer;box-shadow:none!important}
+#panel .festcal button b{display:inline-flex;align-items:center;gap:4px;margin:0!important;color:var(--indigo-ink)!important;font-weight:500}
+#panel .festcal button b::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--fc);box-shadow:0 0 0 1.5px #fff}
+#panel .festcal button[aria-pressed="true"]{border-color:var(--gold-2)!important;background:linear-gradient(160deg,#fffaf0,var(--gold-soft) 45%,#f6e2a8)!important;color:var(--gold-ink)!important;box-shadow:0 0 0 2px #f0cd7833!important}
+#panel .festcal button[aria-pressed="true"] b{color:var(--gold-ink)!important}
+#panel .festcal button.first:not(.on)::before{content:"下一檔";margin-right:2px;padding:1px 6px;border-radius:999px;background:var(--gold-2);color:#fff;font-size:10px;line-height:16px}
+#panel .festcal button.on::before{content:"販售中";margin-right:2px;padding:1px 6px;border-radius:999px;background:var(--nebula);color:#fff;font-size:10px;line-height:16px}
+#panel .sprow .spc>small:first-of-type{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#panel .fbadge{color:var(--gold-ink)!important;font-weight:500!important}
+
+/* 衣櫥標題旁的「⇄ 男生／女生」小按鈕 */
+#panel .content-page-head h2{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px}
+#panel .sex-switch{display:inline-flex;align-items:center;gap:3px;height:24px;padding:0 9px;border:1px solid var(--silver-line);border-radius:999px;background:linear-gradient(160deg,#fff,var(--silver));color:var(--indigo-ink);font:500 12px/1 var(--body);letter-spacing:0;cursor:pointer;box-shadow:inset 0 1px 0 #fff;vertical-align:middle}
+#panel .sex-switch span{color:var(--gold-2);font-size:12px}
+#panel .sex-switch:active{transform:translateY(1px)}
+#panel .content-page-head h2:has(.sex-switch){flex-wrap:nowrap;gap:6px;white-space:nowrap;min-width:0}
+#panel .content-page-head h2:has(.sex-switch) .hint{font-size:11px!important;white-space:nowrap}
+#panel .content-page-head h2 .sex-switch{flex:0 0 auto;margin-left:2px}
+/* 窄手機：返回鈕只寫「← 返回」，衣櫥標題與切換鈕維持一行 */
+@media(max-width:374px){#panel .page-back .pb-long{display:none}#panel .content-page-head h2:has(.sex-switch){gap:4px}#panel .sex-switch{padding:0 7px}}
+#panel .content-page-head h2:has(.sex-switch)+.hint,#panel .fh+.hint{white-space:normal}
+#panel .page-back .pb-long{display:inline!important;position:static!important;width:auto!important;height:auto!important;margin:0!important;clip-path:none!important;overflow:visible!important}
+#panel .page-back{white-space:nowrap}
+@media(max-width:374px){#panel .page-back .pb-long{display:none!important}#panel .content-page-head h2{font-size:18px!important}#panel .content-page-head h2::before{display:none}}
+
+/* 頁面敘述（我的小屋、我的衣櫥…）：固定兩行高度，字級一致，長度一致 */
+#panel .page-desc{margin:0!important;font-size:12px!important;line-height:1.65!important;min-height:3.3em;color:var(--indigo-muted);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;white-space:normal!important}
+#panel .sex-switch{padding:0 7px!important}#panel .content-page-head h2:has(.sex-switch){gap:5px}
+
+/* =====================================================================
+   商人頁外觀統一（造型／裝潢／節慶商人、花園、寵物、收購）
+   1. 拿掉造型區外層金框（避免框中框），和裝潢商人一樣卡片直接排列
+   2. 所有商品卡片：同一種邊框、圓角、底色、陰影
+   3. 分類標題：同一字級顏色＋右側金色細線
+   ===================================================================== */
+#panel .spshow{border:0!important;background:none!important;box-shadow:none!important;padding:0!important;border-radius:0!important}
+#panel :is(.spc,.hc,.ad,.plot,.seed){border:1px solid var(--silver-line)!important;border-radius:12px!important;background:linear-gradient(170deg,#ffffff,#f3f4fc)!important;box-shadow:inset 0 1px 0 #fff,0 2px 6px -4px #23295c40!important}
+#panel .plot.add{border-style:dashed!important;border-color:#9ea6cf!important}
+#panel :is(.spc.on,.hc.on,.seed[aria-pressed="true"]){border-color:var(--gold-2)!important;box-shadow:0 0 0 3px #f0cd7833!important}
+#panel :is(.petbox,.sale-section){border:1px solid var(--silver-line)!important;border-radius:12px!important;background:linear-gradient(170deg,#fbfbff,#f1f2fb)!important;box-shadow:none!important}
+#panel :is(.serh,.sale-section>h3,.adopt-title,#panel>h3){display:flex;align-items:center;gap:8px;margin:14px 0 8px!important;font:500 15px/1.4 var(--body)!important;color:var(--indigo-ink)!important}
+#panel .serh::after,#panel>h3::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,#e2c47ecc,#c6cce600)}
+#panel .spshow>.serh:first-child{margin-top:2px!important}
+
+/* =====================================================================
+   首頁登入：專屬背景圖＋深紫色星空卡片（參考設計稿）
+   背景圖由 login/login-art.js 決定，讀到圖後 .cl-mask 會加上 .has-art
+   ===================================================================== */
+.cl-mask{--login-bottom:#2a1f78;background:var(--login-bottom)!important}
+.cl-mask .cl-shell{position:relative;gap:0!important;width:min(460px,100%)!important;align-items:start!important;margin:0 auto!important}
+.cl-mask.has-art .cl-shell{background:var(--login-art) top center/100% auto no-repeat;border-radius:20px}
+/* 圖上已有標題與人物：文字標題只留給讀屏軟體；保留圖片上半部（約 53%）給標題和人物 */
+.cl-mask.has-art .cl-hero{aspect-ratio:1024/800;position:relative}
+.cl-mask.has-art .cl-hero-copy{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.cl-mask.has-art .cl-promo{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);max-width:92%;padding:3px 12px;border-radius:999px;background:#1d1550cc;border:1px solid #c9b8ff66;color:#f3e6c4;font-size:11px;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 註冊後面幾步（選角色、暱稱、確認）內容較多：圖片只露出標題 */
+.cl-mask.has-art:is([data-step='2'],[data-step='3'],[data-step='4']) .cl-hero{aspect-ratio:1024/330}
+.cl-mask.has-art:is([data-step='2'],[data-step='3'],[data-step='4']) .cl-promo{display:none}
+@media(max-width:500px){.cl-mask{padding:0 0 18px!important}.cl-mask.has-art .cl-shell{border-radius:0}.cl-mask .cl-card{margin:0 12px}}
+
+/* 卡片：深紫玻璃＋淡金細線＋紫色光暈 */
+.cl-mask .cl-card{
+  background:linear-gradient(90deg,transparent 10%,#f0cd7899 50%,transparent 90%) top/100% 1px no-repeat,
+    linear-gradient(170deg,rgba(52,36,128,.86),rgba(28,20,78,.92))!important;
+  border:1px solid rgba(196,176,255,.6)!important;border-radius:22px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 0 22px rgba(150,110,255,.35),0 18px 50px rgba(6,3,32,.55)!important;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#ece8ff!important}
+.cl-mask .cl-card .cl-brand{color:#f6e7c1!important;text-shadow:0 0 12px rgba(240,205,120,.35)}
+.cl-mask .cl-card .cl-brand small{color:#cfc4f5!important}
+.cl-mask .cl-card :is(.cl-hint,.cl-note,label small){color:#b9afe0!important}
+.cl-mask .cl-card .cl-field input{background:rgba(255,255,255,.07)!important;border:1px solid rgba(200,185,255,.5)!important;color:#fff!important;border-radius:999px!important}
+.cl-mask .cl-card .cl-field input::placeholder{color:#b8aee2!important}
+.cl-mask .cl-card .cl-field input:focus{border-color:#f0cd78!important;outline:2px solid rgba(240,205,120,.35)!important}
+.cl-mask .cl-card :is(.cl-ico,.cl-eye){color:#cdbdff!important}
+.cl-mask .cl-card .cl-eye[aria-pressed=true]{color:#f0cd78!important}
+.cl-mask .cl-card .cl-link{color:#d9cbff!important}
+.cl-mask .cl-card .cl-err{color:#ffb7c5!important}
+.cl-mask .cl-card .cl-go{border:1px solid #cdb6ff!important;border-radius:999px!important;background:linear-gradient(115deg,#a978ff,#7a55ee 55%,#5d43d4)!important;color:#fff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 18px rgba(160,110,255,.55)!important}
+.cl-mask .cl-card .cl-go:disabled{filter:grayscale(.5);opacity:.6!important}
+.cl-mask .cl-card :is(.cl-sub,.cl-alt){border:1.5px solid rgba(205,190,255,.75)!important;border-radius:999px!important;background:transparent!important;color:#f1ecff!important;box-shadow:none!important}
+.cl-mask .cl-card .cl-steps li{color:#b9afe0}
+.cl-mask .cl-card .cl-steps li>span{border-color:rgba(200,185,255,.5);color:#d9d1ff}
+.cl-mask .cl-card .cl-steps li[aria-current]{color:#f6e7c1}
+.cl-mask .cl-card .cl-steps li[aria-current]>span{background:linear-gradient(130deg,#a978ff,#5d43d4);color:#fff}
+.cl-mask .cl-card .cl-steps li.done>span{background:rgba(240,205,120,.2);border-color:#f0cd78;color:#f6e7c1}
+/* 背景圖貼齊上緣、底色接圖片最下方的顏色；圖片做成偽元素，底部與兩側淡出，寬螢幕也不會有接縫 */
+.cl-mask{--login-bottom:#322888;align-items:flex-start!important;justify-content:center!important}
+.cl-mask.has-art .cl-shell{background:none!important}
+.cl-mask.has-art .cl-shell::before{content:"";position:absolute;left:0;top:0;width:100%;aspect-ratio:2/3;z-index:-1;pointer-events:none;background:var(--login-art) top center/100% auto no-repeat;
+  -webkit-mask-image:linear-gradient(180deg,#000 82%,transparent 100%);mask-image:linear-gradient(180deg,#000 82%,transparent 100%)}
+.cl-mask .cl-shell{isolation:isolate}
+.cl-mask.has-art .cl-hero{aspect-ratio:1024/870}
+.cl-mask .cl-card{width:auto!important}
+@media(min-width:501px){.cl-mask{padding-top:24px!important}
+  .cl-mask.has-art .cl-shell::before{border-radius:20px;-webkit-mask-image:linear-gradient(180deg,#000 82%,transparent 100%),linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,#000 82%,transparent 100%),linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-composite:intersect}}
+/* 註冊確認框、暱稱欄位：跟深紫卡片一致 */
+.cl-mask .cl-card div[style*="#f7f3fb"]{background:rgba(255,255,255,.07)!important;border:1px solid rgba(200,185,255,.4);color:#ece8ff!important}
+.cl-mask .cl-card div[style*="#f7f3fb"] b{color:#f6e7c1}
+.cl-mask .cl-card input:not([type=checkbox]){background:rgba(255,255,255,.07)!important;border:1px solid rgba(200,185,255,.5)!important;color:#fff!important}
+.cl-mask .cl-card input:not([type=checkbox]):focus{border-color:#f0cd78!important;outline:2px solid rgba(240,205,120,.35)!important}
+.cl-mask .cl-card label{color:#ece8ff}
+.cl-mask .cl-card .nickname-count{color:#b9afe0}
+.cl-mask .cl-card .nickname-count.invalid{color:#ffb7c5}
+.cl-mask.has-art:not([data-step="2"]):not([data-step="3"]):not([data-step="4"]) .cl-hero{aspect-ratio:1/var(--login-hero,.85)}
+
+/* 登入畫面右上角的聲音開關（跟遊戲內 HUD 聲音鈕同一個圖示） */
+.cl-snd{position:fixed;top:max(12px,env(safe-area-inset-top));right:12px;z-index:30;width:38px;height:38px;display:grid;place-items:center;padding:0;border:1px solid rgba(205,190,255,.7);border-radius:999px;background:rgba(29,21,80,.72);color:#f1ecff;cursor:pointer;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 0 12px rgba(150,110,255,.35)}
+.cl-snd svg{width:18px;height:18px}
+.cl-snd .snd-mute{display:none}
+.cl-snd.off{color:#9d97bd;border-color:rgba(160,150,200,.5)}
+.cl-snd.off .snd-wave{display:none}
+.cl-snd.off .snd-mute{display:inline}
+.cl-mask[hidden] .cl-snd{display:none}
+/* 所有背景圖統一：上方 62% 給標題與人物，登入卡片永遠在同一高度 */
+.cl-mask.has-art:not([data-step="2"]):not([data-step="3"]):not([data-step="4"]) .cl-hero{aspect-ratio:1/.93!important}
+/* 登入遊戲／建立玩家帳號：不撐滿整張卡片，兩顆同寬、置中 */
+.cl-mask .cl-card :is(.cl-go,.cl-alt){width:min(78%,300px)!important;align-self:center!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box}

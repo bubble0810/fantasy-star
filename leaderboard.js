@@ -11,8 +11,10 @@
   function values(r) {
     const v = r.value || {};
     switch (r.type) {
-      case 'stroop': return integer(v.score) ? [v.score] : null;
-      case 'memory': return v.completed === true && v.pairs === 8 && integer(v.tries) && v.tries >= 8 ? [-v.tries] : null;
+      // Score = correct − wrong (min 0); ties go to the higher accuracy.
+      case 'stroop': return integer(v.score) && integer(v.correct) && integer(v.wrong) && v.score <= v.correct && v.score >= v.correct - v.wrong ? [v.score, v.correct + v.wrong ? v.correct / (v.correct + v.wrong) : 0] : null;
+      // Competition v2: only the 12-pair L5 run counts; fewer tries win, then shorter time.
+      case 'memory': return v.completed === true && v.pairs === 12 && integer(v.tries) && v.tries >= 12 && integer(v.durationMs) && v.durationMs > 0 ? [-v.tries, -v.durationMs] : null;
       case 'maze': return v.completed === true && v.stage === 3 && integer(v.durationMs) && v.durationMs > 0 ? [-v.durationMs] : null;
       case 'quest': return integer(v.cleared) && v.cleared <= 108 && integer(v.stars) && v.stars <= v.cleared * 3 ? [v.cleared,v.stars] : null;
       case 'looks': return integer(v.count) ? [v.count] : null;
@@ -92,8 +94,7 @@
   function legacyRecords(uid,state,recordedAt,catalog) {
     if(!time(recordedAt)) throw new TypeError('Stable first-registration time required');
     const out=[], add=(type,value)=>out.push({id:'legacy:'+uid+':'+type,uid,type,value,legacy:true,achievedAt:null,recordedAt});
-    if(integer(state.best?.stroop)) add('stroop',{score:state.best.stroop});
-    if(integer(state.best?.memory)&&state.best.memory>=8) add('memory',{completed:true,pairs:8,tries:state.best.memory});
+    // Old stroop/memory bests came from rules that are no longer ranked (any stroop run, 8-pair memory), so they are not imported.
     const stars=Object.entries(state.lvStars||{}).filter(([id,n])=>/^\d+$/.test(id)&&+id<108&&integer(n)&&n>=1&&n<=3);
     if(stars.length) add('quest',{cleared:stars.length,stars:stars.reduce((n,[,s])=>n+s,0)});
     if(catalog) add('looks',collectionValue(state,catalog));
@@ -102,16 +103,58 @@
   }
   function publicValue(type,value) {
     const v=value||{};
-    if(type==='stroop'&&integer(v.score))return {score:v.score};
-    if(type==='memory'&&integer(v.tries)&&v.tries>=8)return {tries:v.tries};
+    if(type==='stroop'&&integer(v.score))return integer(v.correct)&&integer(v.wrong)?{score:v.score,correct:v.correct,wrong:v.wrong}:{score:v.score};
+    if(type==='memory'&&integer(v.tries)&&v.tries>=12)return integer(v.durationMs)&&v.durationMs>0?{tries:v.tries,durationMs:v.durationMs}:{tries:v.tries};
     if(type==='maze'&&integer(v.durationMs)&&v.durationMs>0)return {durationMs:v.durationMs};
     if(type==='quest'&&integer(v.cleared)&&v.cleared<=108&&integer(v.stars)&&v.stars<=v.cleared*3)return {cleared:v.cleared,stars:v.stars};
     if(type==='looks'&&integer(v.count))return {count:v.count};
     return null;
   }
+  // Public rows are {u,n,l,m,t}: uid, name, level, publicValue, epoch ms the row was set. List order is rank.
+  // These helpers mirror values()/compare() using only public data, for realtime single-board updates.
+  function publicMetric(type,m) {
+    const v=m||{};
+    switch(type) {
+      case 'stroop': return integer(v.score)?[v.score,integer(v.correct)&&integer(v.wrong)&&v.correct+v.wrong?v.correct/(v.correct+v.wrong):0]:null;
+      case 'memory': return integer(v.tries)?[-v.tries,integer(v.durationMs)&&v.durationMs>0?-v.durationMs:Number.MIN_SAFE_INTEGER]:null;
+      case 'maze': return integer(v.durationMs)&&v.durationMs>0?[-v.durationMs]:null;
+      case 'quest': return integer(v.cleared)&&integer(v.stars)?[v.cleared,v.stars]:null;
+      case 'looks': return integer(v.count)?[v.count]:null;
+      default: return null;
+    }
+  }
+  // True only when public value a ranks strictly ahead of b (ties keep the earlier achiever ahead).
+  function publicBetter(type,a,b) {
+    const x=publicMetric(type,a);if(!x)return false;
+    const y=publicMetric(type,b);if(!y)return true;
+    for(let i=0;i<x.length;i++) if(x[i]!==y[i]) return x[i]>y[i];
+    return false;
+  }
+  // Returns the new top-3 list after placing row, or null when the board would not change.
+  // Other rows keep their order, so a tie goes after the players who reached it first.
+  function placePublic(type,rows,row) {
+    const list=Array.isArray(rows)?rows.slice(0,3):[];
+    const own=list.find(r=>r&&r.u===row.u);
+    if(!publicMetric(type,row.m)||(own&&!publicBetter(type,row.m,own.m))) return null;
+    const others=list.filter(r=>r&&r.u!==row.u);
+    let at=others.findIndex(r=>publicBetter(type,row.m,r.m));if(at<0)at=others.length;
+    if(at>=3) return null;
+    return [...others.slice(0,at),row,...others.slice(at)].slice(0,3);
+  }
+  // Approximate total from the five public boards. Tie: the player whose latest scoring row is older ranks first.
+  function publicTotal(boards) {
+    const sum=new Map();
+    for(const type of Object.keys(TYPES)) (Array.isArray(boards?.[type])?boards[type]:[]).slice(0,3).forEach((r,i)=>{
+      if(!r||typeof r.u!=='string'||!r.u) return;
+      const t=integer(r.t)?r.t:0, old=sum.get(r.u)||{u:r.u,n:r.n,l:r.l,t:0,raw:0};
+      if(t>=old.t){old.n=r.n;old.l=r.l;}
+      old.t=Math.max(old.t,t);old.raw+=POINTS[i];sum.set(r.u,old);
+    });
+    return [...sum.values()].filter(r=>r.raw>0).sort((a,b)=>b.raw-a.raw||a.t-b.t||byId(a.u,b.u)).slice(0,3).map(({raw,...r})=>({...r,s:raw/5}));
+  }
   function performanceText(type,value) {
     const v=publicValue(type,value);if(!v)return '—';
-    return type==='stroop'?`${v.score} 分`:type==='memory'?`${v.tries} 次`:type==='maze'?`${(v.durationMs/1000).toFixed(3)} 秒`:type==='quest'?`${v.cleared} 關・${v.stars} 顆星`:`共 ${v.count} 款`;
+    return type==='stroop'?`${v.score} 分`+(integer(v.correct)&&v.correct+v.wrong>0?`・${Math.round(v.correct/(v.correct+v.wrong)*100)}%`:''):type==='memory'?`${v.tries} 次`+(v.durationMs?`・${(v.durationMs/1000).toFixed(1)} 秒`:''):type==='maze'?`${(v.durationMs/1000).toFixed(3)} 秒`:type==='quest'?`${v.cleared} 關・${v.stars} 顆星`:`共 ${v.count} 款`;
   }
   function render(container,result,selected='total') {
     if(!container||typeof container.replaceChildren!=='function') throw new TypeError('DOM container required');
@@ -121,7 +164,7 @@
     container.innerHTML=`<section class="rank-view${detail?' rank-with-performance':''}"><h2>星空榜</h2><div class="rank-tabs" role="tablist" aria-label="排行榜類別">${Object.entries(names).map(([key,name])=>`<button type="button" role="tab" aria-selected="${key===active}" data-board="${key}">${name}</button>`).join('')}</div><div class="rank-heading"><h3>${names[active]}</h3><span class="rank-status">${result?.enabled?'總榜':'尚未開放'}</span></div><div class="rank-table-head"><span>名次</span><span>暱稱</span><span>等級</span>${detail?`<span class="rank-performance">${label}</span>`:''}</div><div class="rank-top3">${rows.map(r=>`<div class="rank-person"><span class="rank-medal">${escape(r.rank)}</span><div><b>${escape(r.name)}</b></div><span class="rank-level">${integer(r.level)&&r.level>0?escape(r.level):'—'}</span>${detail?`<span class="rank-performance">${escape(performanceText(active,r.value))}</span>`:''}</div>`).join('')}</div>${rows.length?'':`<p class="hint">${result?.enabled?'尚無排名資料':'等待榜單開放'}</p>`}</section>`;
     container.querySelectorAll('[data-board]').forEach(button=>button.addEventListener('click',()=>render(container,result,button.dataset.board)));
   }
-  const api=Object.freeze({version:1,types:TYPES,calculate,collectionValue,legacyRecords,publicValue,performanceText,render});
+  const api=Object.freeze({version:1,types:TYPES,calculate,collectionValue,legacyRecords,publicValue,publicBetter,placePublic,publicTotal,performanceText,render});
   if(typeof module==='object'&&module.exports) module.exports=api;
   else root.FSLeaderboard=api;
 })(typeof window==='object'?window:globalThis);

@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>[hidden]{display:none!important}body{margin:0}</style></head><body><title>幻想智慧星</title>
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>[hidden]{display:none!important}body{margin:0}</style></head><body><title>幻想智多星</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
@@ -131,6 +131,10 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 .lvpick button b{font-family:var(--display);font-weight:400;font-size:1.05rem}
 .lvpick button small{font-size:.72rem;color:var(--muted)}
 .lvpick button[disabled]{opacity:.5;cursor:not-allowed}
+#miniFrame{position:fixed;inset:0;z-index:5000;background:#1b1530}
+#miniFrame iframe{width:100%;height:100%;border:0;display:block}
+.mini-loading{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:var(--bg);padding:24px;color:var(--ink);text-align:center}
+.mini-loading>div{max-width:340px}.mini-loading button{width:100%;min-height:44px}
 .maze{width:100%;max-width:360px;aspect-ratio:1;margin:0 auto;display:block;border-radius:18px;touch-action:none;background:#1b1d45}
 .mstat{display:flex;justify-content:space-between;font-variant-numeric:tabular-nums;font-size:.9rem;color:var(--muted)}
 .mstat b{color:var(--ink)}
@@ -151,6 +155,10 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 .memory-tier-1{--memory-a:#355d76;--memory-b:#232f4b;--memory-edge:#86c7dc}
 .memory-tier-2{--memory-a:#6d5287;--memory-b:#302b4e;--memory-edge:#c0a1e4}
 .memory-tier-3{--memory-a:#79516b;--memory-b:#322940;--memory-edge:#e2a1bd}
+.memory-tier-4{--memory-a:#7a5a3a;--memory-b:#33283a;--memory-edge:#e8c08a}
+.memory-tier-5{--memory-a:#8a3f52;--memory-b:#2a1f3c;--memory-edge:#ffb3c4}
+.mem.memory-tier-4{grid-template-columns:repeat(5,1fr);gap:6px}
+.mem.memory-tier-5{grid-template-columns:repeat(6,1fr);gap:5px}
 .memory-level{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;padding:14px 4px;border:1px solid var(--memory-edge);border-radius:14px;color:#f3f2ff;background:linear-gradient(145deg,var(--memory-a),var(--memory-b));box-shadow:inset 0 1px 0 #ffffff38,0 4px 9px #30224320}
 .memory-level b{font-size:13px;font-weight:500}.memory-level span{font-size:12px}.memory-level small{font-size:11px;color:#eee5fa}.memory-level .memory-level-num{font-size:22px;letter-spacing:2px;color:var(--memory-edge)}.memory-level:disabled{opacity:.48}
 .memory-best{padding:11px 12px;border:1px solid #c6bfdc;border-radius:13px;background:linear-gradient(135deg,#eef7ff,#eee5f6);color:#4c4268}.memory-best .hint{margin:5px 0 0}
@@ -171,6 +179,11 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 
 .stroop{display:flex;flex-direction:column;gap:14px;align-items:center}
 .sword{font-family:var(--display);font-size:4.2rem;line-height:1.1;min-height:4.8rem}
+.srev{margin:0;padding:6px 14px;border-radius:999px;background:#fff1c2;border:1px solid #e0a800;color:#7a5200;font-weight:700;text-align:center}
+.sword.rev{text-decoration:underline wavy #e0a800 3px;text-underline-offset:10px}
+.swrap{position:relative;display:flex;justify-content:center;align-items:center;min-width:8rem}
+.sfx{position:absolute;right:-2.2rem;top:50%;transform:translateY(-50%);font-size:2rem;font-weight:700;opacity:0;transition:opacity .12s}
+.sfx.ok{opacity:1;color:#1f9d55}.sfx.no{opacity:1;color:#e53950}
 .sbtns{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%}
 .sbtns button{border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 0;font-size:1.05rem;font-weight:700;color:var(--ink)}
 .sbtns button:active{background:var(--rose-soft)}
@@ -302,7 +315,7 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 .cheerbtn small,.helps .passbtn small{font-weight:400;font-size:.74rem}
 .helps .passbtn{flex-direction:column;align-items:flex-start;justify-content:center}
 .cheerbtn[disabled]{opacity:.45;cursor:not-allowed}
-.dtag{font-weight:700}.dtag.d1{color:#1f9d55}.dtag.d2{color:#b07a10}.dtag.d3{color:#c2185b}
+.dtag{font-weight:700}.dtag.d1{color:#1f9d55}.dtag.d2{color:#b07a10}.dtag.d3{color:#c2185b}.dtag.d4{color:#6a3fc8}
 .diffpick{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .diffpick>span{font-family:var(--display);color:var(--muted)}
 .diffpick button{border:2px solid var(--line);background:#fff;border-radius:999px;padding:4px 14px;font-size:.88rem}
@@ -640,12 +653,12 @@ body{padding:0!important;background:transparent!important;background-image:none!
 .stagewrap .hud .exptxt{font-size:.7rem}
 @media(max-width:420px){.stagewrap .hud{max-width:calc(100% - 152px)}.stagewrap>.cl-fab{right:6px;gap:4px}}
 </style>
-<link rel="stylesheet" href="home-ui.css?v=20261112-home39">
+<link rel="stylesheet" href="home-ui.css?v=20261114-art6">
 
-<div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智慧星是直式畫面，轉直後就能繼續囉！</span></div>
+<div class="rotmask" aria-live="polite"><div class="ph"></div><b>請把手機轉直玩</b><span>幻想智多星是直式畫面，轉直後就能繼續囉！</span></div>
 <div class="app"><div class="savewarn" id="savewarn" hidden><b>這個瀏覽器可能無法保存進度</b><span>如果是從 LINE、Facebook 點開的，請改用 Safari 或 Chrome 開啟。也可以點右上角玩家名字，用「備份碼」保存進度。</span><button class="act ghost2" id="swbtn">備份存檔</button></div>
   <header class="top">
-    <div class="brand">幻想智慧星<small>答題闖關 · 收集造型 · 布置小屋</small></div><button class="saveicon need" id="saveicon" aria-label="存檔"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="currentColor"/><rect x="7" y="4" width="8" height="5" rx="1" fill="#fff"/><rect x="6.5" y="13" width="11" height="6" rx="1" fill="#fff"/></svg><span>存檔</span><i class="sdot"></i></button>
+    <div class="brand">幻想智多星<small>答題闖關 · 收集造型 · 布置小屋</small></div><button class="saveicon need" id="saveicon" aria-label="存檔"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="currentColor"/><rect x="7" y="4" width="8" height="5" rx="1" fill="#fff"/><rect x="6.5" y="13" width="11" height="6" rx="1" fill="#fff"/></svg><span>存檔</span><i class="sdot"></i></button>
     <div class="saveboard need" id="saveboard">
       <div class="sbtxt"><b id="sbtitle">⚠ 記得存檔！</b><span id="sbline">關掉網頁前，一定要按「立即存檔」並複製備份碼，進度才不會不見！</span><small id="sbstat">還沒有備份過</small></div>
       <div class="sbacts"><button class="sbbtn" id="svbtn">💾 存檔</button><button class="sbload" id="ldbtn">讀檔</button></div>
@@ -655,7 +668,7 @@ body{padding:0!important;background:transparent!important;background-image:none!
   <div class="stagewrap" id="stagewrap">
     <div class="hud" id="playerHud" aria-label="玩家資訊">
       <div class="hud-cell hud-profile" id="hudNameSlot"><button class="chip pchip" id="pbtn" title="玩家帳號"><span class="profile-level-label">Lv. 1</span><span class="profile-name" id="pname0">玩家</span></button><div class="hud-level"><span class="lvbadge" id="lv">Lv.1</span><div class="bar"><i id="xpbar"></i></div><div class="exptxt" id="xptxt" aria-label="經驗值"></div></div><span class="candy"><span id="candyIco"></span><span id="candy">0</span></span></div>
-      <div class="hud-tools"><button class="hud-cell hud-rank" data-rankgo aria-label="星空榜" aria-pressed="false"><span aria-hidden="true">🏆</span><span>星空榜</span></button><div class="hud-cell" id="hudMailSlot"><button id="hudMailGuest" disabled title="登入後使用信箱"><span aria-hidden="true">✉</span><span>信箱</span></button></div></div>
+      <div class="hud-tools"><div class="hud-icons"><div class="hud-cell" id="hudMailSlot"><button id="hudMailGuest" disabled title="登入後使用信箱"><span aria-hidden="true">✉</span><span>信箱</span></button></div><button class="hud-cell hud-ico" id="sndAll" type="button" aria-label="聲音開關" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="snd-wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="snd-mute" d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><button class="hud-cell hud-ico" id="homeSettings" type="button" aria-label="設定" title="設定"><span aria-hidden="true">⚙</span></button></div><button class="hud-cell hud-rank" data-rankgo aria-label="星空榜" aria-pressed="false"><span aria-hidden="true">🏆</span><span>星空榜</span></button></div>
       <button class="hud-cell hud-money" data-wallet aria-label="查看完整貨幣數量"><span id="festCurrencyHud" hidden></span></button>
     </div>
     <div class="stage" id="stage"></div>
@@ -680,9 +693,10 @@ body{padding:0!important;background:transparent!important;background-image:none!
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="nickname.js?v=20261110-home1"></script>
+<script src="nickname.js?v=20261114-name14"></script>
 <script src="festival-config.js?v=20261111-national1"></script>
 <script src="leaderboard.js?v=20261111-rank-metrics1"></script>
+<script src="mini/config.js?v=20261114-mini1"></script>
 <script>
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
@@ -1489,7 +1503,7 @@ const HOMES=[
 const HM=Object.fromEntries(HOMES.map(h=>[h.id,h]));
 function curHome(){const h=HM[S.home];return h&&h.img&&(S.homes||[]).includes(h.id)?h:HOMES[0]}
 const homeImg=h=>`<img src="${h.img}" alt="${h.n}" style="display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px">`;
-function shopTabs(sub){const fo=FESTS.filter(f=>festState(f).on);return `<div class="sub shop-local-tabs"><button aria-pressed="${sub==='normal'}" data-sub="normal">造型商人</button><button aria-pressed="${sub==='fest'}" data-sub="fest" title="${fo.length?fo.map(f=>f.n).join('、'):'節慶限定商品'}" aria-label="節慶商人${fo.length?'，當期活動：'+fo.map(f=>f.n).join('、'):''}">節慶商人${fo.length?`<span class="dot" aria-hidden="true">${fo.length}</span>`:''}</button><button aria-pressed="${sub==='decor'}" data-sub="decor">裝潢商人</button></div>`}
+function shopTabs(sub){const fo=FESTS.filter(f=>festState(f).on);return `<div class="sub shop-local-tabs"><button aria-pressed="${sub==='normal'}" data-sub="normal">造型商人</button><button aria-pressed="${sub==='decor'}" data-sub="decor">裝潢商人</button><button aria-pressed="${sub==='fest'}" data-sub="fest" title="${fo.length?fo.map(f=>f.n).join('、'):'節慶限定商品'}" aria-label="節慶商人${fo.length?'，當期活動：'+fo.map(f=>f.n).join('、'):''}">節慶商人${fo.length?`<span class="dot" aria-hidden="true">${fo.length}</span>`:''}</button></div>`}
 function homeCard(h,L,mode){const o=(S.homes||[]).includes(h.id),on=curHome().id===h.id,lock=L<h.lv&&!o,fst=h.fest?festState(FESTS.find(f=>f.k===h.fest)):null,dark=!o&&(lock||(fst&&!fst.on)),why=lock?`🔒 Lv.${h.lv} 解鎖`:fst&&!fst.on?`🔒 ${fmtMD(fst.next)} 開賣`:'';
   let pic=h.img?homeImg(h):`<div class="hsoon"><b>設計中</b><small>${h.st}</small></div>`,btn='';
   if(!h.img)btn=`<button class="act" disabled>即將推出</button>`;
@@ -1792,7 +1806,7 @@ function genUnit(d){
   return ['math',q,o,0,exp,Math.min(3,d+1),true];
 }
 const GENS={math:[genMath,genMath,genUnit],eng:[genEng],geo:[genGeo],idiom:[genIdiom],logic:[genLogic]};
-const qid=q=>{let h=5381;const s=q[0]+q[1];for(let i=0;i<s.length;i++)h=(h*33^s.charCodeAt(i))>>>0;return h.toString(36)};
+const qid=q=>{if(q[7])return 'p:'+q[7];let h=5381;const s=q[0]+q[1];for(let i=0;i<s.length;i++)h=(h*33^s.charCodeAt(i))>>>0;return h.toString(36)};
 const QADD=[
  ['tw','台灣最高的山是哪一座？',['玉山','雪山','合歡山','阿里山'],0,'玉山主峰海拔約 3952 公尺，是台灣也是東北亞最高峰。',1],
  ['tw','日月潭位在台灣哪一個縣？',['南投縣','台中市','嘉義縣','花蓮縣'],0,'日月潭在南投縣魚池鄉，是台灣最大的天然湖泊。',1],
@@ -2077,12 +2091,14 @@ function leaderboardInitializeBest(skipType){
   if(!window.FSLeaderboard)return;
   if(!S.leaderboardV1||typeof S.leaderboardV1!=='object')S.leaderboardV1={};
   const best=S.leaderboardV1.personalBest=S.leaderboardV1.personalBest||{};
+  // Competition v2 (2026-11): memory ranks 12 pairs and stroop only its L5 run, so older personal bests are not comparable.
+  if(S.leaderboardV1.competitionV!==2){delete best.memory;delete best.stroop;S.leaderboardV1.competitionV=2}
   for(const record of FSLeaderboard.legacyRecords('personal',S,1,leaderboardCatalog()))if(record.type!==skipType&&!best[record.type])best[record.type]={value:record.value,achievedAt:null,legacy:true};
 }
 function leaderboardBetter(type,value,old){
   if(!old)return true;
-  if(type==='stroop')return value.score>old.score;
-  if(type==='memory')return value.tries<old.tries;
+  if(type==='stroop'){const acc=v=>Number.isSafeInteger(v.correct)&&v.correct+v.wrong>0?v.correct/(v.correct+v.wrong):0;return value.score>old.score||(value.score===old.score&&acc(value)>acc(old))}
+  if(type==='memory')return value.tries<old.tries||(value.tries===old.tries&&(value.durationMs||Infinity)<(old.durationMs||Infinity));
   if(type==='maze')return value.durationMs<old.durationMs;
   if(type==='quest')return value.cleared>old.cleared||(value.cleared===old.cleared&&value.stars>old.stars);
   if(type==='looks')return value.count>old.count;
@@ -2164,8 +2180,10 @@ function playerSheet(){
 }
 const lvCost=k=>Math.min(100*k,600);
 const need=L=>{let t=0;for(let k=1;k<L;k++)t+=lvCost(k);return t};
-const levelOf=x=>{let L=1;while(x>=need(L+1))L++;return L};
-let trySp=null,tab='lobby',questView='hub',wSlot='top',shopSub='normal',shopSlot='top',homeSub='garden',festPreview=false;
+// Level cap: experience keeps accumulating past 99, but the level stops there.
+const LV_MAX=99;
+const levelOf=x=>{let L=1;while(L<LV_MAX&&x>=need(L+1))L++;return L};
+let trySp=null,tab='lobby',questView='hub',wSlot='top',shopSub='normal',shopSlot='top',homeSub='garden',festPreview=false,festPick=null;
 
 function plainDoll(k){const B=BASES[k];return `<image href="${BASEIMG[k]}" x="0" y="0" width="${B.W}" height="${B.H}"/>`}
 function eqObj(over){const ch=S.char||'f',D=DEF[ch],ids={...S.eq,...(over||{})},o={};for(const [k] of slotsFor(ch)){const id=ids[k];if(id&&IT[id]&&fits(IT[id]))o[k]=IT[id];else if(D[k])o[k]=IT[D[k]]}if(o.outfit){o.top=IT[o.outfit.t];o.bottom=IT[o.outfit.b];delete o.outfit}return o}
@@ -2181,8 +2199,8 @@ function saveBoard(){const el=$('#saveboard');if(!el)return;const ok=S.lastBacku
 function hud(){
   saveBoard();
   const L=levelOf(S.exp),a=need(L),b=need(L+1);
-  $('#lv').textContent='Lv.'+L;
-  $('#xpbar').style.width=((S.exp-a)/(b-a)*100).toFixed(1)+'%';
+  $('#lv').textContent=L>=LV_MAX?'Lv.MAX':'Lv.'+L;
+  $('#xpbar').style.width=L>=LV_MAX?'100%':((S.exp-a)/(b-a)*100).toFixed(1)+'%';
   $('#xptxt').textContent=`${S.exp-a} / ${b-a}`;$('#xptxt').title=`經驗 ${S.exp-a} / ${b-a}`;
   $('#candy').textContent=S.candy;
   const name=document.getElementById('pname0');if(name){name.textContent=curName();name.title=curName();}
@@ -2263,8 +2281,8 @@ function render(){
   if(tab==='quest'){if(window.FSHomeUI)FSHomeUI.renderQuest(p);else p.innerHTML='<p class="hint">正在準備闖關選單…</p>';}
   if(tab==='palace'){if(window.starPalace)starPalace(p);else p.innerHTML='<p class="hint">正在準備星宮…</p>';}
   if(tab==='shop'&&shopSub==='decor'){
-    p.innerHTML=`${shopTabs('decor')}<div class="merchant">${merchantSVG('#3f8f7a')}<p><b>裝潢商人</b>「想換個新家嗎？各種風格的小屋都在這裡，等級越高能買的越漂亮喔！」</p></div>
-      <div class="hgrid">${HOMES.filter(h=>h.id!=='R00'&&!h.fest).map(h=>homeCard(h,L,'shop')).join('')}</div>`;
+    p.innerHTML=`${shopTabs('decor')}<div class="merchant">${merchantSVG('#3f8f7a')}<p><b>裝潢商人</b>「想換新家嗎？等級越高，能買的小屋越漂亮喔！」</p></div>
+      <h3 class="serh">風格小屋</h3><div class="hgrid">${HOMES.filter(h=>h.id!=='R00'&&!h.fest).map(h=>homeCard(h,L,'shop')).join('')}</div>`;
     p.querySelectorAll('[data-sub]').forEach(b=>b.onclick=()=>{shopSub=b.dataset.sub;render()});bindHomes(p,L);
   }
   else if(ONLY_SETS&&(tab==='wardrobe'||tab==='shop')){
@@ -2278,14 +2296,20 @@ function render(){
       else if(!fOn(i)){const st=festState(FESTS.find(f=>f.k===i.fest));btns+=`<button class="act" disabled>${fmtMD(st.next)} 開賣</button>`} else if(window.GAMEF&&GAMEF[i.fest]&&/SP0/.test(i.code))btns+=`<button class="act buy" data-fgo="${i.fest}">用${GAMEF[i.fest].cur}兌換</button>`
       else btns+=`<button class="act buy" data-buy="${i.id}" ${lock||S.candy<i.cost?'disabled':''}>${lock?'Lv.'+i.lv+' 解鎖':mini+i.cost}</button>`;
       return `<div class="spc ${on||tr?'on':''} ${hid?'locked':''}"><div class="silwrap"><span class="code image-code">${i.code.replace('B','').replace(/^[MF]SP/,'SP')}${i.code.endsWith('B')?'+':''}</span>${thumb(i)}${hid?`<span class="lockbadge">${why}</span>`:''}</div><b>${i.n}</b><small>${i.ser}${i.fest?`・<b class="fbadge">${fName(i)}限定</b>`:''}</small><small>${o?(on?'✦ 穿著中':(i.cost===0?'免費贈送・已擁有':'已擁有')):(i.lv>1?`需要 Lv.${i.lv} · ${i.cost} 星星糖`:`${i.cost} 星星糖・不限等級`)}</small><div class="petacts">${btns}</div></div>`};
-    const head2=tab==='wardrobe'?`<div class="fh"><h2>我的衣櫥 <span class="hint">（${sps.length} 套）</span></h2><button class="act ghost2" id="swc">切換成${ch==='m'?'女生':'男生'}角色</button></div><p class="hint">穿上套裝，角色就會整個變身；脫下後回到白色基本服。</p>`
+    // 節慶商人：檔期當次次分頁，一次只看一個節慶（預設＝販售中或下一檔）
+    const fcal=FESTS.map(f=>({f,st:festState(f)})).sort((a,b)=>(b.st.on-a.st.on)||((a.st.next||0)-(b.st.next||0)));
+    if(festTab&&(!festPick||!fcal.some(x=>x.f.k===festPick)))festPick=fcal[0]?fcal[0].f.k:null;
+    const pickF=festTab?FESTS.find(f=>f.k===festPick):null,fsps=festTab?sps.filter(i=>i.fest===festPick):[],fsoon=festTab?soon.filter(i=>i.fest===festPick):soon,fhomes=festTab?HOMES.filter(h=>h.fest===festPick):[];
+    const head2=tab==='wardrobe'?`<div class="fh"><h2>我的衣櫥 <span class="hint">（${sps.length} 套）</span></h2><button class="act ghost2" id="swc">切換成${ch==='m'?'女生':'男生'}角色</button></div><p class="hint page-desc">穿上，角色就會變成那造型；想換回原本的樣子，按「脫下」回到白色基本服。可到商城買造型！</p>`
       :`${shopTabs(festTab?'fest':'normal')}
-      ${festTab?`<div class="merchant">${merchantSVG('#c2185b')}<p><b>節日應援商人</b>「我只在節日期間開賣限定造型！平常先存好星星糖，節日到了再來買喔。」</p></div><div class="festcal">${FESTS.map(f=>({f,st:festState(f)})).sort((a,b)=>(b.st.on-a.st.on)||((a.st.next||0)-(b.st.next||0))).map(({f,st})=>`<span class="${st.on?'on':''}" style="--fc:${f.c}"><b>${f.n}</b>${st.on?`販售中・剩 ${daysTo(st.end)} 天`:`${fmtMD(st.next)} 開賣`}</span>`).join('')}</div>`
-        :`<div class="merchant">${merchantSVG('#e2508f')}<p><b>造型商人</b>「這裡有最精緻的${ch==='m'?'男生':'女生'}套裝！存夠星星糖就能買回家喔。」</p></div>`}`;
-    p.innerHTML=`${head2}<div class="spshow">${''?'<div class="fh"><span class="hint">試穿中，往上看看舞台</span><button class="act ghost2" id="tryoff">結束試穿</button></div>':''}${sps.length?(festTab?[...new Set(sps.map(i=>i.fest))].sort((a,b)=>fOn({fest:b})-fOn({fest:a})).map(fk=>`<h3 class="serh">${FESTS.find(f=>f.k===fk).n}限定</h3><div class="sprow">${sps.filter(i=>i.fest===fk).map(card).join('')}</div>`).join(''):[...new Set(sps.map(i=>i.ser))].map(se=>`<h3 class="serh">${se}</h3><div class="sprow">${sps.filter(i=>i.ser===se).map(card).join('')}</div>`).join('')):`<div class="empty"><b>${isShop?'新造型準備中':'尚未擁有這個角色的造型'}</b><small>${isShop?'設計師正在準備新套裝，敬請期待。':'取得造型後就會出現在這裡；可以切換角色，或到商城看看。'}</small></div>`}
-      ${soon.length?`<details class="soon"><summary>即將推出（${soon.length} 款）</summary><div class="soonlist">${soon.map(i=>`<span><i>${i.code}</i>${i.n}<small>${i.fest?fName(i)+'限定':i.ser}</small></span>`).join('')}</div></details>`:''}
-      ${ITEMS.some(i=>i.slot==='special'&&!i.hide&&!i.coming&&i.sx!==ch&&(isShop||own(i.id)))?`<p class="hint">${ch==='m'?'女生':'男生'}角色另有 ${ITEMS.filter(i=>i.slot==='special'&&!i.hide&&!i.coming&&i.sx!==ch&&(isShop||own(i.id))).length} 套${isShop?'專屬':'已擁有'}套裝，切換角色就能看到。</p>`:''}${festTab&&HOMES.some(h=>h.fest)?`<h3 class="serh">節日限定小屋</h3><div class="hgrid">${HOMES.filter(h=>h.fest).map(h=>homeCard(h,L,'shop')).join('')}</div>`:''}</div>`;
+      ${festTab?`<div class="merchant">${merchantSVG('#c2185b')}<p><b>節日應援商人</b>「節日限定造型只在節日開賣，先存好星星糖吧！」</p></div><div class="festcal" role="group" aria-label="選擇節慶">${fcal.map(({f,st},i)=>`<button type="button" class="${st.on?'on':''}${i===0?' first':''}" data-fpick="${f.k}" aria-pressed="${f.k===festPick}" style="--fc:${f.c}"><b>${f.n}</b>${st.on?`販售中・剩 ${daysTo(st.end)} 天`:`${fmtMD(st.next)} 開賣`}</button>`).join('')}</div>`
+        :`<div class="merchant">${merchantSVG('#e2508f')}<p><b>造型商人</b>「最精緻的${ch==='m'?'男生':'女生'}套裝都在這裡，存夠星星糖就能帶回家！」</p></div>`}`;
+    p.innerHTML=`${head2}<div class="spshow">${''?'<div class="fh"><span class="hint">試穿中，往上看看舞台</span><button class="act ghost2" id="tryoff">結束試穿</button></div>':''}${festTab?(fsps.length||fhomes.length?(fsps.length?`<h3 class="serh">${pickF?pickF.n:''}限定造型</h3><div class="sprow">${fsps.map(card).join('')}</div>`:''):`<div class="empty"><b>${pickF?pickF.n:''}限定商品準備中</b><small>設計師正在準備新商品，敬請期待。</small></div>`):sps.length?([...new Set(sps.map(i=>i.ser))].map(se=>`<h3 class="serh">${se}</h3><div class="sprow">${sps.filter(i=>i.ser===se).map(card).join('')}</div>`).join('')):`<div class="empty"><b>${isShop?'新造型準備中':'尚未擁有這個角色的造型'}</b><small>${isShop?'設計師正在準備新套裝，敬請期待。':'取得造型後就會出現在這裡；可以切換角色，或到商城看看。'}</small></div>`}
+      ${fsoon.length?`<details class="soon"><summary>即將推出（${fsoon.length} 款）</summary><div class="soonlist">${fsoon.map(i=>`<span><i>${i.code}</i>${i.n}<small>${i.fest?fName(i)+'限定':i.ser}</small></span>`).join('')}</div></details>`:''}
+      ${ITEMS.some(i=>i.slot==='special'&&!i.hide&&!i.coming&&i.sx!==ch&&(isShop||own(i.id)))?`<p class="hint">${ch==='m'?'女生':'男生'}角色另有 ${ITEMS.filter(i=>i.slot==='special'&&!i.hide&&!i.coming&&i.sx!==ch&&(isShop||own(i.id))).length} 套${isShop?'專屬':'已擁有'}套裝，切換角色就能看到。</p>`:''}${festTab&&fhomes.length?`<h3 class="serh">${pickF?pickF.n:''}限定小屋</h3><div class="hgrid">${fhomes.map(h=>homeCard(h,L,'shop')).join('')}</div>`:''}</div>`;
     bindCards(p);
+    p.querySelectorAll('[data-fpick]').forEach(b=>b.onclick=()=>{festPick=b.dataset.fpick;render()});
+    {const sel=p.querySelector('[data-fpick][aria-pressed="true"]');if(sel){const row=sel.parentElement;row.scrollLeft=Math.max(0,sel.offsetLeft-row.offsetLeft-8)}}
     bindHomes(p,L);p.querySelectorAll('[data-sub]').forEach(b=>b.onclick=()=>{shopSub=b.dataset.sub;render()});
     p.querySelectorAll('[data-try]').forEach(b=>b.onclick=()=>{trySp=trySp===b.dataset.try?null:b.dataset.try;stage(true);render();if(trySp){window.scrollTo({top:0,behavior:'smooth'});toast('試穿中，往上看看舞台！')}});
     const to=$('#tryoff');if(to)to.onclick=()=>{trySp=null;stage(true);render()};
@@ -2308,10 +2332,10 @@ function render(){
     let body='';
     if(shopSub==='normal'){
       const list=ITEMS.filter(i=>!i.fest&&i.slot===shopSlot&&fits(i)).sort((a,b)=>a.lv-b.lv||a.cost-b.cost);
-      body=`<div class="merchant">${merchantSVG('#7b8cff')}<p><b>一般商人</b>「歡迎光臨！衣服、鞋子、配件都在這裡，等級越高能買的越多喔。」</p></div>${slotChips(shopSlot,'ss')}<div class="grid">${list.map(i=>itemCard(i,'shop')).join('')}</div>`;
+      body=`<div class="merchant">${merchantSVG('#7b8cff')}<p><b>一般商人</b>「衣服、鞋子、配件都在這裡，等級越高買得越多！」</p></div>${slotChips(shopSlot,'ss')}<div class="grid">${list.map(i=>itemCard(i,'shop')).join('')}</div>`;
     }else{
       const sorted=FESTS.map(f=>({f,st:festState(f)})).sort((a,b)=>(b.st.on-a.st.on)||((a.st.next||0)-(b.st.next||0)));
-      body=`<div class="merchant">${merchantSVG('#e2508f')}<p><b>節日商人</b>「我只在節日期間出現！錯過就要等明年囉。」</p></div>
+      body=`<div class="merchant">${merchantSVG('#e2508f')}<p><b>節日商人</b>「我只在節日出現，錯過就要等明年囉！」</p></div>
       <label class="pv"><input type="checkbox" id="fpv" ${festPreview?'checked':''}> 預覽還沒開賣的節日服飾</label>
       ${sorted.map(({f,st})=>{const its=ITEMS.filter(i=>i.fest===f.k&&fits(i));if(!st.on&&!festPreview)return `<div class="fest off" style="--fc:${f.c}"><div class="fh"><b>${f.n}</b><span class="badge off">${fmtMD(st.next)} 開賣 · 還有 ${daysTo(st.next)} 天</span></div></div>`;
         return `<div class="fest ${st.on?'on':'off'}" style="--fc:${f.c}"><div class="fh"><b>${f.n}限定</b><span class="badge ${st.on?'':'off'}">${st.on?`販售中 · 剩 ${daysTo(st.end)} 天`:`${fmtMD(st.next)} 開賣 · 還有 ${daysTo(st.next)} 天`}</span></div><div class="grid">${its.map(i=>itemCard(i,st.on?'shop':'festoff')).join('')}</div></div>`}).join('')}`;
@@ -2333,9 +2357,9 @@ function render(){
   if(tab==='rank')FSHomeUI.renderRank(p);
   if(tab==='room'){
     const mine=HOMES.filter(h=>(S.homes||[]).includes(h.id));
-    p.innerHTML=`<div class="fh"><h2>我的小屋 <span class="hint">（${mine.length}/${HOMES.filter(h=>h.img).length} 間）</span></h2><button class="act ghost2" id="godecor">去找裝潢商人</button></div><p class="hint">點「搬進去」就能換房間背景。想要新的小屋，到商店找裝潢商人購買。</p>
+    p.innerHTML=`<div class="fh"><h2>我的小屋 <span class="hint">（${mine.length}/${HOMES.filter(h=>h.img).length} 間）</span></h2></div><p class="hint page-desc">點「搬進去」就能換成那間小屋的背景；想要更多新小屋，可以到商城找裝潢商人購買。</p>
       <div class="hgrid">${mine.map(h=>homeCard(h,L,'room')).join('')}</div>`;
-    bindHomes(p,L);$('#godecor').onclick=()=>{tab='shop';shopSub='decor';render()};
+    bindHomes(p,L);
   }
   window.FSHomeUI?.finalizePage(p);
 }
@@ -2381,7 +2405,7 @@ function renderHome(p,L){
   let body='';
   if(homeSub==='garden'){
     if(!S.seedSel)S.seedSel='daisy';
-    body=`<div class="merchant">${merchantSVG('#8bc34a')}<p><b>花園小園丁・花花</b>「種花、澆水等開花，收成後就能換星星糖！」</p></div><p class="hint">花會照真實時間慢慢長大，關掉頁面也會繼續長。每株可以澆一次水，讓剩下時間縮短 25%，收成時多一朵。</p>
+    body=`<div class="merchant">${merchantSVG('#8bc34a')}<p><b>花園小園丁・花花</b>「種花、澆水等開花，收成後換星星糖！」</p></div>
     <div class="seeds">${SEEDS.map(s=>`<button class="seed" aria-pressed="${S.seedSel===s.k}" data-seed="${s.k}" ${L<s.lv?'disabled':''}><b>${s.n}</b><small>${L<s.lv?'Lv.'+s.lv+' 解鎖':`種子 ${s.cost} 糖 · ${s.min>=60?s.min/60+' 小時':s.min+' 分'}`}</small><small>賣 ${s.sell} 糖</small></button>`).join('')}</div>
     <div class="plots">${S.plots.map((pl,i)=>{const st=plantState(pl);let act,info;
       if(!pl){const sd=SEEDS.find(s=>s.k===S.seedSel);info='空地';act=`<button class="act buy" data-plant="${i}" ${S.candy<sd.cost?'disabled':''}>種${sd.n} ${sd.cost}</button>`}
@@ -2424,7 +2448,7 @@ function renderHome(p,L){
   if(homeSub==='market')body=mkBody();
   if(homeSub==='sell'){
     const items=Object.entries(S.bag).filter(([,n])=>n>0),total=items.reduce((a,[k,n])=>a+sellPrice(k)*n,0);
-    body=`<div class="merchant">${merchantSVG('#3fb39a')}<p><b>收購商人</b>「花園的花、寵物帶回來的寶物，我都高價收購！」</p></div>
+    body=`<div class="merchant">${merchantSVG('#3fb39a')}<p><b>收購商人</b>「花朵和寵物帶回的寶物，我都高價收購！」</p></div>
     ${items.length?`<div class="bag">${items.map(([k,n])=>`<div class="bi"><b class="bin">${bagIco(k)}${k}</b><small>×${n} · 每個 ${sellPrice(k)} 糖</small><div class="petacts"><button class="act buy" data-sell="${k}">賣 1 個</button><button class="act wear" data-sellall="${k}">全賣 +${sellPrice(k)*n}</button></div></div>`).join('')}</div><button class="big" data-sellevery>全部賣掉 +${total} 糖</button>`:'<p class="hint">背包空空的。去花園收成，或是收寵物的禮物吧！</p>'}`;
   }
   const bagN=Object.values(S.bag).reduce((a,b)=>a+b,0),gifts=S.pets.reduce((a,x)=>a+x.gifts,0),ready=S.plots.filter(pl=>pl&&plantState(pl).ready).length;
@@ -2492,30 +2516,33 @@ function startQuiz(c,L){
 }
 function markSeen(i){const q=Q[i];if(!q)return;const id=qid(q);const a=(S.qseen||[]).filter(x=>x!==id);a.push(id);S.qseen=a.length>3000?a.slice(-3000):a}
 function cheerState(){const today=new Date().toDateString();if(!S.cheer||S.cheer.day!==today)S.cheer={day:today,left:3};return S.cheer}
-function useCheer(){const C=cheerState();if(C.left<=0)return;C.left--;QZ.cheer++;save();const q=Q[QZ.list[QZ.i]];toast('應援成功！這題直接答對');answer(q[3],true)}
+function useCheer(){const C=cheerState();if(QZ.practice||C.left<=0)return;C.left--;QZ.cheer++;save();const q=Q[QZ.list[QZ.i]];toast('應援成功！這題直接答對');answer(q[3],true)}
 function showQ(){
-  const idx=QZ.list[QZ.i],q=Q[idx],cat=CATS.find(c=>c.k===q[0]),C=cheerState();
+  const idx=QZ.list[QZ.i],q=Q[idx],cat=CATS.find(c=>c.k===q[0])||PR_DOM[q[0]]||{n:'題目'},C=cheerState(),P=passState();
   const order=shuffle([0,1,2,3]);QZ.order=order;QZ.t0=Date.now();
   const bb=QZ.L&&QZ.L.boss?chImg(QZ.L.ch,'B'):'';
-  $('#sheet').innerHTML=(bb?`<div class="lvbanner boss mini" style="background-image:url(${bb})"><b>👑 魔王關</b></div>`:'')+`<div class="qhead"><span class="qtag">${cat.n}・<b class="dtag d${qd(q)}">${DN[qd(q)]}</b></span><div class="dots">${QZ.list.map((_,i)=>`<i class="${i<QZ.i?(QZ.res[i]?'ok':'no'):i===QZ.i?'cur':''}"></i>`).join('')}</div><span class="qscore">${qScore()} 分</span><button class="ghost" id="quit" style="padding:4px 10px">← 返回</button></div>
+  $('#sheet').innerHTML=(bb?`<div class="lvbanner boss mini" style="background-image:url(${bb})"><b>👑 魔王關</b></div>`:'')+`<div class="qhead"><span class="qtag">${cat.n}・<b class="dtag d${Math.min(4,qd(q))}">${PR_TIERS[qd(q)-1]?.n||DN[qd(q)]||''}</b></span><div class="dots">${QZ.list.map((_,i)=>`<i class="${i<QZ.i?(QZ.res[i]?'ok':'no'):i===QZ.i?'cur':''}"></i>`).join('')}</div><span class="qscore">${qScore()} 分</span><button class="ghost" id="quit" style="padding:4px 10px">← 返回</button></div>
   <div class="timer"><i id="tbar"></i></div>
   <p class="qtext">${q[1]}</p>
   <div class="opts">${order.map((o,k)=>`<button class="opt" data-o="${o}"><span class="k">${'ABCD'[k]}</span><span>${q[2][o]}</span></button>`).join('')}</div>
-  <div class="helps"><button class="passbtn" id="pass" ${QZ.pass>=QZ.maxPass||!QZ.pool.length?'disabled':''}>PASS 換一題 <small>扣 10 分 · 本回合還有 ${QZ.maxPass-QZ.pass} 次</small></button>
-  <button class="cheerbtn" id="cheer" ${C.left?'':'disabled'}>✦ 應援過關 <small>直接答對 · 今天還有 ${C.left} 次</small></button></div><div id="fb"></div>`;
+  ${QZ.practice?'':`<div class="helps"><button class="passbtn" id="pass" ${P.left<=0||!QZ.pool.length?'disabled':''}>PASS 換一題 <small>不扣分 · 今天還有 ${P.left} 次</small></button>
+  <button class="cheerbtn" id="cheer" ${C.left?'':'disabled'}>✦ 應援過關 <small>直接答對 · 今天還有 ${C.left} 次</small></button></div>`}<div id="fb"></div>`;
   refreshSheetLayout();
   $('#quit').onclick=closeQuiz;
-  $('#pass').onclick=doPass;
-  $('#cheer').onclick=useCheer;
+  // PASS and cheer exist only in the main line (practice has neither).
+  if(!QZ.practice){$('#pass').onclick=doPass;$('#cheer').onclick=useCheer}
   document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.o));
   clearInterval(timer);
   timer=setInterval(()=>{const left=QZ.qt-(Date.now()-QZ.t0)/1000;const bar=$('#tbar');if(bar)bar.style.width=Math.max(0,left/QZ.qt*100)+'%';if(left<=0)answer(-1)},100);
 }
-function qScore(){return Math.max(0,QZ.res.filter(Boolean).length*20-QZ.pass*10)}
+function qScore(){return QZ.res.filter(Boolean).length*20}   // PASS no longer costs points
+// PASS: 3 per day (counted separately from cheer), swaps in a question of the same difficulty, no penalty.
+function passState(){const today=new Date().toDateString();if(!S.passDay||S.passDay.day!==today)S.passDay={day:today,left:3};return S.passDay}
 function doPass(){
-  if(QZ.pass>=QZ.maxPass||!QZ.pool.length)return;clearInterval(timer);
-  const old=QZ.list[QZ.i];S.recent=[old,...S.recent.filter(x=>x!==old)].slice(0,40);markSeen(old);
-  QZ.pass++;QZ.list[QZ.i]=QZ.pool.shift();toast('已換一題，扣 10 分');showQ();
+  const P=passState();if(QZ.practice||P.left<=0||!QZ.pool.length)return;clearInterval(timer);
+  const old=QZ.list[QZ.i],t=Q[old][5];let j=QZ.pool.findIndex(i=>Q[i][5]===t);if(j<0)j=0;
+  S.recent=[old,...S.recent.filter(x=>x!==old)].slice(0,40);markSeen(old);
+  P.left--;QZ.pass++;QZ.list[QZ.i]=QZ.pool.splice(j,1)[0];save();toast(`已換一題（不扣分），今天還有 ${P.left} 次`);showQ();
 }
 function answer(o,cheered){
   const hp=document.querySelector('.helps');if(hp)hp.remove();
@@ -2523,7 +2550,8 @@ function answer(o,cheered){
   const idx=QZ.list[QZ.i],q=Q[idx],ok=o===q[3],sec=(Date.now()-QZ.t0)/1000;SND.play(ok?'correct':'wrong');
   QZ.res.push(ok);S.recent=[idx,...S.recent.filter(x=>x!==idx)].slice(0,40);markSeen(idx);
   let bonus='';
-  if(ok){QZ.exp+=20;QZ.candy+=20;if(sec<=8&&!cheered){QZ.candy+=5;bonus='（快手 +5 糖）'}if(cheered)bonus='（應援）'}
+  const R=QZ.rw||QUIZ_RW;
+  if(ok){QZ.exp+=R.e;QZ.candy+=R.c;if(sec<=R.fs&&!cheered){QZ.candy+=R.fc;bonus=`（快手 +${R.fc} 糖）`}if(cheered)bonus='（應援）'}
   document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;const v=+b.dataset.o;if(v===q[3])b.classList.add('right');else if(v===o)b.classList.add('wrong')});
   const last=QZ.i===QZ.list.length-1;
   $('#fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><b>${ok?'答對了！'+bonus:o===-1?'時間到了':'差一點點'}</b>${q[4]}</div><button class="big" id="next" style="width:100%;margin-top:10px">${last?'看結果':'下一題'}</button>`;
@@ -2532,22 +2560,79 @@ function answer(o,cheered){
 }
 function finish(){
   const n=QZ.res.filter(Boolean).length,score=qScore(),perfect=score===100;
-  if(perfect){QZ.exp+=30;QZ.candy+=50;S.perfect++;S.diceBonus=(S.diceBonus||0)+1}
-  QZ.exp=Math.max(0,QZ.exp-QZ.pass*10);QZ.candy=Math.max(0,QZ.candy-QZ.pass*6);
+  const R=QZ.rw||QUIZ_RW;
+  if(perfect){QZ.exp+=R.pe;QZ.candy+=R.pc;S.perfect++;S.diceBonus=(S.diceBonus||0)+1}
+  QZ.exp=Math.max(0,QZ.exp-QZ.pass*R.ppe);QZ.candy=Math.max(0,QZ.candy-QZ.pass*R.ppc);
   S.played++;S.correct+=n;
   const bk='quiz-'+(QZ.L?'L'+QZ.L.id:QZ.c),prevBest=(S.best[bk]||0);S.best[bk]=Math.max(prevBest,score);
   if(QZ.L){save();return levelResult(QZ.L,score)}
   SND.play('win');const lvMsg=grant(QZ.exp,QZ.candy);
+  // Practice shows 1-3 stars (1-2 / 3-4 / 5 correct) for the player only; they never count toward the main line.
+  const st=n>=5?3:n>=3?2:n>=1?1:0;
+  if(QZ.practice){const p=prState();p.best=p.best||{};const k=QZ.practice.dom+'-'+QZ.practice.tier;p.best[k]=Math.max(p.best[k]||0,st);save()}
   const msg=perfect?'滿分！完美過關！':score>=80?'表現很棒！':score>=40?'再接再厲！':'下次一定可以！';
-  $('#sheet').innerHTML=`<div class="result"><span class="qtag">${QZ.c==='all'?'綜合大冒險':CATS.find(c=>c.k===QZ.c).n}</span><div class="score">${score} 分</div><b style="font-family:var(--display);font-size:1.2rem;font-weight:400">${msg}</b><p class="hint">答對 ${n} 題${QZ.pass?` · 用了 ${QZ.pass} 次 PASS（−${QZ.pass*10} 分）`:''} · 這一類最高 ${S.best[bk]} 分${score>prevBest&&prevBest?'（新紀錄！）':''}</p>
+  $('#sheet').innerHTML=`<div class="result"><span class="qtag">${QZ.practice?PR_DOM[QZ.practice.dom].n+'・'+PR_TIERS[QZ.practice.tier-1].n:QZ.c==='all'?'綜合大冒險':CATS.find(c=>c.k===QZ.c).n}</span>${QZ.practice?'<div>'+starRow(st,34)+'</div>':''}<div class="score">${score} 分</div><b style="font-family:var(--display);font-size:1.2rem;font-weight:400">${msg}</b><p class="hint">答對 ${n} 題${QZ.pass?` · 用了 ${QZ.pass} 次 PASS`:''} · 這一類最高 ${S.best[bk]} 分${score>prevBest&&prevBest?'（新紀錄！）':''}</p>
   <div class="gains"><span class="e">+${QZ.exp} 經驗</span><span>+${QZ.candy} 星星糖</span></div>
   ${lvMsg}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><button class="ghost" id="close">返回</button><button class="big" id="again">再挑戰一次</button></div></div>`;
   refreshSheetLayout();
-  $('#close').onclick=closeQuiz;$('#again').onclick=()=>startQuiz(QZ.c);
+  $('#close').onclick=closeQuiz;$('#again').onclick=()=>QZ.practice?startPractice(QZ.practice.dom):startQuiz(QZ.c);
   render();
 }
 function closeQuiz(){SND.setTheme(baseTheme());clearInterval(timer);stopGame();$('#modal').hidden=true;render();stage()}
+
+/* ---------- 自由練習：九大領域 × 四種難度（題庫在 qbank/L1~L4.json） ---------- */
+// Main-line and old quiz rewards: per correct exp/candy, fast-answer seconds/candy, perfect exp/candy, per-PASS exp/candy penalty.
+const QUIZ_RW={e:20,c:20,fs:8,fc:5,pe:30,pc:50,ppe:10,ppc:6};
+const PR_RW={e:15,c:10,fs:5,fc:3,pe:20,pc:25,ppe:5,ppc:3};
+const PR_DOM={D01:{n:'語文',d:'國語・英語・本土語',ic:'📖'},D02:{n:'數學',d:'計算・幾何・邏輯',ic:'🔢'},D03:{n:'社會',d:'歷史・地理・公民',ic:'🌏'},D04:{n:'自然',d:'生物・理化・地科',ic:'🔬'},D05:{n:'藝術',d:'音樂・美術・表演',ic:'🎨'},D06:{n:'綜合',d:'童軍・家政・輔導',ic:'⛺'},D07:{n:'健體',d:'運動・保健・營養',ic:'⚽'},D08:{n:'科技',d:'資訊・網安・機械',ic:'💻'},D09:{n:'冷知識',d:'生活與趣味大發現',ic:'💡'}};
+const PR_GRID=['D01','D02','D03','D04','D09','D05','D06','D07','D08'];   // 3x3, 冷知識 in the centre
+const PR_TIERS=[{n:'初級',cost:0,qt:20},{n:'進階',cost:10000,qt:20},{n:'高手',cost:30000,qt:18},{n:'資優',cost:90000,qt:15}];
+const PR_BANK={};
+// S.practice.tier = highest unlocked tier (1-4), S.practice.sel = tier currently chosen.
+function prState(){if(!S.practice||typeof S.practice!=='object')S.practice={tier:1,sel:1};const p=S.practice;p.tier=Math.min(4,Math.max(1,p.tier|0||1));p.sel=Math.min(p.tier,Math.max(1,p.sel|0||1));return p}
+function prLoad(t){if(!PR_BANK[t])PR_BANK[t]=fetch('qbank/L'+t+'.json?v=20261114').then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.json()}).catch(e=>{delete PR_BANK[t];throw e});return PR_BANK[t]}
+function prBuy(t){
+  const p=prState(),T=PR_TIERS[t-1];if(!T||t!==p.tier+1)return;
+  if(S.candy<T.cost){toast(`星星糖不夠喔，解鎖「${T.n}」需要 ${T.cost.toLocaleString()} 顆`);return}
+  if(!confirm(`要花 ${T.cost.toLocaleString()} 顆星星糖解鎖「${T.n}」嗎？\n九大領域會一起開放。`))return;
+  S.candy-=T.cost;p.tier=t;p.sel=t;save();toast(`已解鎖「${T.n}」難度！`);render();
+}
+async function startPractice(dom){
+  const p=prState(),t=p.sel;let bank;
+  try{bank=await prLoad(t)}catch(e){toast('題庫載入失敗，請確認網路後再試一次');return}
+  const seen=new Map((S.qseen||[]).map((id,i)=>[id,i])),key=x=>'p:'+x[0];
+  const pool=bank.filter(x=>x[1]===dom);if(pool.length<5){toast('這個領域的題目還不夠');return}
+  // Unseen questions first (random), then the ones seen longest ago.
+  const ord=shuffle(pool.filter(x=>!seen.has(key(x)))).concat(pool.filter(x=>seen.has(key(x))).sort((a,b)=>seen.get(key(a))-seen.get(key(b))));
+  const toQ=x=>{Q.push([x[1],x[3],x[4],x[5],x[6],t,true,x[0]]);return Q.length-1};
+  const list=ord.slice(0,5).map(toQ),spare=ord.slice(5,8).map(toQ);
+  QZ={c:'p:'+dom,L:null,qt:PR_TIERS[t-1].qt,list,i:0,res:[],exp:0,candy:0,pass:0,maxPass:2,cheer:0,pool:spare,rw:PR_RW,practice:{dom,tier:t}};
+  $('#modal').hidden=false;showQ();
+}
+// Main-line quiz level: five questions from the level's domain, difficulty mix by chapter (MAIN_MIX), unseen first.
+async function startMainQuiz(L){
+  const tiers=[...new Set(L.mix)];let banks;
+  try{banks=await Promise.all(tiers.map(prLoad))}catch(e){toast('題庫載入失敗，請確認網路後再試一次');return}
+  const seen=new Map((S.qseen||[]).map((id,i)=>[id,i])),key=x=>'p:'+x[0],byT={};
+  tiers.forEach((t,i)=>{const pool=banks[i].filter(x=>x[1]===L.dom);byT[t]=shuffle(pool.filter(x=>!seen.has(key(x)))).concat(pool.filter(x=>seen.has(key(x))).sort((a,b)=>seen.get(key(a))-seen.get(key(b))))});
+  const toQ=(x,t)=>{Q.push([x[1],x[3],x[4],x[5],x[6],t,true,x[0]]);return Q.length-1};
+  const list=shuffle(L.mix.map(t=>toQ(byT[t].shift(),t)));
+  const pool=tiers.flatMap(t=>byT[t].splice(0,3).map(x=>toQ(x,t)));   // spares for PASS (same difficulty is preferred)
+  QZ={c:'m:'+L.dom,L,qt:L.qt,list,i:0,res:[],exp:0,candy:0,pass:0,cheer:0,pool,rw:MAIN_RW,main:true};
+  $('#modal').hidden=false;showQ();
+}
+function prHTML(){
+  const p=prState();
+  const tiers=PR_TIERS.map((T,i)=>{const k=i+1,open=k<=p.tier,next=k===p.tier+1;return `<button data-prt="${k}" aria-pressed="${open&&k===p.sel}" ${open||next?'':'disabled'}><b>${open?'':'🔒 '}${T.n}</b><small>${open?T.qt+' 秒':next?(T.cost/10000)+' 萬糖':'未開放'}</small></button>`}).join('');
+  return `<details class="page-rules"><summary>計分與獎勵規則</summary><div class="rules"><span>每回合 5 題，從選定的領域與難度出題</span><span>答對一題 +10 糖、+15 經驗</span><span>5 題全對再 +25 糖、+20 經驗</span><span>5 秒內答對再 +3 糖</span><span>答對 1～2 題 1 星、3～4 題 2 星、全對 3 星（只記錄在這裡，不影響主線）</span><span>練習場沒有 PASS 和應援</span><span>難度要依序花星星糖解鎖，九大領域一起開放</span></div></details>
+  <div class="diffpick prtiers"><span>難度</span>${tiers}<small>星星糖 ${(S.candy||0).toLocaleString()}・格子下方是這個難度的最佳星數</small></div>
+  <div class="prgrid">${PR_GRID.map(k=>{const D=PR_DOM[k];return `<button class="prcell${k==='D09'?' hot':''}" data-prd="${k}"><span class="pric" aria-hidden="true">${D.ic}</span><b>${D.n}</b><small>${D.d}</small><span class="prst" aria-label="最佳 ${(p.best||{})[k+'-'+p.sel]||0} 星">${starRow((p.best||{})[k+'-'+p.sel]||0,12)}</span></button>`}).join('')}</div>`;
+}
+function prBind(panel){
+  panel.querySelectorAll('[data-prt]').forEach(b=>b.onclick=()=>{const k=+b.dataset.prt,p=prState();if(k<=p.tier){p.sel=k;save();render()}else prBuy(k)});
+  panel.querySelectorAll('[data-prd]').forEach(b=>b.onclick=()=>startPractice(b.dataset.prd));
+}
 
 /* ---------- shared rewards ---------- */
 function grant(exp,candy){
@@ -2577,19 +2662,42 @@ function resultSheet(tag,big,msg,exp,candy,again,earnedLvMsg){SND.play('win');
 }
 S.best=S.best||{};
 
+/* ---------- 小遊戲內嵌框（mini/）----------
+   遊戲畫面在 mini/<遊戲>/，只回報原始成績；選單、星星、獎勵、排行紀錄都留在主頁。
+   檢查訊息來源、origin、session、遊戲鍵，每局只結算一次。 */
+let miniCur=null;
+function miniRemove(){if(!miniCur)return;clearTimeout(miniCur.loadTimer);miniCur.box.remove();miniCur=null;try{SND.resume()}catch(e){}}
+function miniOpen(game,params,onResult,onClose){
+  stopGame();miniRemove();try{SND.pause()}catch(e){}
+  const session=crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(36).slice(2);
+  const qs=new URLSearchParams({embed:'1',session,...params}).toString();
+  const box=document.createElement('div');box.id='miniFrame';
+  box.innerHTML=`<iframe src="mini/${game}/index.html?${qs}" title="小遊戲" allow="autoplay"></iframe><div class="mini-loading" id="miniLoading"><div><p id="miniLoadText" role="status">正在載入遊戲…</p><button class="big" id="miniLoadBack">返回</button></div></div>`;
+  document.body.appendChild(box);
+  miniCur={game,session,box,frame:box.querySelector('iframe'),onResult,onClose,done:false};
+  miniCur.loadTimer=setTimeout(()=>{const t=$('#miniLoadText');if(t)t.textContent='遊戲載入較久，可以先返回再試一次。'},12000);
+  $('#miniLoadBack').onclick=()=>{const c=miniCur?.onClose;miniRemove();c&&c()};
+  gameStop=miniRemove;
+}
+addEventListener('message',e=>{
+  const c=miniCur,d=e.data;
+  if(!c||!d||e.source!==c.frame.contentWindow||e.origin!==location.origin&&!(location.origin==='null'&&e.origin==='null')||d.session!==c.session||d.fsMini!==c.game)return;
+  if(d.type==='fsMiniReady'){clearTimeout(c.loadTimer);$('#miniLoading')?.remove();return}
+  if(d.type==='fsMiniClose'){const f=c.onClose;miniRemove();f&&f();return}
+  if(d.type==='fsMiniResult'&&!c.done){
+    c.done=true;const f=c.onResult;gameStop=null;miniRemove();
+    let ok=false;try{ok=f(d.result||{})!==false}catch(err){console.error(err)}
+    if(!ok){const back=c.onClose;back&&back();toast('成績無法確認，這局不列入紀錄')}
+  }
+});
+const miniInt=(v,lo,hi)=>Number.isSafeInteger(v)&&v>=lo&&v<=hi;
+
 /* ---------- 電流急急棒 ---------- */
-function serp(){const pts=[[30,290],[60,280]];const rows=[280,200,120,40];
-  rows.forEach((y,r)=>{const ltr=r%2===0;for(let k=0;k<=24;k++){const t=k/24,x=ltr?60+200*t:260-200*t;pts.push([x,y+12*Math.sin(Math.PI*4*t)])}
-    if(r<3){const cx=ltr?260:60;for(let k=1;k<12;k++){const a=Math.PI/2+(ltr?-1:1)*Math.PI*k/12;pts.push([cx+40*Math.cos(a),y-40+40*Math.sin(a)])}}});
-  pts.push([30,40]);return pts}
-const MAZES=[
-  {n:'第 1 關',d:'寬軌道',w:34,time:40,exp:15,candy:15,pts:[[30,290],[30,200],[120,200],[120,80],[220,80],[220,240],[290,240],[290,40]]},
-  {n:'第 2 關',d:'鋸齒山路',w:24,time:40,exp:25,candy:25,pts:[[30,290],[80,230],[130,290],[180,230],[230,290],[290,230],[290,160],[230,110],[170,160],[110,110],[50,160],[50,40],[290,40]]},
-  {n:'第 3 關',d:'波浪迷宮',w:19,time:50,exp:40,candy:40,pts:serp()}
-];
+// best.maze5 = routes cleared out of 5. Older saves only have best.maze (out of the old 3 routes, now routes 3-5).
+const mazeCleared=()=>Number.isSafeInteger(S.best.maze5)?S.best.maze5:(S.best.maze?Math.min(5,S.best.maze+2):0);
 function mazeBestInfo(){
   const ms=window.FSGameRecords?.personalBest()?.maze?.value?.durationMs;
-  return '<section class="maze-best" style="width:100%;padding:10px 12px;border:1px solid #b8c7e2;border-radius:12px;background:linear-gradient(135deg,#eef8ff,#f1e8fa);color:#3d4363"><b>第 3 關個人最佳：'+(Number.isSafeInteger(ms)&&ms>0?(ms/1000).toFixed(3)+' 秒':'尚無完成紀錄')+'</b><p class="hint" style="margin:5px 0 0">只記錄第三關，秒數越少越好。</p><p class="hint" data-maze-sync style="margin:5px 0 0"></p></section>';
+  return '<section class="maze-best" style="width:100%;padding:10px 12px;border:1px solid #b8c7e2;border-radius:12px;background:linear-gradient(135deg,#eef8ff,#f1e8fa);color:#3d4363"><b>第 5 關（競賽關）個人最佳：'+(Number.isSafeInteger(ms)&&ms>0?(ms/1000).toFixed(3)+' 秒':'尚無完成紀錄')+'</b><p class="hint" style="margin:5px 0 0">排行榜只記錄第 5 關，成功通關才算，秒數越少越好。</p><p class="hint" data-maze-sync style="margin:5px 0 0"></p></section>';
 }
 function mazeSyncText(){
   const sync=window.FSLeaderboardSync?.state||{},status=sync.syncStatus;
@@ -2597,127 +2705,79 @@ function mazeSyncText(){
 }
 addEventListener('fs-leaderboard-updated',mazeSyncText);
 function mazeMenu(){
-  const cleared=S.best.maze||0;
+  const cleared=mazeCleared();
   openSheet(head('電流急急棒')+`<p class="qtext">選一關挑戰</p><p class="hint">按住綠色起點，手指（或滑鼠）不放開，沿著軌道一路拖到星星。碰到發光的邊、或是中途放開，都算失敗。</p>
   ${mazeBestInfo()}<div class="lvpick">${MAZES.map((m,i)=>`<button data-m="${i}" ${i>cleared?'disabled':''}><b>${m.n}</b><small>${m.d}</small><small>${i>cleared?'先過前一關':'+'+m.candy+' 糖'}</small></button>`).join('')}</div>`);
   mazeSyncText();
   document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>mazePlay(+b.dataset.m));
 }
 function segDist(px,py,[ax,ay],[bx,by]){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let t=l?((px-ax)*dx+(py-ay)*dy)/l:0;t=Math.max(0,Math.min(1,t));const x=ax+t*dx-px,y=ay+t*dy-py;return Math.sqrt(x*x+y*y)}
+// The game page (mini/maze/) only reports {completed, durationMs}; stars, rewards and records are decided here.
 function mazePlay(li,L){
-  const M=L?L.maze:MAZES[li],P=M.pts,start=P[0],goal=P[P.length-1];
-  openSheet(head(L?`第 ${L.id+1} 關 · 電流急急棒`:'電流急急棒 · '+M.n)+`<div class="mstat"><span>狀態：<b id="mst">按住綠色起點開始</b></span><span>剩下 <b id="mt">${M.time}</b> 秒</span></div><canvas class="maze" id="cv" width="640" height="640"></canvas><button class="ghost" id="mback">返回選關</button>`);
-  $('#mback').textContent=L?'返回地圖':'返回選關';$('#mback').onclick=L?closeQuiz:mazeMenu;
-  const cv=$('#cv'),cx=cv.getContext('2d');cx.scale(2,2);
-  const tier=L?(M.w>=28?0:M.w>=22?1:2):li;
-  const skin=[{bg:['#102737','#11182f'],edge:['#73f2dc','#42bcd5','#738de8'],road:['#245061','#183449'],ring:'#adffef'},{bg:['#25213f','#13172f'],edge:['#dab5ff','#9c7ae8','#6f9de6'],road:['#49416a','#292d4e'],ring:'#e6cbff'},{bg:['#331e35','#171a32'],edge:['#ffca9b','#ef82ae','#a68bea'],road:['#5c354f','#332b4a'],ring:'#ffe2ce'}][Math.max(0,Math.min(2,tier))];
-  cv.dataset.mazeTier=String(tier+1);
-  let state='ready',pos=null,rankStart=0,raf=0,retryTimer=0;
-  const path=()=>{cx.beginPath();P.forEach(([x,y],i)=>i?cx.lineTo(x,y):cx.moveTo(x,y))};
-  function draw(){
-    cx.clearRect(0,0,320,320);const bg=cx.createLinearGradient(0,0,320,320);bg.addColorStop(0,skin.bg[0]);bg.addColorStop(1,skin.bg[1]);cx.fillStyle=bg;cx.fillRect(0,0,320,320);
-    cx.strokeStyle='#c7c9ff09';cx.lineWidth=.5;cx.beginPath();for(let n=20;n<320;n+=20){cx.moveTo(n,0);cx.lineTo(n,320);cx.moveTo(0,n);cx.lineTo(320,n)}cx.stroke();
-    cx.lineCap='round';cx.lineJoin='round';
-    const edge=cx.createLinearGradient(20,300,300,20);skin.edge.forEach((color,i)=>edge.addColorStop(i/2,color));
-    cx.shadowColor=state==='fail'?'#ff4d6d':skin.edge[1];cx.shadowBlur=8;path();cx.strokeStyle=state==='fail'?'#ff4d6d':edge;cx.lineWidth=M.w+8;cx.stroke();
-    cx.shadowBlur=0;path();cx.strokeStyle='#ffffff65';cx.lineWidth=M.w+2;cx.stroke();
-    const road=cx.createLinearGradient(0,0,320,320);road.addColorStop(0,skin.road[0]);road.addColorStop(1,skin.road[1]);path();cx.strokeStyle=road;cx.lineWidth=M.w;cx.stroke();
-    path();cx.setLineDash([2,10]);cx.strokeStyle='#e8efff45';cx.lineWidth=1;cx.stroke();cx.setLineDash([]);
-    const origin=cx.createLinearGradient(start[0],start[1]-18,start[0],start[1]+18);origin.addColorStop(0,'#96f2c6');origin.addColorStop(1,'#278c75');cx.fillStyle=origin;cx.beginPath();cx.arc(start[0],start[1],M.w/2+2,0,7);cx.fill();
-    cx.fillStyle='#092d2c';cx.font='bold 11px sans-serif';cx.textAlign='center';cx.fillText('起點',start[0],start[1]+4);
-    const finish=cx.createLinearGradient(goal[0],goal[1]-20,goal[0],goal[1]+20);finish.addColorStop(0,'#fff5ca');finish.addColorStop(1,'#dcae55');cx.fillStyle=finish;cx.fill(new Path2D(star(goal[0],goal[1],M.w/2+6)));
-    if(pos){cx.strokeStyle=state==='fail'?'#ff4d6d':skin.ring;cx.lineWidth=4;cx.beginPath();cx.arc(pos[0],pos[1],7,0,7);cx.stroke();cx.fillStyle='#fff';cx.beginPath();cx.arc(pos[0],pos[1],3,0,7);cx.fill()}
-  }
-  function loop(){if(state==='go'){const left=M.time-(performance.now()-rankStart)/1000;$('#mt').textContent=Math.max(0,left).toFixed(1);if(left<=0)fail('時間到了')}draw();raf=requestAnimationFrame(loop)}
-
-  const xy=e=>{const r=cv.getBoundingClientRect();return [(e.clientX-r.left)*320/r.width,(e.clientY-r.top)*320/r.height]};
-  const onPath=([x,y])=>{for(let i=1;i<P.length;i++)if(segDist(x,y,P[i-1],P[i])<=M.w/2-2)return true;return false};
-  function fail(why){if(state!=='go')return;state='fail';SND.play('zap');$('#mst').textContent=why+'，再試一次！';cv.classList.remove('shake');void cv.offsetWidth;cv.classList.add('shake');retryTimer=setTimeout(()=>{if(state==='fail'&&cv.isConnected){state='ready';pos=null;$('#mst').textContent='按住綠色起點開始';$('#mt').textContent=M.time}},900)}
-  cv.onpointerdown=e=>{const p=xy(e);if(state!=='ready')return;if(Math.hypot(p[0]-start[0],p[1]-start[1])<=M.w/2+6){state='go';pos=p;rankStart=performance.now();cv.setPointerCapture(e.pointerId);$('#mst').textContent='小心別碰到邊！'}};
-  cv.onpointermove=e=>{if(state!=='go')return;if(performance.now()-rankStart>=M.time*1000)return fail('時間到了');pos=xy(e);if(!onPath(pos)&&Math.hypot(pos[0]-start[0],pos[1]-start[1])>M.w/2+6)return fail('觸電了');
-    if(Math.hypot(pos[0]-goal[0],pos[1]-goal[1])<M.w/2+4){state='win';const durationMs=Math.max(1,Math.round(performance.now()-rankStart)),sec=durationMs/1000;S.best.maze=Math.max(S.best.maze||0,li+1);
-      if(L){save();return levelResult(L,sec)}if(li===2)leaderboardRecord('maze',{completed:true,stage:3,durationMs});const fast=sec<M.time/2;resultSheet('電流急急棒 · '+M.n,sec.toFixed(li===2?3:1)+' 秒',fast?'又穩又快，太厲害了！':'成功通過！',M.exp+(fast?10:0),M.candy+(fast?10:0),()=>li<2?mazeMenu():mazePlay(li));if(li===2){document.querySelector('#sheet .gains').insertAdjacentHTML('afterend',mazeBestInfo());mazeSyncText();}}};
-  cv.onpointerup=cv.onpointercancel=()=>{if(state==='go')fail('手放開了')};
-  loop();gameStop=()=>{state='closed';cancelAnimationFrame(raf);clearTimeout(retryTimer)};
+  li=L?L.tier-1:Math.max(0,Math.min(MAZES.length-1,Math.trunc(Number(li)||0)));
+  const M=MAZES[li];
+  miniOpen('maze',{tier:li+1,main:L?'1':'0',title:L?`第 ${L.id+1} 關 · 電流急急棒`:'電流急急棒 · '+M.n,goal:L?L.goal:''},r=>{
+    if(r.completed!==true||!miniInt(r.durationMs,1,M.time*1000+1000))return false;
+    const durationMs=r.durationMs,sec=durationMs/1000;
+    if(L){save();return levelResult(L,sec)}
+    S.best.maze5=Math.max(mazeCleared(),li+1);if(li>=2)S.best.maze=Math.max(S.best.maze||0,li-1);
+    // Leaderboard keeps stage:3 as the id of the competition route (the old third route, now route 5).
+    if(li===MAZE_COMP)leaderboardRecord('maze',{completed:true,stage:3,durationMs});const fast=sec<M.time/2;resultSheet('電流急急棒 · '+M.n,sec.toFixed(li===MAZE_COMP?3:1)+' 秒',fast?'又穩又快，太厲害了！':'成功通過！',M.exp+(fast?10:0),M.candy+(fast?10:0),()=>li<MAZE_COMP?mazeMenu():mazePlay(li));if(li===MAZE_COMP){document.querySelector('#sheet .gains').insertAdjacentHTML('afterend',mazeBestInfo());mazeSyncText();}
+  },()=>L?closeQuiz():mazeMenu());
 }
-
 /* ---------- 記憶翻牌 ---------- */
-const ICONS=[
-  `<path d="${star(20,21,15)}" fill="#ffc93c"/>`,
-  `<path d="M20,34L7,21Q1,13 8,8Q15,4 20,11Q25,4 32,8Q39,13 33,21Z" fill="#ff5c8a"/>`,
-  flower(20,20,16,'#ff9fc6'),
-  `<path d="M6,30L5,12L13,19L20,7L27,19L35,12L34,30Z" fill="#f3c94f"/><circle cx="20" cy="25" r="3" fill="#e2335b"/>`,
-  `<path d="M24,6A15,15 0 1,0 34,26A12,12 0 1,1 24,6Z" fill="#8a7dff"/>`,
-  `<path d="M20,5L33,16L20,36L7,16Z" fill="#7fe0ff" stroke="#3aa6d8" stroke-width="2"/><path d="M7,16L33,16" stroke="#3aa6d8" stroke-width="2"/>`,
-  `<path d="M19,20L5,10Q2,20 6,30Z M21,20L35,10Q38,20 34,30Z" fill="#e2508f"/><circle cx="20" cy="20" r="5" fill="#c23258"/>`,
-  `<path d="M14,30L14,9L32,5L32,26" stroke="#3fb39a" stroke-width="3.5" fill="none"/><ellipse cx="10" cy="30" rx="6" ry="4.5" fill="#3fb39a"/><ellipse cx="28" cy="26" rx="6" ry="4.5" fill="#3fb39a"/>`
-];
-const MEMORY_TIERS=[{pairs:4,maxCandy:20,full:6,name:'星光初探'},{pairs:6,maxCandy:40,full:9,name:'月影試煉'},{pairs:8,maxCandy:60,full:12,name:'極光競賽'}];
-const MEMORY_NAMES=['星星','愛心','花朵','王冠','月亮','寶石','蝴蝶','音符','櫻桃','雲朵'];
-const MEMORY_INKS=[['#ffe6a7','#d9923f'],['#ffb5d0','#d95391'],['#ffe5a1','#ed9a61'],['#ffe9b6','#c79345'],['#ddd1ff','#8c78c8'],['#b8eff9','#5195c0'],['#f0c3f5','#a978ce'],['#a6e8d7','#3d9b94'],['#ffb7c0','#c44c75'],['#d7f2ff','#79afd7']];
+// Old saves had 3 tiers (4/6/8 pairs) — the same as the new L1-L3, so their progress carries over unchanged.
 function memoryProgress(){
   if(!S.memoryCompetitionV1){const legacy=Number.isSafeInteger(S.best?.memory)&&S.best.memory>=8;S.memoryCompetitionV1={cleared:legacy?3:0,best:legacy?{3:S.best.memory}:{}};}
   return S.memoryCompetitionV1;
 }
-function memoryBestInfo(){const n=window.FSGameRecords?.personalBest()?.memory?.value?.tries;return '<section class="memory-best"><b>第 3 關個人最佳：'+(Number.isSafeInteger(n)?n+' 次':'尚無完成紀錄')+'</b><p class="hint">第三關 8 對・翻牌次數越少越好。</p><p class="hint" data-memory-sync></p></section>';}
+function memoryBestInfo(){leaderboardInitializeBest();const v=window.FSGameRecords?.personalBest()?.memory?.value,n=v?.tries;return '<section class="memory-best"><b>第 5 關（競賽關）個人最佳：'+(Number.isSafeInteger(n)?n+' 次'+(Number.isSafeInteger(v.durationMs)?'・'+(v.durationMs/1000).toFixed(1)+' 秒':''):'尚無完成紀錄')+'</b><p class="hint">排行榜只計第 5 關 12 對：翻牌次數越少越好，次數相同比用時。</p><p class="hint" data-memory-sync></p></section>';}
 function memorySyncText(){const sync=window.FSLeaderboardSync?.state||{};document.querySelectorAll('[data-memory-sync]').forEach(e=>{e.setAttribute('role','status');e.textContent=sync.syncStatus==='synced'?'成績已同步；全站星空榜由管理員發布。':sync.syncStatus==='pending'?(sync.errorCode?'成績已保留，雲端尚未同步，連線恢復後會再試。':'成績同步中，請稍候。'):'個人紀錄保存在目前存檔，登入並連線後才能同步。';});}
 addEventListener('fs-leaderboard-updated',memorySyncText);
 function memMenu(){
   const progress=memoryProgress();
-  openSheet(head('記憶翻牌 · 競賽挑戰')+'<p class="qtext">循序解鎖三種難度</p><p class="hint">每翻兩張計 1 次，第三關列入排行。</p><div class="memory-levels">'+MEMORY_TIERS.map((m,i)=>'<button class="memory-level memory-tier-'+(i+1)+'" data-memory-level="'+(i+1)+'" '+(i>progress.cleared?'disabled':'')+'><span class="memory-level-num">0'+(i+1)+'</span><b>'+m.name+'</b><span>'+m.pairs+' 對／'+m.pairs*2+' 張</span><small>'+(i>progress.cleared?'先完成上一關':'最高 +'+m.maxCandy+' 糖')+'</small>'+(progress.best?.[i+1]?'<small>最佳 '+progress.best[i+1]+' 次</small>':'')+'</button>').join('')+'</div>'+memoryBestInfo());
+  openSheet(head('記憶翻牌 · 競賽挑戰')+'<p class="qtext">循序解鎖五種難度</p><p class="hint">每翻兩張計 1 次，拿到 3 星就解鎖下一關。第 3～5 關是競賽區，只有第 5 關列入排行。</p><div class="memory-levels">'+MEMORY_TIERS.map((m,i)=>'<button class="memory-level memory-tier-'+(i+1)+'" data-memory-level="'+(i+1)+'" '+(i>progress.cleared?'disabled':'')+'><span class="memory-level-num">0'+(i+1)+'</span><b>'+m.name+'</b><span>'+m.pairs+' 對／'+m.pairs*2+' 張</span><small>'+(i>progress.cleared?'先在上一關拿 3 星':MEMORY_STAR(m.pairs)[0]+' 次內 3 星')+'</small>'+(progress.best?.[i+1]?'<small>最佳 '+progress.best[i+1]+' 次</small>':'')+'</button>').join('')+'</div>'+memoryBestInfo());
   document.querySelectorAll('[data-memory-level]').forEach(b=>b.onclick=()=>memStart(null,+b.dataset.memoryLevel));memorySyncText();
 }
-function memoryDefs(){return '<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute;overflow:hidden"><defs>'+MEMORY_INKS.map(([a,b],i)=>'<linearGradient id="memory-ink-'+i+'" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient>').join('')+'</defs></svg>';}
-function memoryFace(v){const art=ICONS[v].replace(/fill="#[\da-f]+"/i,'fill="url(#memory-ink-'+v+')"');return '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="'+MEMORY_INKS[v][0]+'" opacity=".2"/><circle cx="24" cy="24" r="20" fill="none" stroke="'+MEMORY_INKS[v][1]+'" opacity=".18"/><g transform="translate(4 4)">'+art+'</g><path d="M36 9v6m-3-3h6" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><circle cx="13" cy="35" r="1.3" fill="#fff"/></svg>';}
+// The game page (mini/memory/) only reports {completed, pairs, tries, durationMs}.
 function memStart(L,tier=3){
-  const progress=L?null:memoryProgress();tier=Math.max(1,Math.min(3,Math.trunc(Number(tier)||3)));
-  if(!L&&tier>progress.cleared+1){memMenu();toast('先完成上一關，就能解鎖這一關');return;}
-  const mode=MEMORY_TIERS[tier-1],pairs=L?L.pairs:mode.pairs,ids=[...Array(pairs).keys()],deck=shuffle([...ids,...ids]);
-  let open=[],tries=0,found=0,lock=false,active=true,finished=false;const timers=new Set(),t0=performance.now();
-  openSheet(head(L?`第 ${L.id+1} 關 · 記憶翻牌`:'記憶翻牌 · 第 '+tier+' 關')+`<div class="mstat"><span>已翻 <b id="mtry">0</b> 次</span><span>配對 <b id="mfound">0</b> / ${pairs}</span></div>${L?'':memoryDefs()}<div class="mem ${L?'':'mem-competition memory-tier-'+tier}">${deck.map((v,i)=>`<button class="mc" data-i="${i}" aria-label="第 ${i+1} 張牌，尚未翻開"><div class="in"><div class="b"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="${star(20,21,12)}" fill="#dce6ff"/><path d="M20 4L36 20L20 36L4 20Z" fill="none" stroke="#fff" opacity=".45"/></svg></div><div class="f">${L?`<svg viewBox="0 0 40 40" aria-hidden="true">${ICONS[v]}</svg>`:memoryFace(v)}</div></div></button>`).join('')}</div><p class="hint" style="text-align:center">${L?`${L.lim} 次內完成才算過關，${L.s3} 次內拿三顆星`:mode.full+' 次內完成可拿滿額獎勵，最高 '+mode.maxCandy+' 糖'+(tier===3?'；此關計入競賽排行':'；此關不計入競賽排行')}</p><div class="memory-actions"><button class="ghost" id="memoryBack">${L?'返回地圖':'返回選關'}</button><button class="ghost" id="memoryRetry">重新開始</button></div>`);
-  const board=document.querySelector('.mem'),cards=[...board.querySelectorAll('.mc')];
-  gameStop=()=>{active=false;timers.forEach(clearTimeout);timers.clear();};
-  const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);if(active&&board.isConnected)fn();},ms);timers.add(id);};
-  document.getElementById('memoryBack').onclick=L?closeQuiz:memMenu;
-  document.getElementById('memoryRetry').onclick=()=>memStart(L,tier);
-  function finish(){
-    if(finished||!active)return;finished=true;lock=true;cards.forEach(c=>c.disabled=true);
+  const progress=L?null:memoryProgress();tier=L?L.tier:Math.max(1,Math.min(MEMORY_TIERS.length,Math.trunc(Number(tier)||1)));
+  if(!L&&tier>progress.cleared+1){memMenu();toast('先在上一關拿到 3 星，就能解鎖這一關');return;}
+  const mode=MEMORY_TIERS[tier-1],pairs=mode.pairs;
+  miniOpen('memory',{tier,main:L?'1':'0',title:L?`第 ${L.id+1} 關 · 記憶翻牌`:'記憶翻牌 · 第 '+tier+' 關',goal:L?L.goal:''},r=>{
+    if(r.completed!==true||r.pairs!==pairs||!miniInt(r.tries,pairs,99999)||!miniInt(r.durationMs,1,864e5))return false;
+    const tries=r.tries,durationMs=r.durationMs;
     // Mainline keeps its original star, progress and reward calculations.
-    if(L){save();levelResult(L,tries);return;}
-    progress.cleared=Math.max(progress.cleared,tier);progress.best=progress.best||{};progress.best[tier]=Math.min(progress.best[tier]||Infinity,tries);
-    if(tier===3){S.best.memory=Math.min(S.best.memory||Infinity,tries);leaderboardRecord('memory',{completed:true,pairs:8,tries});}
-    const candy=Math.max(Math.round(mode.maxCandy*.2),mode.maxCandy-4*Math.max(0,tries-mode.full)),exp=Math.round(candy*.8),lvMsg=grant(exp,candy),sec=Math.max(0,Math.round((performance.now()-t0)/1000));
-    // Commit the result now; leaving during the reveal must not lose it or award it twice.
-    later(()=>{
-      resultSheet('記憶翻牌 · 第 '+tier+' 關',tries+' 次',tries<=mode.full?'配對完成，記憶力超強！':'全部找到了！（'+sec+' 秒）',exp,candy,()=>memStart(null,tier),lvMsg);
-      const close=document.getElementById('close');close.textContent='返回選關';close.onclick=memMenu;
-      if(tier<3){const next=document.createElement('button');next.className='big';next.id='memoryNext';next.textContent='下一關';next.style.width='100%';next.onclick=()=>memStart(null,tier+1);document.querySelector('#sheet .dialog-actions').append(next);}
-      if(tier===3){document.querySelector('#sheet .gains').insertAdjacentHTML('afterend',memoryBestInfo());memorySyncText();}
-    },700);
-  }
-  cards.forEach(c=>c.onclick=()=>{
-    const i=+c.dataset.i;if(!active||finished||lock||c.classList.contains('up')||c.classList.contains('done'))return;
-    c.classList.add('up');c.setAttribute('aria-label','第 '+(i+1)+' 張牌，'+MEMORY_NAMES[deck[i]]);SND.play('flip');open.push(i);
-    if(open.length<2)return;
-    tries++;document.getElementById('mtry').textContent=tries;const [a,b]=open;open=[];
-    if(deck[a]===deck[b]){
-      found++;SND.play('pair');document.getElementById('mfound').textContent=found;
-      later(()=>{for(const j of [a,b]){cards[j].classList.add('done');cards[j].disabled=true;cards[j].setAttribute('aria-label','已配對，'+MEMORY_NAMES[deck[j]]);}},250);
-      if(found===pairs)finish();
-    }else{lock=true;later(()=>{for(const j of [a,b]){cards[j].classList.remove('up');cards[j].setAttribute('aria-label','第 '+(j+1)+' 張牌，尚未翻開');}lock=false;},800);}
-  });
+    if(L){save();return levelResult(L,tries)}
+    // Competition: 3 stars unlock the next tier.
+    const three=tries<=MEMORY_STAR(pairs)[0];if(three)progress.cleared=Math.max(progress.cleared,tier);
+    progress.best=progress.best||{};progress.best[tier]=Math.min(progress.best[tier]||Infinity,tries);
+    if(tier===MEMORY_COMP)leaderboardRecord('memory',{completed:true,pairs:12,tries,durationMs});
+    const candy=Math.max(Math.round(mode.maxCandy*.2),mode.maxCandy-4*Math.max(0,tries-mode.full)),exp=Math.round(candy*.8),lvMsg=grant(exp,candy),sec=Math.max(0,Math.round(durationMs/1000));
+    resultSheet('記憶翻牌 · 第 '+tier+' 關',tries+' 次',(three?'三星完成，記憶力超強！':'全部找到了！（'+sec+' 秒）')+(tier<MEMORY_TIERS.length&&!three&&progress.cleared<tier?'　'+MEMORY_STAR(pairs)[0]+' 次內完成（3 星）就能解鎖下一關':''),exp,candy,()=>memStart(null,tier),lvMsg);
+    const close=document.getElementById('close');close.textContent='返回選關';close.onclick=memMenu;
+    if(tier<MEMORY_TIERS.length&&progress.cleared>=tier){const next=document.createElement('button');next.className='big';next.id='memoryNext';next.textContent='下一關';next.style.width='100%';next.onclick=()=>memStart(null,tier+1);document.querySelector('#sheet .dialog-actions').append(next);}
+    if(tier===MEMORY_COMP){document.querySelector('#sheet .gains').insertAdjacentHTML('afterend',memoryBestInfo());memorySyncText();}
+  },()=>L?closeQuiz():memMenu());
 }
-
-ICONS.push(`<circle cx="13" cy="28" r="7" fill="#e2335b"/><circle cx="27" cy="28" r="7" fill="#e2335b"/><path d="M13,21Q18,8 28,6M27,21Q24,12 28,6" stroke="#3b8a4a" stroke-width="2.5" fill="none"/>`,`<path d="M10,30Q2,30 3,23Q4,16 12,17Q14,8 23,9Q32,10 32,18Q38,19 37,25Q36,30 30,30Z" fill="#9fd6ff"/><path d="${star(28,12,5)}" fill="#ffd166"/>`);
-
 /* ---------- 108 關闖關地圖 ---------- */
 const CHAPTERS=[
   {n:'粉紅花園',bg:'#ffe9f2',ac:'#e2508f'},{n:'糖果小鎮',bg:'#fff3d9',ac:'#d98a00'},{n:'櫻花神社',bg:'#ffeef4',ac:'#c2185b'},
   {n:'珍珠海灣',bg:'#e3f7f5',ac:'#1f8f84'},{n:'沙漠星月城',bg:'#f8eedd',ac:'#a8641a'},{n:'雪原極光',bg:'#e8f3ff',ac:'#2f6bd6'},
   {n:'魔法學院',bg:'#efe8ff',ac:'#6b3fd1'},{n:'水晶宮殿',bg:'#e9f8ff',ac:'#2289b8'},{n:'星光皇家殿堂',bg:'#fff4d6',ac:'#b07a10'}
 ];
-const SEQ=['quiz','maze','quiz','memory','quiz','stroop','quiz','maze','quiz','memory','stroop','boss'];
+// Each chapter: levels 4, 8 and 12 are minigames (maze, memory, colour-trap boss); the other nine are one quiz per domain.
+const SEQ=['quiz','quiz','quiz','maze','quiz','quiz','quiz','memory','quiz','quiz','quiz','stroop'];
+// Main-line seconds per question by chapter: 1-3 → 20 s, 4-6 → 18 s, 7-9 → 15 s.
+const MAIN_QT=[20,20,20,18,18,18,15,15,15];
+// Question difficulty (L1-L4) of the five questions, by chapter.
+const MAIN_MIX=[[1,1,1,1,1],[1,1,1,1,1],[1,1,2,2,2],[1,1,2,2,2],[2,2,3,3,3],[2,2,3,3,3],[3,3,4,4,4],[3,3,4,4,4],[4,4,4,4,4]];
+// Minigame tier (L1-L5) by chapter: 1-2 → L1, 3-4 → L2, 5-6 → L3, 7-8 → L4, 9 → L5.
+const MAIN_GAME_TIER=[1,1,2,2,3,3,4,4,5];
+const MAIN_RW={e:20,c:20,fs:8,fc:5,pe:30,pc:50,ppe:0,ppc:0};   // main-line quiz rewards: PASS costs nothing
 const TYPE_N={quiz:'答題',maze:'電流棒',memory:'翻牌',stroop:'顏色',boss:'魔王'};
+const DOMAIN_IDS=['D01','D02','D03','D04','D05','D06','D07','D08','D09'];
+const chapterDomains=ch=>shuffleR(DOMAIN_IDS,rng(ch*104729+7));   // fixed random order, the same for every player
 function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function gridMaze(len,seed){
   const r=rng(seed),N=6,seen=new Set(),path=[[0,5]];let best=[[0,5]],steps=0;seen.add('0,5');
@@ -2731,36 +2791,35 @@ function gridMaze(len,seed){
 }
 function shuffleR(a,r){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function levelDef(i){
-  const ch=Math.floor(i/12),k=i%12,d=i/107,type=SEQ[k];
-  const L={id:i,ch,type,boss:type==='boss',exp:30+Math.round(i*2.5),candy:50+Math.round(i*3)};
+  const ch=Math.floor(i/12),k=i%12,type=SEQ[k],gt=MAIN_GAME_TIER[ch];
+  const L={id:i,ch,type,boss:k===11,exp:30+Math.round(i*2.5),candy:50+Math.round(i*3)};
   if(L.boss){L.exp*=2;L.candy*=2}
-  if(type==='quiz'||type==='boss'){
-    L.cat=L.boss?'all':CATS[(ch*5+k)%CATS.length].k;L.qt=20-Math.round(d*8);
-    L.need=L.boss?(ch<6?[4,5,5]:[5,5,5]):(ch<3?[3,4,5]:ch<6?[3,4,5]:[4,4,5]);
-    L.goal=`5 題拿到 ${L.need[0]*20} 分以上 · 每題 ${L.qt} 秒（答對 20 分，PASS 扣 10 分）`;
+  if(type==='quiz'){
+    L.dom=chapterDomains(ch)[SEQ.slice(0,k).filter(t=>t==='quiz').length];L.mix=MAIN_MIX[ch];L.qt=MAIN_QT[ch];L.need=[1,3,5];
+    L.goal=`5 題答對 1 題過關、3 題 2 星、全對 3 星 · 每題 ${L.qt} 秒`;
     L.stars=v=>L.need.filter(n=>v>=n*20).length;
   }
   if(type==='maze'){
-    const w=Math.round(34-d*18),cells=8+Math.round(d*20),time=Math.round(20+cells*1.6);
-    L.maze={n:'第 '+(i+1)+' 關',w,time,pts:gridMaze(cells,i*7919+13)};
-    L.goal=`軌道寬 ${w} · ${time} 秒內到達終點`;
-    L.stars=v=>1+(v<=time*.8)+(v<=time*.6);
+    L.tier=gt;L.maze=MAZES[gt-1];const [s3,s2]=MAZE_STAR(gt);
+    L.goal=`${L.maze.d} · ${L.maze.time} 秒內到達終點 · ${s2} 秒內 2 星、${s3} 秒內 3 星`;
+    L.stars=v=>1+(v<=s2)+(v<=s3);
   }
   if(type==='memory'){
-    L.pairs=ch<3?6:ch<6?8:10;L.lim=Math.round(L.pairs*(3-d*.8));L.s2=Math.round(L.pairs*2.5);L.s3=L.pairs*2;
-    L.goal=`${L.pairs} 對牌 · ${L.lim} 次內翻完`;
+    L.tier=gt;L.pairs=MEMORY_TIERS[gt-1].pairs;[L.s3,L.s2,L.lim]=MEMORY_STAR(L.pairs);
+    L.goal=`${L.pairs} 對牌 · 全部翻完就過關 · ${L.s2} 次內 2 星、${L.s3} 次內 3 星`;
     L.stars=v=>v>L.lim?0:1+(v<=L.s2)+(v<=L.s3);
   }
   if(type==='stroop'){
-    L.target=8+Math.round(d*14);L.goal=`30 秒內拿到 ${L.target} 分`;
-    L.stars=v=>v<L.target?0:1+(v>=L.target+3)+(v>=L.target+5);
+    L.tier=gt;const T=STROOP_TIERS[gt-1],[s3,s2]=STROOP_STAR(gt);
+    L.goal=`${T.n} 色${T.rev?'・有反轉題':''} · ${T.sec} 秒 · 1 分以上過關、${s2} 分 2 星、${s3} 分 3 星`;
+    L.stars=v=>v<1?0:1+(v>=s2)+(v>=s3);
   }
   return L;
 }
 const LEVELS=Array.from({length:108},(_,i)=>levelDef(i));
 let chap=Math.min(8,Math.floor((S.maxLv||0)/12));
 function playLevel(i){questView='main';const L=LEVELS[i];
-  if(L.type==='quiz'||L.boss)return startQuiz(L.cat,L);
+  if(L.type==='quiz')return startMainQuiz(L);
   if(L.type==='maze')return mazePlay(0,L);
   if(L.type==='memory')return memStart(L);
   if(L.type==='stroop')return stroopStart(L);
@@ -2777,21 +2836,31 @@ function levelResult(L,v){
   if(!prev){exp=L.exp+stars*5;candy=L.candy+stars*5}
   else if(stars>prev){exp=(stars-prev)*10;candy=(stars-prev)*10}
   else{exp=5;candy=5}
-  S.lvStars[L.id]=Math.max(prev,stars);S.maxLv=Math.max(S.maxLv||0,L.id+1);leaderboardRecord('quest',leaderboardQuestValue());
-  const lvMsg=grant(exp,candy),last=L.id===107;
+  S.lvStars[L.id]=Math.max(prev,stars);const best=S.lvStars[L.id];
+  // Inside the final chapter a level only unlocks the next one at 3 stars.
+  if(L.ch<FINAL_CH||best>=3)S.maxLv=Math.max(S.maxLv||0,L.id+1);
+  leaderboardRecord('quest',leaderboardQuestValue());
+  const lvMsg=grant(exp,candy),last=L.id===107,finalLock=L.ch===FINAL_CH&&best<3&&(S.maxLv||0)<=L.id;
   if(!last){const nc=Math.floor(Math.min(L.id+1,107)/12);if(chOpen(nc))chap=nc}
-  const msg=last?'恭喜你完成全部 108 關！':L.boss?(chOpen(L.ch+1)?`打倒「${CHAPTERS[L.ch].n}」魔王！下一章開啟`:`打倒魔王！這一章全部三星才能前往下一章（還差 ${36-chStars(L.ch)} 顆星）`):stars===3?'三星滿分！':'過關！';
+  const msg=last?(best>=3?'恭喜你完成全部 108 關！':'過關！終極試煉要三顆星才算完成，再挑戰一次吧！')
+    :finalLock?`過關！終極試煉每一關都要三顆星，才能前往下一關（還差 ${3-best} 顆星）`
+    :L.boss?(L.ch===FINAL_CH-1?(chOpen(FINAL_CH)?'打倒魔王！終極試煉殿堂的大門開啟了！':`打倒魔王！前 96 關全部三星，才能進入終極試煉殿堂（還差 ${FINAL_NEED-preStars()} 顆星）`):`打倒「${CHAPTERS[L.ch].n}」魔王！下一章開啟`)
+    :stars===3?'三星滿分！':'過關！';
   openSheet(`<div class="result"><span class="qtag">${tag}</span><div>${starRow(stars,40)}</div><div class="score" style="font-size:2rem">${big}</div><b style="font-family:var(--display);font-size:1.2rem;font-weight:400">${msg}</b><div class="gains"><span class="e">+${exp} 經驗</span><span>+${candy} 星星糖</span></div>${prev?'<p class="hint">重玩的獎勵比較少，拿到更多星星會補發差額。</p>':''}${lvMsg}
-  <div style="display:grid;grid-template-columns:repeat(${last?2:3},1fr);gap:8px;width:100%"><button class="ghost" id="close">返回地圖</button><button class="ghost" id="again">再玩一次</button>${last?'':'<button class="big" id="nextLv">下一關</button>'}</div></div>`);
+  <div style="display:grid;grid-template-columns:repeat(${last?2:3},1fr);gap:8px;width:100%"><button class="ghost" id="close">返回地圖</button><button class="ghost" id="again">再玩一次</button>${last?'':`<button class="big" id="nextLv">${finalLock?'再挑戰三星':'下一關'}</button>`}</div></div>`);
   $('#close').onclick=closeQuiz;$('#again').onclick=()=>playLevel(L.id);
-  if(!last)$('#nextLv').onclick=()=>{if(!chOpen(Math.floor((L.id+1)/12))){closeQuiz();toast('這一章全部三星，才能前往下一章喔！');return}playLevel(L.id+1)};
+  if(!last)$('#nextLv').onclick=()=>{const n=L.id+1,nc=Math.floor(n/12);if(n>(S.maxLv||0)){playLevel(L.id);return}if(!chOpen(nc)){closeQuiz();toast(nc===FINAL_CH?`前 96 關全部三星，才能進入終極試煉殿堂（還差 ${FINAL_NEED-preStars()} 顆星）`:'先打倒這一章的魔王喔！');return}playLevel(n)};
   render();
 }
 const CH_IMG={0:1,1:1,2:1,3:1,4:1,5:1,6:1,7:1,8:1};const chImg=(ch,k)=>CH_IMG[ch]?`chapters/C${String(ch+1).padStart(2,'0')}${k}.webp`:'';
-const CH_GUIDE=[['garden','花花','歡迎來到粉紅花園！先從簡單的關卡開始，慢慢熟悉玩法吧～'],['candy','奶霜','糖果小鎮到處都甜甜的，可是魔王糖果女巫很愛惡作劇喔！'],['sakura','櫻子','櫻花神社很安靜，專心答題，才能拿到三顆星。'],['sea','小汐','珍珠海灣的題目變多了，記得深呼吸，一題一題慢慢來！'],['desert','沙米爾','沙漠星月城開始出現困難題，冒險者要更小心囉。'],['snow','雪鈴','雪原好冷，但極光好美！時間變短了，要動作快一點喔。'],['magic','星芙','歡迎來到魔法學院，這裡的題目很難，好好發揮你的智慧吧！'],['snow','雪鈴','水晶宮殿閃閃發亮，快到終點了，再加油一下！'],['royal','星光女王','你終於來到星光皇家殿堂，證明你就是最厲害的幻想智慧星！']];
+const CH_GUIDE=[['garden','花花','歡迎來到粉紅花園！先從簡單的關卡開始，慢慢熟悉玩法吧～'],['candy','奶霜','糖果小鎮到處都甜甜的，可是魔王糖果女巫很愛惡作劇喔！'],['sakura','櫻子','櫻花神社很安靜，專心答題，才能拿到三顆星。'],['sea','小汐','珍珠海灣的題目變多了，記得深呼吸，一題一題慢慢來！'],['desert','沙米爾','沙漠星月城開始出現困難題，冒險者要更小心囉。'],['snow','雪鈴','雪原好冷，但極光好美！時間變短了，要動作快一點喔。'],['magic','星芙','歡迎來到魔法學院，這裡的題目很難，好好發揮你的智慧吧！'],['snow','雪鈴','水晶宮殿閃閃發亮，快到終點了，再加油一下！'],['royal','星光女王','你終於來到星光皇家殿堂，證明你就是最厲害的幻想智多星！']];
 const chStars=c=>{let t=0;for(let i=c*12;i<c*12+12;i++)t+=S.lvStars[i]||0;return t};
 const chMiss=c=>{const a=[];for(let i=c*12;i<c*12+12;i++)if((S.lvStars[i]||0)<3)a.push(i);return a};
-function chOpen(c){if(c<=0)return true;if((S.chOld||0)>=c)return true;return (S.maxLv||0)>=c*12&&chStars(c-1)>=36&&chOpen(c-1)}
+// Chapters 2-8 open once the previous boss is cleared (1 star); chapter 9 also needs all 96 earlier levels at 3 stars.
+const FINAL_CH=8,FINAL_NEED=288;
+const preStars=()=>{let t=0;for(let i=0;i<96;i++)t+=Math.min(3,S.lvStars[i]||0);return t};
+const preMiss=()=>{const a=[];for(let i=0;i<96;i++)if((S.lvStars[i]||0)<3)a.push(i);return a};
+function chOpen(c){if(c<=0)return true;if((S.chOld||0)>=c)return true;if((S.maxLv||0)<c*12||!chOpen(c-1))return false;return c<FINAL_CH||preStars()>=FINAL_NEED}
 function mapHTML(){if(S.chOld==null){S.chOld=Math.floor((S.maxLv||0)/12);save()}
   const C=CHAPTERS[chap],max=S.maxLv||0,total=Object.values(S.lvStars).reduce((a,b)=>a+b,0);
   const chUnlocked=c=>chOpen(c);
@@ -2804,34 +2873,46 @@ function mapHTML(){if(S.chOld==null){S.chOld=Math.floor((S.maxLv||0)/12);save()}
     <div class="maptop"><h3>闖關地圖 <span class="hint">（${Math.min(max,108)}/108 關 · ${total} 顆星）</span></h3></div>
     ${(g=>`<div class="merchant chguide">${`<img class="merimg" src="merchants/${g[0]}.webp" alt="" style="border-color:${C.ac}66">`}<p><b>${g[1]}</b>「${g[2]}」</p></div>`)(CH_GUIDE[chap])}<div class="chaps">${CHAPTERS.map((c,j)=>`<button data-ch="${j}" aria-pressed="${j===chap}" ${chUnlocked(j)?'':'disabled'}>${j+1}. ${c.n}</button>`).join('')}</div>
     <div class="map">${nodes.join('')}</div>
-    ${chap<8&&!chOpen(chap+1)&&max>=(chap+1)*12?`<div class="goal" style="text-align:center"><b>⭐ 這一章還差 ${36-chStars(chap)} 顆星</b><br>把第 ${chap*12+1}–${chap*12+12} 關全部拿到三顆星，才能前往「${CHAPTERS[chap+1].n}」！<br><small>還沒三星：${chMiss(chap).map(i=>'第 '+(i+1)+' 關').join('、')}</small></div>`:''}
+    ${chap===FINAL_CH-1&&!chOpen(FINAL_CH)&&max>=FINAL_CH*12?(()=>{const miss=preMiss(),by={};miss.forEach(i=>(by[Math.floor(i/12)]=by[Math.floor(i/12)]||[]).push(i));return `<div class="goal" style="text-align:center"><b>🏛️ 終極試煉殿堂：總星數大檢定 ${preStars()} / ${FINAL_NEED}</b><br>把第 1～96 關全部拿到三顆星，大門才會開啟！<br><small>還沒三星的關卡（點一下直接去補）：</small>${Object.entries(by).map(([c,a])=>`<div style="margin-top:6px"><small>${+c+1}. ${CHAPTERS[c].n}</small><br>${a.map(i=>`<button class="ghost" data-lv="${i}" style="padding:2px 8px;margin:2px;font-size:12px">${i+1}</button>`).join('')}</div>`).join('')}</div>`})():''}
+    ${chap===FINAL_CH?'<p class="hint" style="text-align:center">⭐ 終極試煉：每一關都要拿到三顆星，才能前往下一關。</p>':''}
+    ${chap<FINAL_CH-1&&!chOpen(FINAL_CH)?`<p class="hint" style="text-align:center">🏛️ 終極試煉殿堂：前 96 關總星數 ${preStars()} / ${FINAL_NEED}</p>`:''}
     ${max<108?`<p class="hint">下一關：第 ${max+1} 關（${TYPE_N[LEVELS[max].type]}）· ${LEVELS[max].goal}</p>`:'<p class="hint">108 關全部完成！可以回頭把每一關都拿到三顆星。</p>'}
   </div>`;
 }
 
 function levelIntro(i){
   const L=LEVELS[i],C=CHAPTERS[L.ch],st=S.lvStars[i]||0;
-  const how={quiz:'回答 5 題「'+(CATS.find(c=>c.k===L.cat)||{n:''}).n+'」題目。',boss:'章節魔王！5 題綜合題，各種題型都可能出現。',maze:'按住起點，沿著軌道拖到星星，碰到邊就要重來。',memory:'翻開兩張一樣的牌就配對成功，記住每張牌的位置。',stroop:'點出字的顏色，不是字的意思。'}[L.type];
+  const how={quiz:'回答 5 題「'+((PR_DOM[L.dom]||{}).n||'')+'」領域的題目。PASS、應援每天各 3 次。',maze:'按住起點，沿著軌道拖到星星，碰到邊就要重來。',memory:'翻開兩張一樣的牌就配對成功，記住每張牌的位置。',stroop:(L.boss?'章節魔王！':'')+'點出字的顏色，不是字的意思；分數＝答對 − 答錯。'}[L.type];
   const bi=chImg(L.ch,L.boss?'B':'M');
-  openSheet(head(`${C.n} · 第 ${i+1} 關`)+(bi?`<div class="lvbanner ${L.boss?'boss':''}" style="background-image:url(${bi})"><b>${L.boss?'👑 '+C.n+'・魔王關':C.n}</b></div>`:'')+`<p class="qtext">${L.boss?'魔王關：':''}${TYPE_N[L.type]}挑戰</p><p class="hint">${how}</p><div class="goal"><b>過關條件</b><br>${L.goal}</div><div style="text-align:center">${starRow(st,30)}</div><div class="gains"><span class="e">首次過關 +${L.exp} 經驗</span><span>+${L.candy} 星星糖</span></div><button class="big" id="go">開始挑戰</button>`);
+  openSheet(head(`${C.n} · 第 ${i+1} 關`)+(bi?`<div class="lvbanner ${L.boss?'boss':''}" style="background-image:url(${bi})"><b>${L.boss?'👑 '+C.n+'・魔王關':C.n}</b></div>`:'')+`<p class="qtext">${L.boss?'魔王關：':''}${TYPE_N[L.type]}挑戰</p><p class="hint">${how}</p><div class="goal"><b>過關條件</b><br>${L.goal}${L.ch===FINAL_CH?'<br>⭐ 終極試煉：拿到三顆星，才能前往下一關':''}</div><div style="text-align:center">${starRow(st,30)}</div><div class="gains"><span class="e">首次過關 +${L.exp} 經驗</span><span>+${L.candy} 星星糖</span></div><button class="big" id="go">開始挑戰</button>`);
   $('#go').onclick=()=>playLevel(i);
 }
 
 /* ---------- 顏色陷阱 ---------- */
-const COLORS=[['紅','#e53950'],['藍','#2f6bff'],['綠','#1f9d55'],['黃','#e0a800'],['紫','#8e44d6']];
-function stroopStart(L){
-  let score=0,wrong=0,cur=null,t0=0,iv=0;
-  openSheet(head(L?`第 ${L.id+1} 關 · 顏色陷阱`:'顏色陷阱')+`<div class="stroop"><p class="hint" style="text-align:center">點出這個字是用<b>什麼顏色</b>寫的，別被字騙了！答對 +1，答錯 −1。${L?`<br>過關目標：<b>${L.target} 分</b>`:''}</p><div class="mstat" style="width:100%"><span>分數 <b id="ssc">0</b></span><span>剩下 <b id="stm">30</b> 秒</span></div><div class="sword" id="sw">準備</div><div class="sbtns">${COLORS.map((c,i)=>`<button data-c="${i}">${c[0]}</button>`).join('')}</div></div>`);
-  const next=()=>{const w=Math.floor(Math.random()*5);let ink=w;if(Math.random()<.8)while(ink===w)ink=Math.floor(Math.random()*5);cur=ink;const el=$('#sw');el.textContent=COLORS[w][0];el.style.color=COLORS[ink][1]};
-  document.querySelectorAll('.sbtns button').forEach(b=>b.onclick=()=>{if(cur===null)return;if(+b.dataset.c===cur)score++;else{score=Math.max(0,score-1);wrong++;const el=$('#sw');el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')}$('#ssc').textContent=score;next()});
-  let count=3;$('#sw').textContent=count;
-  iv=setInterval(()=>{
-    if(count>0){count--;if(count===0){t0=Date.now();next()}else $('#sw').textContent=count;return}
-    const left=30-(Date.now()-t0)/1000;$('#stm').textContent=Math.max(0,Math.ceil(left));
-    if(left<=0){clearInterval(iv);cur=null;S.best.stroop=Math.max(S.best.stroop||0,score);leaderboardRecord('stroop',{score});if(L){save();return levelResult(L,score)}const candy=score*3,exp=score*3;
-      resultSheet('顏色陷阱',score+' 分',score>=20?'反應神速！':score>=12?'眼明手快！':'多玩幾次會越來越快喔',exp,candy,stroopStart)}
-  },count>0?1000:200);
-  gameStop=()=>clearInterval(iv);
+function stroopProgress(){if(!S.stroopV2){const old=Number.isSafeInteger(S.best?.stroop)&&S.best.stroop>=STROOP_UNLOCK;S.stroopV2={cleared:old?4:0,best:{}}}return S.stroopV2}
+const stroopAcc=(c,w)=>c+w?Math.round(c/(c+w)*100):0;
+function stroopMenu(){
+  const p=stroopProgress();leaderboardInitializeBest();const pb=window.FSGameRecords?.personalBest()?.stroop?.value;
+  openSheet(head('顏色陷阱 · 競賽挑戰')+`<p class="qtext">循序解鎖五種難度</p><p class="hint">分數＝答對 − 答錯。每關拿到 3 星就解鎖下一關。第 3～5 關是競賽區，只有第 5 關列入排行。</p><div class="memory-levels">${STROOP_TIERS.map((m,i)=>{const t=i+1,s3=STROOP_STAR(t)[0];return `<button class="memory-level memory-tier-${t}" data-stroop-level="${t}" ${i>p.cleared?'disabled':''}><span class="memory-level-num">0${t}</span><b>${m.name}</b><span>${m.n} 色・${m.sec} 秒${m.rev?'・反轉':''}</span><small>${i>p.cleared?'先在上一關拿 3 星':t<STROOP_TIERS.length?s3+' 分 3 星解鎖下一關':'此關列入排行'}</small>${p.best?.[t]!=null?`<small>最佳 ${p.best[t]} 分</small>`:''}</button>`}).join('')}</div><section class="memory-best"><b>第 5 關（競賽關）個人最佳：${Number.isSafeInteger(pb?.score)?pb.score+' 分'+(Number.isSafeInteger(pb.correct)?'・正確率 '+stroopAcc(pb.correct,pb.wrong)+'%':''):'尚無紀錄'}</b><p class="hint">排行榜只計第 5 關（5 色、有反轉題、30 秒）：分數高的排前面，同分比正確率。</p></section>`);
+  document.querySelectorAll('[data-stroop-level]').forEach(b=>b.onclick=()=>stroopStart(null,+b.dataset.stroopLevel));
+}
+// Score = correct − wrong (never below 0). Main-line levels use the tier of their chapter and never count for the leaderboard.
+// The game page (mini/stroop/) only reports {correct, wrong}; the score is computed here.
+function stroopStart(L,tier){
+  tier=L?L.tier:Math.max(1,Math.min(STROOP_TIERS.length,Math.trunc(Number(tier)||1)));
+  const T=STROOP_TIERS[tier-1];
+  if(!L&&tier>stroopProgress().cleared+1){stroopMenu();toast('先在上一關拿到 3 星，就能解鎖這一關');return}
+  miniOpen('stroop',{tier,main:L?'1':'0',title:L?`第 ${L.id+1} 關 · 顏色陷阱`:'顏色陷阱 · 第 '+tier+' 關',goal:L?L.goal:''},r=>{
+    const cap=T.sec*20;if(!miniInt(r.correct,0,cap)||!miniInt(r.wrong,0,cap)||r.correct+r.wrong>cap)return false;
+    const correct=r.correct,wrong=r.wrong,s=Math.max(0,correct-wrong),acc=stroopAcc(correct,wrong);
+    if(L){S.best.stroop=Math.max(S.best.stroop||0,s);save();return levelResult(L,s)}
+    const p=stroopProgress();p.best=p.best||{};p.best[tier]=Math.max(p.best[tier]||0,s);const s3=STROOP_STAR(tier)[0],unlocked=s>=s3&&tier>p.cleared;if(s>=s3)p.cleared=Math.max(p.cleared,tier);
+    if(tier===STROOP_COMP)leaderboardRecord('stroop',{score:s,correct,wrong});
+    const candy=s*3,exp=s*3,last=tier>=STROOP_TIERS.length;
+    resultSheet('顏色陷阱 · 第 '+tier+' 關',s+' 分',`答對 ${correct}・答錯 ${wrong}・正確率 ${acc}%`+(unlocked&&!last?'　下一關已解鎖！':!last&&p.cleared<tier?`　拿到 ${s3} 分（3 星）就能解鎖下一關`:''),exp,candy,()=>stroopStart(null,tier));
+    const close=document.getElementById('close');if(close){close.textContent='返回選關';close.onclick=stroopMenu}
+    if(!last&&p.cleared>=tier){const nx=document.createElement('button');nx.className='big';nx.textContent='下一關';nx.style.width='100%';nx.onclick=()=>stroopStart(null,tier+1);document.querySelector('#sheet .dialog-actions')?.append(nx)}
+  },()=>L?closeQuiz():stroopMenu());
 }
 /* MARKET */
 /* ---------- 星星市場（投資玩法） ----------
@@ -2883,6 +2964,8 @@ const mkFmt=t=>{const d=new Date(t+MK_TZ);return `${d.getUTCMonth()+1}/${d.getUT
 function mkLeft(ms){const m=Math.max(0,Math.floor(ms/60e3)),h=Math.floor(m/60);return h>=24?`${Math.floor(h/24)} 天 ${h%24} 小時`:h?`${h} 小時 ${m%60} 分`:`${m} 分鐘`}
 function mkSpark(a,lh){const pts=[];let h=lh;while(pts.length<14&&h>MK_E){if(mkOpenH(h)||pts.length===0)pts.unshift(mkClose(a,h));h-=2}while(pts.length<14)pts.unshift(pts[0]);const mn=Math.min(...pts),mx=Math.max(...pts),r=mx-mn||1;
   const up=pts[13]>=pts[0];return `<svg viewBox="0 0 120 36" class="mkspark" preserveAspectRatio="none"><polyline points="${pts.map((v,i)=>`${(i/13*118+1).toFixed(1)},${(33-(v-mn)/r*30).toFixed(1)}`).join(' ')}" fill="none" stroke="${up?'#e2335b':'#1f9d55'}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></svg>`}
+/* 今日星訊用：最近 24 小時的突發快訊，最新的在前，最多 n 則 */
+function mkHeadlines(n=3){const lh=mkLH(Date.now()),ev=[];for(let h=lh;h>lh-24&&ev.length<n;h--)for(const a of MK_ASSETS){if(ev.length>=n)break;const e=mkEvt(a,h);if(e){const L=e>0?a.up:a.dn;ev.push({ic:a.e,hour:String(h%24).padStart(2,'0')+':00',text:L[mkHash(a.k+h)%L.length],up:e>0,pct:Math.abs((Math.exp(e)-1)*100).toFixed(0)})}}return ev}
 function mkNews(lh){const ev=[];for(let h=lh;h>lh-24;h--)for(const a of MK_ASSETS){const e=mkEvt(a,h);if(e){const L=e>0?a.up:a.dn;ev.push(`<li class="hot"><b>${a.e}</b><span><i class="mkflash">⚡ 突發 ${String(h%24).padStart(2,'0')}:00</i>${L[mkHash(a.k+h)%L.length]}</span><em class="${e>0?'u':'d'}">${e>0?'▲':'▼'} ${Math.abs((Math.exp(e)-1)*100).toFixed(0)}%</em></li>`)}}
   const out=[];for(const a of MK_ASSETS){const c=mkClose(a,lh),p=mkClose(a,lh-24),ch=(c-p)/p;out.push({a,ch})}
   out.sort((x,y)=>Math.abs(y.ch)-Math.abs(x.ch));const day=Math.floor(lh/24);
@@ -2896,15 +2979,14 @@ function mkBody(){
     :st.open?`<div class="mkst open"><b>🟢 交易中・每小時整點更新價格</b><span>下次更新：${mkFmt(nextClose)}（還有 ${mkLeft(nextClose-now)}）</span><span>本週結算：${mkFmt(st.liq)} 收盤，持有的標的<b>全部賣出</b></span></div>`
     :`<div class="mkst close"><b>🌙 週末休市</b><span>週六晚上 8 點到週一早上 8 點休市，價格暫停不動。本週持有的標的已用週六 8 點的價格結算。</span><span>${mkFmt(st.reopen)} 開盤（還有 ${mkLeft(st.reopen-now)}）</span></div>`;
   const can=!bad&&st.open;
-  return `<div class="merchant">${merchantSVG('#1f5f99')}<p><b>星星市場</b>「把星星糖拿來投資吧！價格每小時更新，有漲有跌。記得：每週六晚上 8 點會全部結算，週末休市喔！」</p></div>
+  return `<div class="merchant">${merchantSVG('#1f5f99')}<p><b>星星市場</b>「價格每小時更新、有漲有跌，週六晚上 8 點全部結算！」</p></div>
   ${banner}
   <div class="mksum"><span>投入<b>${inv}</b></span><span>目前價值<b>${val}</b></span><span>損益<b class="${pl>=0?'u':'d'}">${pl>=0?'+':''}${pl}</b></span><span>手上星星糖<b>${S.candy}</b></span></div>
-  <div class="mknews"><b>📰 市場快訊（近 24 小時）</b><ul>${mkNews(day)}</ul></div>
   <div class="mklist">${MK_ASSETS.map(a=>{const c=mkClose(a,day),p=mkClose(a,day-1),p24=mkClose(a,day-24),ch=(c-p)/p,ch24=(c-p24)/p24,h=M.h[a.k],q=mkQty[a.k]||1,has=h&&h.q,hp=has?h.q*c-h.cost:0,maxB=Math.floor(S.candy/c);
     return `<div class="mkc"><div class="mkh"><span class="mke">${a.e}</span>${[0,1,2].some(d=>mkEvt(a,day-d))?'<span class="mkhot">⚡突發</span>':''}<div><b>${a.n}</b><small class="r${a.risk}">${MK_RISK[a.risk]}</small></div><div class="mkp"><b>${c}</b><small class="${ch>=0?'u':'d'}">${ch>=0?'▲':'▼'} ${Math.abs(ch*100).toFixed(1)}%<i class="mkhint">1小時</i></small><small class="${ch24>=0?'u':'d'}" style="font-weight:400">24h ${ch24>=0?'+':''}${(ch24*100).toFixed(1)}%</small></div></div>
       ${mkSpark(a,day)}<small class="mkd">${a.d}</small>
       ${has?`<div class="mkhold">持有 <b>${h.q}</b> 份 · 成本 ${h.cost} · 價值 ${h.q*c} · <b class="${hp>=0?'u':'d'}">${hp>=0?'+':''}${hp}</b></div>`:''}
-      <div class="mkq"><button data-mq="${a.k}" data-d="-1" aria-label="減少">−</button><span>${q} 份 = ${q*c} 糖</span><button data-mq="${a.k}" data-d="1" aria-label="增加">＋</button><button data-mq="${a.k}" data-d="10">+10</button><button data-mq="${a.k}" data-max="${Math.max(1,maxB)}">最多</button></div>
+      <div class="mkq"><span>${q} 份 = ${q*c} 糖</span><button data-mq="${a.k}" data-d="-10" aria-label="減少 10 份">−10</button><button data-mq="${a.k}" data-d="-1" aria-label="減少 1 份">−1</button><button data-mq="${a.k}" data-d="1" aria-label="增加 1 份">+1</button><button data-mq="${a.k}" data-d="10" aria-label="增加 10 份">+10</button><button data-mq="${a.k}" data-max="${Math.max(1,maxB)}">最多</button></div>
       <div class="petacts"><button class="act buy" data-mbuy="${a.k}" ${!can||S.candy<q*c?'disabled':''}>買進 ${q} 份</button><button class="act wear" data-msell="${a.k}" ${!can||!has?'disabled':''}>全部賣出${has?' +'+h.q*c:''}</button></div></div>`}).join('')}</div>
   ${M.log.length?`<div class="mklog"><b>結算紀錄</b>${M.log.map(x=>`<span>${mkFmt(x.t).split('）')[0]}）拿回 ${x.got} 糖 <b class="${x.got-x.cost>=0?'u':'d'}">${x.got-x.cost>=0?'+':''}${x.got-x.cost}</b></span>`).join('')}</div>`:''}
   <details class="soon"><summary>市場規則</summary><div class="mkrules">
@@ -2925,13 +3007,16 @@ function mkBind(p){
 
 /* ---------- 音效與背景音樂（網頁即時合成，不需要音樂檔） ---------- */
 const SND=(()=>{
-  let ctx=null,master=null,sfxBus=null,bgmBus=null,timer=0,nextT=0,step=0,theme='main',started=false;
+  let ctx=null,master=null,sfxBus=null,bgmBus=null,echo=null,timer=0,nextT=0,step=0,theme='main',started=false;
+  /* 水晶回聲：延遲＋回授＋低通，讓水晶鈴聲有空間感（回到 bgmBus，跟著音樂淡入淡出） */
+  function makeEcho(){echo=ctx.createDelay(1.2);echo.delayTime.value=.42;const fb=ctx.createGain(),lp=ctx.createBiquadFilter(),wet=ctx.createGain();
+    fb.gain.value=.38;lp.type='lowpass';lp.frequency.value=3200;wet.gain.value=.5;echo.connect(lp);lp.connect(fb);fb.connect(echo);lp.connect(wet);wet.connect(bgmBus)}
   let cfg={sfx:1,bgm:1};try{Object.assign(cfg,JSON.parse(localStorage.getItem('fz-audio')||'{}'))}catch(e){}
   const keep=()=>{try{localStorage.setItem('fz-audio',JSON.stringify(cfg))}catch(e){}};
   const hz=n=>440*Math.pow(2,(n-69)/12);
   function init(){if(ctx)return true;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;
     ctx=new AC();master=ctx.createGain();master.gain.value=.9;master.connect(ctx.destination);
-    sfxBus=ctx.createGain();sfxBus.gain.value=.55;sfxBus.connect(master);bgmBus=ctx.createGain();bgmBus.gain.value=0;bgmBus.connect(master);return true}
+    sfxBus=ctx.createGain();sfxBus.gain.value=.55;sfxBus.connect(master);bgmBus=ctx.createGain();bgmBus.gain.value=0;bgmBus.connect(master);makeEcho();return true}
   function note(bus,f,t,dur,{type='sine',vol=.3,a=.005,slide=0,dec=null}={}){
     const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f*slide),t+dur);
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+a);g.gain.exponentialRampToValueAtTime(.0008,t+(dec||dur));o.connect(g);g.connect(bus);o.start(t);o.stop(t+(dec||dur)+.05)}
@@ -2950,7 +3035,15 @@ const SND=(()=>{
     jackpot:t=>{for(let i=0;i<10;i++)bell(sfxBus,[72,76,79,84,88][i%5]+(i>4?12:0),t+i*.07,.15,.6)},
     open:t=>{note(sfxBus,hz(67),t,.12,{type:'triangle',vol:.1});note(sfxBus,hz(74),t+.07,.18,{type:'triangle',vol:.1})},
     spooky:t=>{note(sfxBus,330,t,.9,{type:'sine',vol:.1,slide:.5});note(sfxBus,415,t+.05,.9,{type:'sine',vol:.06,slide:.5})},
-    zap:t=>{note(sfxBus,900,t,.18,{type:'sawtooth',vol:.06,slide:.2})}
+    zap:t=>{note(sfxBus,900,t,.18,{type:'sawtooth',vol:.06,slide:.2})},
+    /* 首頁登入音效 */
+    sparkle:t=>[93,97,100].forEach((n,i)=>bell(sfxBus,n,t+i*.045,.05,.55)),
+    chime:t=>{bell(sfxBus,86,t,.11,.7);bell(sfxBus,93,t+.06,.08,.8)},
+    whoosh:t=>{const len=.55,buf=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*len),ctx.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.sin(Math.PI*i/d.length);
+      const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=buf;f.type='bandpass';f.Q.value=1.4;f.frequency.setValueAtTime(500,t);f.frequency.exponentialRampToValueAtTime(3600,t+len);g.gain.value=.09;s.connect(f);f.connect(g);g.connect(sfxBus);s.start(t);
+      [81,86,90].forEach((n,i)=>bell(sfxBus,n,t+.18+i*.07,.06,.6))},
+    softerr:t=>{bell(sfxBus,79,t,.08,.45);bell(sfxBus,74,t+.12,.08,.55)},
+    portal:t=>{note(sfxBus,hz(50),t,1.6,{vol:.09,a:.4,dec:1.6});[62,66,69,74,78,81,86,90].forEach((n,i)=>bell(sfxBus,n,t+i*.075,.1,1));[93,97,100,105].forEach((n,i)=>bell(sfxBus,n,t+.7+i*.05,.06,.9))}
   };
   function play(k){if(!cfg.sfx||!init())return;if(ctx.state!=='running')ctx.resume();const f=SFX[k];if(f)f(ctx.currentTime+.01)}
   /* 背景音樂：依平日／週日／節慶切換曲風 */
@@ -2972,6 +3065,12 @@ const SND=(()=>{
     valentine:{bpm:100,perc:'shaker',root:63,beats:8,prog:[I.C,I.Am,I.F,I.G],scale:[0,2,4,5,7,9,11],arp:[0,1,2,3,2,1,2,1],lead:'flute',acc:'bell',
       mel:[P('4 . . 5 4 . 2 .|5 . . 4 2 . . .|3 . 5 . 7 . 6 .|4 . . . . . . .'),P('4 . . 5 7 . 5 .|4 . . 2 0 . . .|3 . 2 . 1 . 2 .|0 . . . . . . .')]}
   };
+  /* 首頁登入：慢板、水晶鈴主旋律＋夢幻七和弦長音＋星光閃爍（D 大調，原創旋律） */
+  /* v2：改成鋼琴為主——右手鋼琴旋律、左手低音＋分解和弦，底下一層很輕的溫暖長音；拿掉閃爍雜音與水晶金屬泛音 */
+  TH.login={bpm:72,root:62,beats:8,prog:[[0,4,7],[-3,0,4],[-7,-3,0],[-5,-1,2]],scale:[0,2,4,5,7,9,11],arp:[null,0,2,1,null,2,1,2],
+    lead:'piano',leadVol:.1,acc:'piano',accVol:.042,bassInst:'piano',bassVol:.075,bass2:1,perc:null,
+    pad:1,seventh:1,padType:'sine',padVol:.022,padCut:900,
+    mel:[P('4 . . 5 7 . . .|5 . 4 . 2 . . .|2 . . 4 7 . 6 .|4 . . . 3 . . .'),P('7 . . 9 8 . 7 .|5 . . 4 2 . . .|4 . 2 . 0 . 2 .|1 . . . 4 . . .')]};
   TH.moon={...TH.chinese,bpm:96,lead:'flute',perc:'shaker'};TH.qixi={...TH.chinese,bpm:100,lead:'flute',acc:'bell',perc:'shaker'};
   TH.hwevent={...TH.halloween,bpm:138,bass2:1};
   /* 和弦設定：pad＝柔和長音和弦，seventh＝加七和弦更夢幻，strum＝節奏刷和弦 */
@@ -3010,9 +3109,9 @@ const SND=(()=>{
     nationalgame:{bpm:138,root:58,beats:8,prog:I4,scale:MAJ,arp:[0,2,1,2,0,2,1,2],lead:'brass',acc:'pluck',perc:['march','drive'],bass2:1,pad:1,strum:'beat',
       mel:[P('4 . 4 4 5 . 6 .|7 . 7 7 6 . 5 .|4 . 4 4 5 . 6 .|5 . 4 . 2 . . .'),P('7 . 7 . 8 . 9 .|10 . 9 . 8 . 7 .|6 . 5 . 4 . 2 .|0 . . . . . . .')]}
   });
-  function padChord(notes,t,dur){const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=1400;f.Q.value=.3;const gn=ctx.createGain();
-    gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(.045,t+.35);gn.gain.setValueAtTime(.045,t+dur*.7);gn.gain.linearRampToValueAtTime(0,t+dur+.25);f.connect(gn);gn.connect(bgmBus);
-    for(const n of notes)for(const d of [-6,6]){const o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=hz(n);o.detune.value=d;o.connect(f);o.start(t);o.stop(t+dur+.3)}}
+  function padChord(notes,t,dur,T={}){const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=T.padCut||1400;f.Q.value=.3;const gn=ctx.createGain(),pv=T.padVol||.045;
+    gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(pv,t+.35);gn.gain.setValueAtTime(pv,t+dur*.7);gn.gain.linearRampToValueAtTime(0,t+dur+.25);f.connect(gn);gn.connect(bgmBus);
+    for(const n of notes)for(const d of [-6,6]){const o=ctx.createOscillator();o.type=T.padType||'sawtooth';o.frequency.value=hz(n);o.detune.value=d;o.connect(f);o.start(t);o.stop(t+dur+.3)}}
   function strumChord(notes,t,v){notes.forEach((n,i)=>inst('pluck',n,t+i*.018,v))}
   function inst(k,n,t,v){if(k==='pluck'){note(bgmBus,hz(n),t,.4,{type:'triangle',vol:v*1.1,dec:.4});note(bgmBus,hz(n)*2,t,.2,{vol:v*.25,dec:.2})}
     else if(k==='marimba'){note(bgmBus,hz(n),t,.25,{vol:v*1.2,a:.002,dec:.25});note(bgmBus,hz(n)*4,t,.06,{vol:v*.12,a:.001,dec:.06})}
@@ -3022,6 +3121,18 @@ const SND=(()=>{
       g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*.6,t+.03);g.gain.exponentialRampToValueAtTime(.0008,t+.45);const g2=ctx.createGain();g2.gain.value=.25;
       o.connect(f);o2.connect(g2);g2.connect(f);f.connect(g);g.connect(bgmBus);o.start(t);o2.start(t);o.stop(t+.5);o2.stop(t+.5)}
     else if(k==='flute'){note(bgmBus,hz(n),t,.7,{vol:v*.95,a:.06,dec:.75});note(bgmBus,hz(n)*1.004,t,.7,{type:'triangle',vol:v*.3,a:.08,dec:.7})}
+    else if(k==='piano'){/* 鋼琴：快速起音、先快後慢的衰減、泛音由亮轉暗（低通濾波漸收），微微走音的雙弦增加溫暖感，少量送進回聲當作琴房空間 */
+      const f=ctx.createBiquadFilter(),g=ctx.createGain(),len=n<55?2.8:n<70?2.1:1.6;f.type='lowpass';f.Q.value=.4;
+      f.frequency.setValueAtTime(Math.min(6500,hz(n)*9),t);f.frequency.exponentialRampToValueAtTime(Math.max(450,hz(n)*2.2),t+len*.7);f.connect(g);g.connect(bgmBus);
+      if(echo){const s=ctx.createGain();s.gain.value=.16;g.connect(s);s.connect(echo)}
+      for(const [m,vv,dl,det,ty] of [[1,1,1,0,'triangle'],[1,.45,1,2.5,'sine'],[2,.32,.62,0,'sine'],[3,.14,.4,0,'sine'],[4,.07,.26,0,'sine']]){
+        const o=ctx.createOscillator(),og=ctx.createGain();o.type=ty;o.frequency.value=hz(n)*m;o.detune.value=det;
+        og.gain.setValueAtTime(0,t);og.gain.linearRampToValueAtTime(v*vv,t+.004);og.gain.exponentialRampToValueAtTime(v*vv*.32,t+.14);og.gain.exponentialRampToValueAtTime(.0005,t+len*dl);
+        o.connect(og);og.connect(f);o.start(t);o.stop(t+len*dl+.05)}}
+    else if(k==='crystal'){/* 水晶鈴：基音＋八度＋不和諧泛音（像水晶杯），一部分送進回聲 */
+      for(const [m,vv,len,ty] of [[1,.9,1.9,'sine'],[2,.24,1.1,'sine'],[4.2,.07,.5,'triangle']]){const o=ctx.createOscillator(),g=ctx.createGain();o.type=ty;o.frequency.value=hz(n)*m;
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*vv,t+.004);g.gain.exponentialRampToValueAtTime(.0006,t+len);o.connect(g);g.connect(bgmBus);
+        if(echo){const s=ctx.createGain();s.gain.value=.6;g.connect(s);s.connect(echo)}o.start(t);o.stop(t+len+.05)}}
     else bell(bgmBus,n,t,v,1.1)}
   let NB=null;function shaker(t,v){if(!NB){NB=ctx.createBuffer(1,ctx.sampleRate*.06,ctx.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length)}
     const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),gn=ctx.createGain();s.buffer=NB;f.type='highpass';f.frequency.value=6500;gn.gain.value=v;s.connect(f);f.connect(gn);gn.connect(bgmBus);s.start(t)}
@@ -3038,16 +3149,17 @@ const SND=(()=>{
     if(k==='shaker')shaker(t,b%2?.05:.025);
     if(k==='tick'&&b%2===1)note(bgmBus,2400,t,.03,{type:'square',vol:.012});
     if(k==='thump'&&b%(B/2)===0)note(bgmBus,130,t,.2,{vol:.12,slide:.4});
-    if(k==='jingle'&&b%2===1)for(let i=0;i<3;i++)note(bgmBus,3200+Math.random()*2400,t+i*.012,.05,{vol:.009})}
+    if(k==='jingle'&&b%2===1)for(let i=0;i<3;i++)note(bgmBus,3200+Math.random()*2400,t+i*.012,.05,{vol:.009})
+    if(k==='shimmer'){if(b===0)nz(t,1.4,.014,'highpass',8500);if(b===4)for(let i=0;i<4;i++)note(bgmBus,hz(98+[0,4,7,12][i]),t+i*.09,.6,{vol:.012,dec:.6})}}
   function tick(){
     if(!ctx)return;const T=TH[theme]||TH.main,spb=60/T.bpm/2,B=T.beats,L=B*T.prog.length;
     while(nextT<ctx.currentTime+.25){
       const pos=step%L,bar=Math.floor(pos/B),b=pos%B,loop=Math.floor(step/L),ch=T.prog[bar].map(x=>x+T.root);
-      const ai=T.arp[b];if(ai!=null)inst(T.acc,ch[ai%3]+(ai>=3?12:0),nextT,.06);
-      if(b===0||(T.bass2&&b===B/2))note(bgmBus,hz(ch[0]-12),nextT,spb*B*.9,{type:'triangle',vol:.06,a:.06,dec:spb*B*.85});
-      const M=T.mel[loop%T.mel.length],d=M[pos];if(d!=null){const sc=T.scale;inst(T.lead,T.root+12+sc[d%sc.length]+12*Math.floor(d/sc.length),nextT,.085)}
+      const ai=T.arp[b];if(ai!=null)inst(T.acc,ch[ai%3]+(ai>=3?12:0),nextT,T.accVol||.06);
+      if(b===0||(T.bass2&&b===B/2)){if(T.bassInst)inst(T.bassInst,(b===0?ch[0]:ch[2])-12,nextT,T.bassVol||.07);else note(bgmBus,hz(ch[0]-12),nextT,spb*B*.9,{type:'triangle',vol:.06,a:.06,dec:spb*B*.85})}
+      const M=T.mel[loop%T.mel.length],d=M[pos];if(d!=null){const sc=T.scale;inst(T.lead,T.root+12+sc[d%sc.length]+12*Math.floor(d/sc.length),nextT,T.leadVol||.085)}
       {const tri=T.prog[bar].map(x=>x+T.root),full=T.seventh?[...tri,tri[1]+7]:tri,voice=full.map(n=>n<T.root-2?n+12:n);
-        if(T.pad&&b===0)padChord(voice,nextT,spb*B);
+        if(T.pad&&b===0)padChord(voice,nextT,spb*B,T);
         if(T.strum==='beat'&&b%2===0)strumChord(voice.map(n=>n+12),nextT,.035);
         if(T.strum==='off'&&b%4===2)strumChord(voice.map(n=>n+12),nextT,.03);}
       perc(T.perc,b,B,nextT,bar);nextT+=spb;step++}
@@ -3059,16 +3171,16 @@ const SND=(()=>{
   function first(){if(started)return;started=true;init();if(cfg.bgm)startBgm()}
   document.addEventListener('pointerdown',first,{capture:true});document.addEventListener('keydown',first,{capture:true});
   document.addEventListener('visibilitychange',()=>{if(!ctx)return;if(document.hidden)ctx.suspend();else if(started)ctx.resume()});
-  document.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.disabled&&!b.matches('[data-buy],[data-hbuy],[data-wear],.opt,.mc,.hwg,.hwbone,#roll,.sndbtn'))play('tap')},true);
+  document.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.disabled&&!b.matches('[data-buy],[data-hbuy],[data-wear],.opt,.mc,.hwg,.hwbone,#roll,.sndbtn,#sndAll,.cl-mask button'))play('tap')},true);
   function toggle(k){cfg[k]=cfg[k]?0:1;keep();if(k==='bgm'){started=true;cfg.bgm?startBgm():stopBgm()}else if(cfg.sfx)play('tap');paint()}
-  function paint(){const a=document.getElementById('sndBgm'),b=document.getElementById('sndSfx');if(a){a.classList.toggle('off',!cfg.bgm);a.title=cfg.bgm?'關閉音樂':'開啟音樂'}if(b){b.classList.toggle('off',!cfg.sfx);b.title=cfg.sfx?'關閉音效':'開啟音效'}}
-  return {play,toggle,paint,setTheme,cfg,get theme(){return theme},pause(){stopBgm()},resume(){if(cfg.bgm&&started)startBgm()}};
+  // 單一聲音按鈕：音樂與音效一起開關（和節慶小遊戲一致）
+  function toggleAll(){const on=!(cfg.bgm||cfg.sfx);cfg.bgm=cfg.sfx=on?1:0;keep();started=true;if(on){startBgm();play('tap')}else stopBgm();paint()}
+  function paint(){const on=!!(cfg.bgm||cfg.sfx);for(const id of ['sndAll','clSnd']){const a=document.getElementById(id);if(a){a.classList.toggle('off',!on);a.setAttribute('aria-pressed',String(on));a.title=on?'關閉聲音':'開啟聲音';a.setAttribute('aria-label',on?'關閉聲音':'開啟聲音')}}}
+  return {play,toggle,toggleAll,paint,setTheme,cfg,get theme(){return theme},pause(){stopBgm()},resume(){if(cfg.bgm&&started)startBgm()}};
 })();
-(function(){const d=document.createElement('div');d.className='sndbar';
-  d.innerHTML=`<button class="sndbtn" id="homeSettings" aria-label="設定" title="設定">⚙</button><button class="sndbtn" id="sndBgm" aria-label="音樂開關"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="17" cy="16" r="3" fill="currentColor"/></svg></button><button class="sndbtn" id="sndSfx" aria-label="音效開關"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`;
-  {const top=document.querySelector('.top'),save=document.getElementById('saveicon');if(top)top.insertBefore(d,save||null);else document.body.appendChild(d)};$('#homeSettings').onclick=()=>window.FSAccountSettings?FSAccountSettings():openSheet(head('設定')+'<p class="hint">請登入後使用帳號設定。</p>');$('#sndBgm').onclick=()=>SND.toggle('bgm');$('#sndSfx').onclick=()=>SND.toggle('sfx');SND.paint()})();
+(function(){$('#homeSettings').onclick=()=>window.FSAccountSettings?FSAccountSettings():openSheet(head('設定')+'<p class="hint">請登入後使用帳號設定。</p>');$('#sndAll').onclick=()=>SND.toggleAll();SND.paint()})();
 
-function baseTheme(){const map={halloween:'halloween',xmas:'xmas',newyear:'newyear',duanwu:'duanwu',moon:'moon',qixi:'qixi',valentine:'valentine',children:'children',national:'national'};
+function baseTheme(){if(document.querySelector('.cl-mask:not([hidden])'))return 'login';const map={halloween:'halloween',xmas:'xmas',newyear:'newyear',duanwu:'duanwu',moon:'moon',qixi:'qixi',valentine:'valentine',children:'children',national:'national'};
   try{const f=FESTS.find(f=>festState(f).on);if(f)return map[f.k]||'festive'}catch(e){}const dw=new Date().getDay();return dw===0||dw===6?'sunday':'main'}  // 假日（週六、週日）
 SND.setTheme(baseTheme());
 /* ---------- 換裝變身動畫 ---------- */
@@ -3424,7 +3536,7 @@ function checkHashRestore(){
   restoreConfirm($('#hsmsg'),d);$('#hsno').onclick=()=>{closeQuiz();if(!S.char)pickChar(true)};return true;
 }
 function pickChar(first){
-  openSheet(`<div class="result"><span class="qtag">${first?'歡迎來到幻想智慧星':'切換角色'}</span><p class="qtext">選一位角色開始吧！</p><p class="hint">之後隨時可以在衣櫥切換，兩個角色的穿搭會分開保存。</p>
+  openSheet(`<div class="result"><span class="qtag">${first?'歡迎來到幻想智多星':'切換角色'}</span><p class="qtext">選一位角色開始吧！</p><p class="hint">之後隨時可以在衣櫥切換，兩個角色的穿搭會分開保存。</p>
   <div class="pick">${['f','m'].map(k=>{const B=BASES[k];return `<button data-pick="${k}"><svg viewBox="${vb3(k,'all')}">${ONLY_SETS?plainDoll(k):doll3(k,defEq(k),'pk'+k)}</svg><b>${B.n}</b></button>`}).join('')}</div>${first?'<button class="big" id="pkrestore" style="width:100%;background:#3f8f7a">我玩過了，讀取存檔</button>':''}</div>`);
   const pr=$('#pkrestore');if(pr)pr.onclick=()=>openRestore(true);
   document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{S.char=b.dataset.pick;save();closeQuiz();stage(true);toast(`歡迎！你選了${BASES[S.char].n}角色`)});
@@ -3460,8 +3572,9 @@ stage();render();
 if(!window.CLOUD_GATE){if(!checkHashRestore()&&!S.char)pickChar(true)}
 if(S.refundNote){delete S.refundNote;save();setTimeout(()=>toast('04+ 加碼造型已下架，已退回 350 星星糖'),800)}
 </script>
-<script src="home-ui.js?v=20261112-tools28"></script>
-<script src="festgames.js?v=20261111-national1"></script>
-<script src="cloud.js?v=20261113-saveguard40"></script>
+<script src="home-ui.js?v=20261114-desc4"></script>
+<script src="festgames.js?v=20261114-name1"></script>
+<script src="login/login-art.js?v=20261114-art5"></script>
+<script src="cloud.js?v=20261114-noforgot"></script>
 </body></html>
 </body></html>

@@ -44,7 +44,7 @@
     return `<section class="sale-section"><h3>${title}</h3><p class="hint">${group==='flowers'?'收成後可以直接在這裡賣出花朵。':'寵物帶回的幸運物可以在這裡直接賣出。'}</p>${items.length?`<div class="bag">${items.map(([k,n])=>`<div class="bi"><b class="bin">${bagIco(k)}${esc(k)}</b><small>×${n}・每個 ${sellPrice(k)} 星星糖</small><div class="petacts"><button class="act buy" data-sell="${esc(k)}">賣 1 個</button><button class="act wear" data-sellall="${esc(k)}">全賣 +${sellPrice(k)*n}</button></div></div>`).join('')}</div><button class="big sale-total" data-sellgroup="${group}">出售全部${group==='flowers'?'花朵':'幸運物'} +${total} 糖</button>`:`<p class="hint">目前沒有可出售的${group==='flowers'?'花朵':'幸運物'}。</p>`}</section>`;
   }
   function pageHeader(title,description='',backLabel='返回主頁'){
-    return `<header class="content-page-head"><button class="page-back" data-home-view>← ${backLabel}</button><h2 tabindex="-1">${esc(title)}</h2>${description?`<p class="hint">${esc(description)}</p>`:''}</header>`;
+    return `<header class="content-page-head"><button class="page-back" data-home-view aria-label="${esc(backLabel)}">← ${backLabel==='返回主頁'?'返回<span class="pb-long">主頁</span>':backLabel}</button><h2 tabindex="-1">${esc(title)}</h2>${description?`<p class="hint">${esc(description)}</p>`:''}</header>`;
   }
   function finalizePage(panel){
     if(!panel||tab==='lobby'||tab==='quest'&&questView==='hub')return;
@@ -55,7 +55,12 @@
       panel.insertAdjacentHTML('afterbegin',pageHeader(title));
       if(old){old.tabIndex=-1;panel.querySelector('.content-page-head h2').replaceWith(old);if(parent!==panel&&parent?.classList.contains('fh')&&!parent.children.length)parent.remove();}
     }
-    panel.querySelectorAll('#swc,#godecor').forEach(b=>b.parentElement.classList.add('page-tools'));
+    // 衣櫥：切換男女生改成標題旁的小按鈕，不另佔一排
+    {const sw=panel.querySelector('#swc'),h2=panel.querySelector('.content-page-head h2');
+      if(sw&&h2){const from=sw.parentElement,full=sw.textContent.trim(),to=/女生/.test(full)?'女生':'男生';
+        sw.classList.remove('act','ghost2');sw.classList.add('sex-switch');sw.type='button';sw.setAttribute('aria-label',full);sw.title=full;
+        sw.innerHTML=`<span aria-hidden="true">⇄</span>${to}`;h2.appendChild(sw);
+        if(from&&from!==h2&&from.classList.contains('fh')&&!from.children.length&&!from.textContent.trim())from.remove();}}
     panel.querySelectorAll('h2').forEach(h=>{if(h.closest('.content-page-head'))return;const section=document.createElement('h3');for(const a of h.attributes)section.setAttribute(a.name,a.value);while(h.firstChild)section.append(h.firstChild);h.replaceWith(section);});
   }
   function scrollPanel(){
@@ -73,34 +78,33 @@
     delete panel.dataset.questView;
     const active=activeFests(),gifts=(S.pets||[]).reduce((n,p)=>n+(p.gifts||0),0);
     const ready=(S.plots||[]).filter(p=>p&&plantState(p).ready).length;
-    panel.innerHTML=`<section class="lobby-news"><header class="lobby-heading"><div><span class="lobby-eyebrow">YOUR LITTLE UNIVERSE</span><h2 tabindex="-1">今日星訊</h2></div><span class="lobby-spark" aria-hidden="true">✦</span></header><p class="lobby-welcome">歡迎回家，${esc(curName())}。今天也收集一點閃亮的日常。</p><div class="lobby-updates">${active.map(f=>{const g=window.FESTIVAL_CATALOG?.[f.k];return `<button class="lobby-update lobby-event" data-festival-entry data-festival-key="${esc(f.k)}"><span aria-hidden="true">${g?.ic||'✦'}</span><span><b>${esc(f.n)}進行中</b><small>活動至 ${fmtMD(festState(f).end)}</small></span><span aria-hidden="true">→</span></button>`}).join('')}${gifts?`<button class="lobby-update" data-lobby-pets><span aria-hidden="true">🐾</span><span><b>寵物帶回了幸運物</b><small>${gifts} 個等待領取</small></span><span aria-hidden="true">→</span></button>`:''}${ready?`<button class="lobby-update" data-lobby-garden><span aria-hidden="true">✿</span><span><b>花園可以收成了</b><small>${ready} 格花朵已成熟</small></span><span aria-hidden="true">→</span></button>`:''}</div>${!active.length&&!gifts&&!ready?'<p class="lobby-quiet">小屋裡一切安好，準備好就出發吧。</p>':''}<footer class="lobby-footer"><span>換上喜歡的造型，展開今天的冒險。</span><button data-quest-view="hub">前往闖關 <span aria-hidden="true">↗</span></button></footer></section>`;
+    let news=[];try{news=typeof mkHeadlines==='function'?mkHeadlines(3):[]}catch(_){news=[]}
+    const newsHtml=news.length?`<button class="lobby-update lobby-market" data-lobby-market><span aria-hidden="true">📰</span><span><b>星星市場快訊</b>${news.map(n=>`<small class="lobby-news-line"><i>${esc(n.ic)} ${n.hour}</i>${esc(n.text)}<em class="${n.up?'u':'d'}">${n.up?'▲':'▼'} ${n.pct}%</em></small>`).join('')}</span><span aria-hidden="true">→</span></button>`:'';
+    panel.innerHTML=`<section class="lobby-news"><header class="lobby-heading"><div><span class="lobby-eyebrow">YOUR LITTLE UNIVERSE</span><h2 tabindex="-1">今日星訊</h2></div><span class="lobby-spark" aria-hidden="true">✦</span></header><p class="lobby-welcome">歡迎回家，${esc(curName())}。今天也收集一點閃亮的日常。</p><div class="lobby-updates">${active.map(f=>{const g=window.FESTIVAL_CATALOG?.[f.k];return `<button class="lobby-update lobby-event" data-festival-entry data-festival-key="${esc(f.k)}"><span aria-hidden="true">${g?.ic||'✦'}</span><span><b>${esc(f.n)}進行中</b><small>活動至 ${fmtMD(festState(f).end)}</small></span><span aria-hidden="true">→</span></button>`}).join('')}${gifts?`<button class="lobby-update" data-lobby-pets><span aria-hidden="true">🐾</span><span><b>寵物帶回了幸運物</b><small>${gifts} 個等待領取</small></span><span aria-hidden="true">→</span></button>`:''}${ready?`<button class="lobby-update" data-lobby-garden><span aria-hidden="true">✿</span><span><b>花園可以收成了</b><small>${ready} 格花朵已成熟</small></span><span aria-hidden="true">→</span></button>`:''}${newsHtml}</div>${!active.length&&!gifts&&!ready&&!news.length?'<p class="lobby-quiet">小屋裡一切安好，準備好就出發吧。</p>':''}<footer class="lobby-footer"><span>換上喜歡的造型，展開今天的冒險。</span><button data-quest-view="hub">前往闖關 <span aria-hidden="true">↗</span></button></footer></section>`;
   }
   function renderQuest(panel){
     if(!['hub','main','practice','competition'].includes(questView))questView='hub';
     panel.dataset.questView=questView;
     if(questView==='hub'){
-      panel.innerHTML=`${pageHeader('闖關')}<div class="quest-portals"><button class="quest-portal portal-main" data-quest-view="main"><span class="portal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Z"/><path d="M9 3v16m6-14v16"/></svg></span><span class="portal-copy"><b>一般闖關</b><span>九大章節・108 關主線</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-practice" data-quest-view="practice"><span class="portal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 4 5 5M4 20l4-1 13-13a2.1 2.1 0 0 0-5-3L3 16l-1 6Z"/><path d="M13 20h8"/></svg></span><span class="portal-copy"><b>自由練習</b><span>自選題型與難度・不限次數</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-competition" data-quest-view="competition"><span class="portal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10v6a5 5 0 0 1-10 0Z"/><path d="M7 5H3v3a4 4 0 0 0 4 4m10-7h4v3a4 4 0 0 1-4 4m-5 2v6m-4 1h8"/></svg></span><span class="portal-copy"><b>競賽挑戰</b><span>急急棒・翻牌・顏色陷阱</span></span><span class="portal-arrow" aria-hidden="true">→</span></button></div>`;
+      panel.innerHTML=`${pageHeader('闖關')}<div class="quest-portals"><button class="quest-portal portal-main" data-quest-view="main"><span class="portal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Z"/><path d="M9 3v16m6-14v16"/></svg></span><span class="portal-copy"><b>一般闖關</b><span>九大章節・108 關主線</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-practice" data-quest-view="practice"><span class="portal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 4 5 5M4 20l4-1 13-13a2.1 2.1 0 0 0-5-3L3 16l-1 6Z"/><path d="M13 20h8"/></svg></span><span class="portal-copy"><b>自由練習</b><span>九大領域・四種難度・不限次數</span></span><span class="portal-arrow" aria-hidden="true">→</span></button><button class="quest-portal portal-competition" data-quest-view="competition"><span class="portal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10v6a5 5 0 0 1-10 0Z"/><path d="M7 5H3v3a4 4 0 0 0 4 4m10-7h4v3a4 4 0 0 1-4 4m-5 2v6m-4 1h8"/></svg></span><span class="portal-copy"><b>競賽挑戰</b><span>急急棒・翻牌・顏色陷阱</span></span><span class="portal-arrow" aria-hidden="true">→</span></button></div>`;
       return;
     }
     if(questView==='main')panel.innerHTML=pageHeader('一般闖關')+mapHTML();
-    if(questView==='practice')panel.innerHTML=pageHeader('自由練習')+`
-    <details class="page-rules"><summary>計分與獎勵規則</summary><div class="rules"><span>每關 5 題，滿分 100</span><span>答對一題 20 分</span><span>PASS 換題扣 10 分（每回合 2 次）</span><span>✦ 應援過關：每天 3 次，直接答對</span><span>8 秒內答對再 +5 糖</span><span>答對一題 +20 糖，滿分加碼 +50</span></div></details>
-    <div class="diffpick"><span>難度</span>${[['easy','簡單'],['mid','普通'],['hard','困難'],['mix','綜合']].map(([k,n])=>`<button data-qd="${k}" aria-pressed="${(S.qdiff||'mix')===k}">${n}</button>`).join('')}<small>題庫 ${Q.filter(q=>!q[6]).length} 題・數學無限出題・今天應援剩 ${cheerState().left} 次</small></div>
-    <div class="cats"><button class="cat all" data-c="all"><b>綜合大冒險</b><span>${CATS.length} 種題型隨機出題，最考驗實力</span></button>
-    ${CATS.map(c=>`<button class="cat" data-c="${c.k}"><b>${c.n}</b><span>${c.d}</span></button>`).join('')}</div>
+    if(questView==='practice')panel.innerHTML=pageHeader('自由練習')+prHTML()+`
     <div class="records"><span>已闖關 <b>${S.played}</b> 次</span><span>累計答對 <b>${S.correct}</b> 題</span><span>全對 <b>${S.perfect}</b> 次</span><span>已收集套裝 <b>${ITEMS.filter(i=>own(i.id)&&fits(i)).length}/${ITEMS.filter(fits).length}</b></span><button class="linkbtn" id="rstlink">清除遊戲紀錄・重新開始</button></div>`;
     if(questView==='competition')panel.innerHTML=pageHeader('競賽挑戰')+`    <div class="games">
       <button class="game" data-g="maze"><b>電流急急棒</b><span>沿軌道拖曳，勿碰邊或放開。</span><em>最高 +50 糖</em></button>
-      <button class="game" data-g="memory"><b>記憶翻牌</b><span>4／6／8 對，配對次數越少越好。</span><em>最高 +60 糖</em></button>
-      <button class="game" data-g="stroop"><b>顏色陷阱</b><span>看字的顏色作答，限時 30 秒。</span><em>答越多拿越多</em></button>
+      <button class="game" data-g="memory"><b>記憶翻牌</b><span>4～12 對共五關，配對次數越少越好。</span><em>最高 +100 糖</em></button>
+      <button class="game" data-g="stroop"><b>顏色陷阱</b><span>3～5 色共五關，看字的顏色作答，限時 30 秒。</span><em>答越多拿越多</em></button>
     </div>
-<details class="page-rules"><summary>排行收錄規則</summary><p class="hint">急急棒只計第三關秒數；翻牌只計第三關 8 對次數。顏色陷阱完成 30 秒即可列入，包括主線。星空榜由管理員發布更新。</p></details>`;
+<details class="page-rules"><summary>排行收錄規則</summary><p class="hint">三種遊戲各有五關，第 3～5 關是競賽區，只有第 5 關列入排行：急急棒比通關秒數；翻牌比 12 對的翻牌次數，次數相同比用時；顏色陷阱比 5 色 30 秒的分數。主線成績不列入。星空榜由管理員發布更新。</p></details>`;
     panel.querySelector('#rstlink')?.addEventListener('click',playerSheet);
     panel.querySelectorAll('.cat').forEach(b=>b.onclick=()=>startQuiz(b.dataset.c));
+    if(questView==='practice')prBind(panel);
     panel.querySelectorAll('[data-qd]').forEach(b=>b.onclick=()=>{S.qdiff=b.dataset.qd;save();render()});
     panel.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>levelIntro(+b.dataset.lv));
     panel.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{chap=+b.dataset.ch;render()});
-    panel.querySelectorAll('.game').forEach(b=>b.onclick=()=>({maze:mazeMenu,memory:memMenu,stroop:stroopStart})[b.dataset.g]());
+    panel.querySelectorAll('.game').forEach(b=>b.onclick=()=>({maze:mazeMenu,memory:memMenu,stroop:stroopMenu})[b.dataset.g]());
   }
 
   function renderMarket(panel){
@@ -124,6 +128,7 @@
   addEventListener('fs-leaderboard-updated',()=>{if(tab==='rank')renderRank(document.getElementById('panel'));});
   document.addEventListener('click',e=>{
     if(e.target.closest('[data-home-view]')){navigateHome();return;}
+    if(e.target.closest('[data-lobby-market]')){marketTab='stars';tab='market';trySp=null;stage();render();scrollPanel();return;}
     if(e.target.closest('[data-lobby-pets],[data-lobby-garden]')){homeSub=e.target.closest('[data-lobby-pets]')?'pets':'garden';tab='home';stage();render();scrollPanel();return;}
     const destination=e.target.closest('button[data-quest-view]');if(destination){navigateQuest(destination.dataset.questView);return;}
     if(e.target.closest('[data-wallet]'))wallet();
@@ -132,4 +137,12 @@
   });
   window.FSHomeUI={stageActions,updateHud,sellPanel,saleKeys,renderMarket,renderRank,renderQuest,renderLobby,navigateHome,pageHeader,finalizePage,navigateQuest,scrollPanel,options:uiOptions};
   stage();render();
+})();
+
+/* 按鈕狀態：不能按且文字含「解鎖」的按鈕標成 .is-locked（未解鎖樣式）；其他不能按的維持灰色。 */
+(()=>{
+  const LOCK=/解鎖|未開放|尚未開啟/;
+  const tag=root=>root.querySelectorAll('button').forEach(b=>{const locked=b.disabled&&LOCK.test(b.textContent||'');if(b.classList.contains('is-locked')!==locked)b.classList.toggle('is-locked',locked)});
+  const watch=id=>{const el=document.getElementById(id);if(!el)return;tag(el);let q=0;new MutationObserver(()=>{if(q)return;q=requestAnimationFrame(()=>{q=0;tag(el)})}).observe(el,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled']});};
+  watch('panel');watch('sheet');
 })();

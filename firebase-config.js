@@ -1,4 +1,4 @@
-/* ===== 幻想智慧星：Firebase 設定 =====
+/* ===== 幻想智多星：Firebase 設定 =====
    來源：Firebase 後台 → 專案設定 → 你的應用程式 → 網頁應用程式 → SDK 設定（設定）。
    這段設定碼本來就是公開的，資料由 Firestore 安全規則保護。 */
 window.FIREBASE_CONFIG = {

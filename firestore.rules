@@ -1,5 +1,5 @@
 rules_version = '2';
-// 幻想智慧星：Firestore 安全規則（會員、禮物、排行榜私有紀錄及管理員發布）
+// 幻想智多星：Firestore 安全規則（會員、禮物、排行榜私有紀錄及管理員發布）
 // 貼到 Firebase 後台 → Firestore Database → 規則，按「發布」。
 service cloud.firestore {
   match /databases/{db}/documents {
@@ -11,9 +11,11 @@ service cloud.firestore {
     function lbValue(d) {
       let v = d.value;
       return v is map && (
-        (d.type == 'stroop' && v.keys().hasOnly(['score']) && lbInt(v.score))
-        || (d.type == 'memory' && v.keys().hasOnly(['completed','pairs','tries'])
-            && v.completed == true && v.pairs == 8 && lbInt(v.tries) && v.tries >= 8)
+        (d.type == 'stroop' && v.keys().hasOnly(['score','correct','wrong']) && lbInt(v.score)
+            && lbInt(v.correct) && lbInt(v.wrong) && v.score <= v.correct && v.score >= v.correct - v.wrong)
+        || (d.type == 'memory' && v.keys().hasOnly(['completed','pairs','tries','durationMs'])
+            && v.completed == true && v.pairs == 12 && lbInt(v.tries) && v.tries >= 12
+            && lbInt(v.durationMs) && v.durationMs > 0)
         || (d.type == 'maze' && v.keys().hasOnly(['completed','stage','durationMs'])
             && v.completed == true && v.stage == 3 && lbInt(v.durationMs) && v.durationMs > 0)
         || (d.type == 'quest' && v.keys().hasOnly(['cleared','stars']) && lbInt(v.cleared)
@@ -25,15 +27,39 @@ service cloud.firestore {
             && v.count == v.lookIds.size() + v.roomIds.size())
       );
     }
-    // Public rows contain only u (uid), n (name), l (level), m (shown metric); list position is rank.
-    // Only admins publish, so each row is checked by its key whitelist alone (privacy guard).
-    // Six full boards = 18 rows; any per-value check pushes the request past the
-    // 1,000-expression rules limit and the whole publication is denied.
+    // Public rows contain only u (uid), n (name), l (level), m (shown metric), t (epoch ms set);
+    // list position is rank. Admin publications are checked by key whitelist alone (privacy guard):
+    // six full boards = 18 rows, and per-value checks push past the 1,000-expression limit.
     function lbRows(rows) {
       return rows is list && rows.size() <= 3
-        && (rows.size() < 1 || rows[0].keys().hasOnly(['u','n','l','m']))
-        && (rows.size() < 2 || rows[1].keys().hasOnly(['u','n','l','m']))
-        && (rows.size() < 3 || rows[2].keys().hasOnly(['u','n','l','m']));
+        && (rows.size() < 1 || rows[0].keys().hasOnly(['u','n','l','m','t']))
+        && (rows.size() < 2 || rows[1].keys().hasOnly(['u','n','l','m','t']))
+        && (rows.size() < 3 || rows[2].keys().hasOnly(['u','n','l','m','t']));
+    }
+    // A list of at most 3 rows with the row belonging to uid removed (unchanged when absent).
+    function lbWithout(rows, uid) {
+      return rows.size() > 0 && rows[0].u == uid ? rows.removeAll([rows[0]])
+        : rows.size() > 1 && rows[1].u == uid ? rows.removeAll([rows[1]])
+        : rows.size() > 2 && rows[2].u == uid ? rows.removeAll([rows[2]])
+        : rows;
+    }
+    function lbMine(rows, uid) {
+      return rows.size() > 0 && rows[0].u == uid ? rows[0]
+        : rows.size() > 1 && rows[1].u == uid ? rows[1]
+        : rows[2];
+    }
+    // The shown metric a player may publish for themself; same fields as FSLeaderboard.publicValue.
+    function lbPublicMetric(type, m) {
+      return m is map && (
+        (type == 'stroop' && m.keys().hasOnly(['score','correct','wrong']) && lbInt(m.score)
+            && lbInt(m.correct) && lbInt(m.wrong) && m.score <= m.correct)
+        || (type == 'memory' && m.keys().hasOnly(['tries','durationMs']) && lbInt(m.tries)
+            && m.tries >= 12 && lbInt(m.durationMs) && m.durationMs > 0)
+        || (type == 'maze' && m.keys().hasOnly(['durationMs']) && lbInt(m.durationMs) && m.durationMs > 0)
+        || (type == 'quest' && m.keys().hasOnly(['cleared','stars']) && lbInt(m.cleared)
+            && m.cleared <= 108 && lbInt(m.stars) && m.stars <= m.cleared * 3)
+        || (type == 'looks' && m.keys().hasOnly(['count']) && lbInt(m.count))
+      );
     }
     function lbResetTimes(r) {
       return r is map && r.keys().hasOnly(['stroop','memory','maze','quest','looks'])
@@ -50,6 +76,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // 玩家自己改暱稱：name 與 nameAt 必須一起改，nameAt 為伺服器時間，距離上次至少 7 天
+    function nameChangeOk() {
+      let keys = request.resource.data.diff(resource.data).affectedKeys();
+      return !keys.hasAny(['name', 'nameAt']) || (
+        keys.hasAll(['name', 'nameAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 14
+        && request.resource.data.nameAt == request.time
+        && (resource.data.get('nameAt', null) == null
+            || request.time > resource.data.nameAt + duration.value(7, 'd'))
+      );
+    }
+
     // 玩家資料：自己讀寫自己的；管理員可以讀寫全部
     match /players/{uid} {
       allow read: if isMe(uid) || isAdmin();
@@ -61,6 +100,7 @@ service cloud.firestore {
         && resource.data.disabled != true
         && !request.resource.data.diff(resource.data).affectedKeys()
              .hasAny(['adminRev', 'disabled', 'code', 'createdAt'])
+        && nameChangeOk()
       );
       allow delete: if isAdmin();
 
@@ -88,7 +128,7 @@ service cloud.firestore {
               && request.resource.data.achievedAt == request.time
               && lbInt(request.resource.data.clientAchievedAt))
             || (request.resource.data.legacy == true
-              && request.resource.data.type in ['stroop','memory','quest','looks']
+              && request.resource.data.type in ['quest','looks']
               && recordId == 'legacy:' + uid + ':' + request.resource.data.type
               && request.resource.data.achievedAt == null
               && !('clientAchievedAt' in request.resource.data)
@@ -122,7 +162,8 @@ service cloud.firestore {
       }
     }
 
-    // Only the admin publishes. Public documents never contain raw scores or account codes.
+    // The admin publishes full boards; players may only add their own row (lbPlayerWrite).
+    // Public documents never contain raw scores or account codes.
     match /leaderboardConfig/{id} {
       allow read: if id == 'current' && signedIn();
       allow create, update: if id == 'current' && isAdmin()
@@ -132,34 +173,88 @@ service cloud.firestore {
       allow delete: if false;
     }
     match /leaderboardEligibility/{uid} {
-      allow read: if isAdmin();
+      // Players read only their own entry, so excluded accounts skip public writes without a request.
+      allow read: if isMe(uid) || isAdmin();
       allow create, update: if isAdmin()
         && request.resource.data.keys().hasOnly(['excluded','resetAt','updatedAt'])
         && request.resource.data.excluded is bool && lbResetTimes(request.resource.data.resetAt)
         && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
+    // getAfter: an exclusion or reset updates the config and this board in one transaction.
     function lbPublication(d) {
-      let c = get(/databases/$(db)/documents/leaderboardConfig/current).data;
+      let c = getAfter(/databases/$(db)/documents/leaderboardConfig/current).data;
       let b = d.boards;
-      return d.keys().hasOnly(['schemaVersion','enabled','startsAt','configUpdatedAt','publishedAt','boards'])
+      return d.keys().hasOnly(['schemaVersion','enabled','startsAt','configUpdatedAt','publishedAt','boards','lastWriter','lastType'])
         && d.schemaVersion == 1 && d.publishedAt == request.time
+        && (!('lastWriter' in d) || d.lastWriter is string)
         && d.enabled == c.enabled && d.startsAt == c.startsAt && d.configUpdatedAt == c.updatedAt
         && b is map && b.keys().hasOnly(['total','stroop','memory','maze','quest','looks'])
         && lbRows(b.total) && lbRows(b.stroop) && lbRows(b.memory)
         && lbRows(b.maze) && lbRows(b.quest) && lbRows(b.looks);
     }
+    // Realtime update by a player: only their own row on one single board (never total),
+    // other rows kept in order, eligible account, current published config, 2 s apart.
+    function lbPlayerWrite() {
+      let uid = request.auth.uid;
+      let before = resource.data;
+      let after = request.resource.data;
+      let type = after.lastType;
+      let old = before.boards.get(type, []);
+      let rows = after.boards[type];
+      let others = lbWithout(rows, uid);
+      let oldOthers = lbWithout(old, uid);
+      let mine = lbMine(rows, uid);
+      let me = get(/databases/$(db)/documents/players/$(uid)).data;
+      let cfg = get(/databases/$(db)/documents/leaderboardConfig/current).data;
+      let elig = /databases/$(db)/documents/leaderboardEligibility/$(uid);
+      let now = request.time.toMillis();
+      return type in ['stroop','memory','maze','quest','looks']
+        && after.diff(before).affectedKeys().hasOnly(['boards','publishedAt','lastWriter','lastType'])
+        && after.boards.diff(before.boards).affectedKeys().hasOnly([type])
+        && after.lastWriter == uid && after.publishedAt == request.time
+        && request.time > before.publishedAt + duration.value(2, 's')
+        && before.enabled == true && cfg.enabled == true
+        && before.configUpdatedAt == cfg.updatedAt && now >= before.startsAt
+        && me.get('disabled', false) != true
+        && (!exists(elig) || get(elig).data.get('excluded', false) != true)
+        && rows is list && rows.size() <= 3
+        && others.size() == rows.size() - 1
+        && lbWithout(others, uid) == others
+        && others.size() <= oldOthers.size()
+        && others == oldOthers[0:others.size()]
+        && (others.size() == oldOthers.size() || rows.size() == 3)
+        && mine.keys().hasOnly(['u','n','l','m','t']) && mine.keys().hasAll(['u','n','l','m','t'])
+        && mine.n == me.get('name', '玩家')
+        && mine.l is int && mine.l >= 1 && mine.l <= 9999
+        && mine.t is int && mine.t > now - 600000 && mine.t < now + 600000
+        && lbPublicMetric(type, mine.m);
+    }
     match /leaderboardPublic/{id} {
       allow read: if id == 'current' && signedIn();
-      allow create, update: if id == 'current' && isAdmin() && lbPublication(request.resource.data);
+      allow create: if id == 'current' && isAdmin() && lbPublication(request.resource.data);
+      allow update: if id == 'current' && (
+        (signedIn() && lbPlayerWrite())
+        || (isAdmin() && lbPublication(request.resource.data)));
       allow delete: if false;
     }
 
-    // 密碼的副本：只有管理員看得到
+    // 密碼的副本：管理員和玩家本人看得到
+    // 玩家本人可以改密碼：只能動 pw 和 pwAt，格式 1 英文＋6 數字，pwAt 為伺服器時間，距離上次至少 7 天
     match /private/{uid} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || isMe(uid);
       allow create: if isMe(uid);
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        isMe(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pw', 'pwAt'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasAll(['pw', 'pwAt'])
+        && request.resource.data.pw is string
+        && request.resource.data.pw.matches('^[A-Z][0-9]{6}$')
+        && request.resource.data.pwAt == request.time
+        && (resource.data.get('pwAt', null) == null
+            || request.time > resource.data.pwAt + duration.value(7, 'd'))
+      );
+      allow delete: if isAdmin();
     }
 
     // 寄給全部玩家的信

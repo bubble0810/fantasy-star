@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>幻想智慧星・管理後台</title>
+<title>幻想智多星・管理後台</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -84,7 +84,7 @@ td.barc{width:40%;min-width:120px}
 </style>
 </head>
 <body>
-<div id="app"><div class="login card"><h2>幻想智慧星・管理後台</h2><p id="boot">讀取中…</p></div></div>
+<div id="app"><div class="login card"><h2>幻想智多星・管理後台</h2><p id="boot">讀取中…</p></div></div>
 <script>
 (()=>{
 const $=s=>document.querySelector(s),app=$('#app');
@@ -110,7 +110,7 @@ async function loadCatalog(){
   }catch(e){toast('讀不到遊戲清單，請確認 index.html 與 festival-config.js 已一起上傳')}
 }
 const fmt=ts=>ts&&ts.toDate?ts.toDate().toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
-const lvOf=exp=>{let l=1,t=0;while(true){const need=Math.min(100*l,600);if(exp<t+need)return l;t+=need;l++}};
+const lvOf=exp=>{let l=1,t=0;while(l<99){const need=Math.min(100*l,600);if(exp<t+need)return l;t+=need;l++}return 99};   // level cap 99, same as the game
 const lvNeed=l=>Math.min(100*l,600);                       // 這一級升到下一級要多少
 const lvBase=l=>{let t=0;for(let i=1;i<l;i++)t+=lvNeed(i);return t};   // 到達這一級的總經驗值
 const lvInfo=exp=>{const l=lvOf(exp),b=lvBase(l);return {l,cur:exp-b,need:lvNeed(l)}};
@@ -118,7 +118,7 @@ async function log(action,target,detail){try{await db.collection('adminlog').add
 
 /* ---------- 登入 ---------- */
 function loginView(msg){
-  app.innerHTML=`<form class="login card" id="lf"><h2>幻想智慧星・管理後台</h2>
+  app.innerHTML=`<form class="login card" id="lf"><h2>幻想智多星・管理後台</h2>
   <label>管理員 Email<input id="le" type="email" autocomplete="username" required></label>
   <label>密碼<input id="lp" type="password" autocomplete="current-password" required></label>
   <p style="color:var(--warn);margin:0">${esc(msg||'')}</p><button class="btn primary">登入</button></form>`;
@@ -133,7 +133,7 @@ auth.onAuthStateChanged(async u=>{
 
 /* ---------- 外框 ---------- */
 function shell(){
-  app.innerHTML=`<header><h1>幻想智慧星・管理後台</h1><nav>
+  app.innerHTML=`<header><h1>幻想智多星・管理後台</h1><nav>
   <button data-t="players">玩家</button><button data-t="stat">📊 統計</button><button data-t="bc">🎁 送禮物</button><button data-t="leaderboard">🏆 星空榜</button><button data-t="log">操作紀錄</button></nav>
   <div class="who">${esc(ME.email)}<button class="btn" id="lo">登出</button></div></header><main id="main"></main>`;
   app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;view()});
@@ -147,7 +147,7 @@ let LB_ADMIN=null;
 const lbTime=v=>v&&typeof v.toMillis==='function'?Math.floor(v.toMillis()):Number.isSafeInteger(v)?v:0;
 const lbSameTimestamp=(a,b)=>a?.isEqual&&b?.toMillis?a.isEqual(b):lbTime(a)===lbTime(b);
 const lbTaipeiInput=ms=>ms?new Date(ms+8*3600000).toISOString().slice(0,16):'';
-const lbMetric=(type,v)=>type==='stroop'?v.score+' 分':type==='memory'?v.tries+' 次翻牌':type==='maze'?(v.durationMs/1000).toFixed(3)+' 秒':type==='quest'?v.cleared+' 關／'+v.stars+' 顆星':v.count+' 款造型與小屋';
+const lbMetric=(type,v)=>type==='stroop'?v.score+' 分'+(Number.isSafeInteger(v.correct)?'（答對 '+v.correct+'・答錯 '+v.wrong+'）':''):type==='memory'?v.tries+' 次翻牌'+(v.durationMs?'・'+(v.durationMs/1000).toFixed(1)+' 秒':''):type==='maze'?(v.durationMs/1000).toFixed(3)+' 秒':type==='quest'?v.cleared+' 關／'+v.stars+' 顆星':v.count+' 款造型與小屋';
 const lbTimeText=ms=>ms?new Date(ms).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}):'—';
 async function leaderboardView(){
   const owner=ME?.uid,m=$('#main');m.innerHTML='<div class="card"><h2>星空榜管理</h2><p>正在讀取設定…</p></div>';
@@ -175,7 +175,9 @@ async function lbSaveConfig(){
   try{lbAssertOwner();const input=$('#lbStartsAt').value,startsAt=input?Date.parse(input+'+08:00'):0;if(!Number.isSafeInteger(startsAt)||startsAt<0)throw new Error('請輸入有效的台灣時間');const config={schemaVersion:1,enabled:$('#lbEnabled').checked,startsAt,updatedAt:FV.serverTimestamp()};await db.doc('leaderboardConfig/current').set(config);await log('排行榜設定','全站',JSON.stringify({enabled:config.enabled,startsAt}));await leaderboardView();toast('已儲存設定，請重新預覽後發布');}catch(e){toast('設定未儲存：'+(e.code||e.message));}finally{if(button.isConnected)button.disabled=false;}
 }
 async function lbEligibility(uid,type){
-  try{lbAssertOwner();const configRef=db.doc('leaderboardConfig/current'),policyRef=db.doc('leaderboardEligibility/'+uid);await db.runTransaction(async tx=>{const [cs,ps]=await Promise.all([tx.get(configRef),tx.get(policyRef)]),old=ps.exists?ps.data():{excluded:false,resetAt:{}},config=cs.exists?cs.data():{schemaVersion:1,enabled:false,startsAt:0};const resetAt={...(old.resetAt||{})};if(type)resetAt[type]=FV.serverTimestamp();tx.set(policyRef,{excluded:type?old.excluded===true:!old.excluded,resetAt,updatedAt:FV.serverTimestamp()});tx.set(configRef,{schemaVersion:1,enabled:config.enabled===true,startsAt:lbTime(config.startsAt),updatedAt:FV.serverTimestamp()});});await log(type?'排行榜單項重置':'排行榜資格',uid,type||'切換排除資格');await leaderboardView();toast('已更新，請重新預覽並發布');}catch(e){toast('變更失敗：'+(e.code||e.message));}
+  try{lbAssertOwner();const configRef=db.doc('leaderboardConfig/current'),policyRef=db.doc('leaderboardEligibility/'+uid),publicRef=db.doc('leaderboardPublic/current');await db.runTransaction(async tx=>{const [cs,ps,pub]=await Promise.all([tx.get(configRef),tx.get(policyRef),tx.get(publicRef)]),old=ps.exists?ps.data():{excluded:false,resetAt:{}},config=cs.exists?cs.data():{schemaVersion:1,enabled:false,startsAt:0};const resetAt={...(old.resetAt||{})};if(type)resetAt[type]=FV.serverTimestamp();const excluded=type?old.excluded===true:!old.excluded;tx.set(policyRef,{excluded,resetAt,updatedAt:FV.serverTimestamp()});tx.set(configRef,{schemaVersion:1,enabled:config.enabled===true,startsAt:lbTime(config.startsAt),updatedAt:FV.serverTimestamp()});
+      // Takes effect without a new publication: drop the player's rows (all boards on exclusion, one on reset) and keep the board current.
+      const published=pub.exists?pub.data():null;if(published&&cs.exists&&lbSameTimestamp(published.configUpdatedAt,config.updatedAt)){const update={configUpdatedAt:FV.serverTimestamp(),publishedAt:FV.serverTimestamp()};let changed=false;for(const t of type?[type]:excluded?Object.keys(FSLeaderboard.types):[]){const rows=Array.isArray(published.boards?.[t])?published.boards[t]:[],kept=rows.filter(r=>r.u!==uid);if(kept.length!==rows.length){update['boards.'+t]=kept;changed=true;}}if(changed)update.lastWriter=ME.uid;tx.update(publicRef,update);}});await log(type?'排行榜單項重置':'排行榜資格',uid,type||'切換排除資格');await leaderboardView();toast('已更新，公開榜單已同步移除該玩家');}catch(e){toast('變更失敗：'+(e.code||e.message));}
 }
 async function lbPreview(){
   const button=$('#lbPreview');button.disabled=true;$('#lbPublish').disabled=true;
@@ -198,8 +200,8 @@ async function lbPublish(){
   const button=$('#lbPublish');button.disabled=true;
   try{
     lbAssertOwner();const preview=LB_ADMIN.preview;if(!preview)throw new Error('請先讀取成績並預覽');
-    const boards=Object.fromEntries(['total',...Object.keys(FSLeaderboard.types)].map(type=>[type,preview.result.enabled?preview.result.boards[type].map(r=>({u:r.uid,n:r.name,l:Number.isSafeInteger(r.level)?r.level:1,...(type!=='total'&&FSLeaderboard.publicValue(type,r.value)?{m:FSLeaderboard.publicValue(type,r.value)}:{})})):[]]));
-    const auditRef=db.collection('adminlog').doc();const changed=await db.runTransaction(async tx=>{lbAssertOwner();const ref=db.doc('leaderboardConfig/current'),publicRef=db.doc('leaderboardPublic/current');const [latest,published]=await Promise.all([tx.get(ref),tx.get(publicRef)]),config=latest.exists?latest.data():null;if(!config||!lbSameTimestamp(config.updatedAt,preview.config.updatedAt)||config.enabled!==preview.config.enabled||lbTime(config.startsAt)!==lbTime(preview.config.startsAt))throw new Error('設定或資格已變更，請重新預覽');const previous=published.exists?published.data():null;const sameBoards=previous&&Object.keys(boards).every(type=>JSON.stringify(previous.boards?.[type])===JSON.stringify(boards[type]));if(sameBoards&&previous.enabled===config.enabled&&lbTime(previous.startsAt)===lbTime(config.startsAt)&&lbSameTimestamp(previous.configUpdatedAt,config.updatedAt))return false;tx.set(publicRef,{schemaVersion:1,enabled:config.enabled===true,startsAt:lbTime(config.startsAt),configUpdatedAt:config.updatedAt,publishedAt:FV.serverTimestamp(),boards});tx.set(auditRef,{at:FV.serverTimestamp(),admin:ME.email,action:'發布排行榜',target:'全站',detail:JSON.stringify({players:preview.players.length,records:preview.records.length,startsAt:lbTime(preview.config.startsAt)})});return true;});$('#lbStatus').textContent=changed?'已發布，玩家頁面會收到更新。':'榜單內容未變更，已略過重複發布。';toast(changed?'排行榜已發布':'內容未變更，無須重新發布');
+    const boards=Object.fromEntries(['total',...Object.keys(FSLeaderboard.types)].map(type=>[type,preview.result.enabled?preview.result.boards[type].map(r=>({u:r.uid,n:r.name,l:Number.isSafeInteger(r.level)?r.level:1,...(type!=='total'&&FSLeaderboard.publicValue(type,r.value)?{m:FSLeaderboard.publicValue(type,r.value)}:{}),t:Number.isSafeInteger(r.achievedAt)&&r.achievedAt>0?r.achievedAt:0})):[]]));
+    const auditRef=db.collection('adminlog').doc();const changed=await db.runTransaction(async tx=>{lbAssertOwner();const ref=db.doc('leaderboardConfig/current'),publicRef=db.doc('leaderboardPublic/current');const [latest,published]=await Promise.all([tx.get(ref),tx.get(publicRef)]),config=latest.exists?latest.data():null;if(!config||!lbSameTimestamp(config.updatedAt,preview.config.updatedAt)||config.enabled!==preview.config.enabled||lbTime(config.startsAt)!==lbTime(preview.config.startsAt))throw new Error('設定或資格已變更，請重新預覽');const previous=published.exists?published.data():null;const sameBoards=previous&&!previous.lastWriter&&Object.keys(boards).every(type=>JSON.stringify(previous.boards?.[type])===JSON.stringify(boards[type]));if(sameBoards&&previous.enabled===config.enabled&&lbTime(previous.startsAt)===lbTime(config.startsAt)&&lbSameTimestamp(previous.configUpdatedAt,config.updatedAt))return false;tx.set(publicRef,{schemaVersion:1,enabled:config.enabled===true,startsAt:lbTime(config.startsAt),configUpdatedAt:config.updatedAt,publishedAt:FV.serverTimestamp(),boards});tx.set(auditRef,{at:FV.serverTimestamp(),admin:ME.email,action:'發布排行榜',target:'全站',detail:JSON.stringify({players:preview.players.length,records:preview.records.length,startsAt:lbTime(preview.config.startsAt)})});return true;});$('#lbStatus').textContent=changed?'已發布，玩家頁面會收到更新。':'榜單內容未變更，已略過重複發布。';toast(changed?'排行榜已發布':'內容未變更，無須重新發布');
   }catch(e){$('#lbStatus').textContent='發布失敗：'+(e.code||e.message);}finally{if(button.isConnected)button.disabled=false;}
 }
 
@@ -250,7 +252,7 @@ function detailView(){
 
   <h3>基本資料與數值</h3>
   <div class="nums">
-    <label>暱稱<input id="eName" value="${esc(p.name)}" maxlength="24"></label>
+    <label>暱稱<input id="eName" value="${esc(p.name)}" maxlength="28"></label>
     <label>星星糖<input id="eCandy" type="number" min="0" value="${S.candy||0}"></label>
     <label>等級<input id="eLv" type="number" min="1" value="${lvInfo(S.exp||0).l}"></label>
     <label>這一級已累積<input id="eCur" type="number" min="0" value="${lvInfo(S.exp||0).cur}"><small id="eCurHint">這一級滿級是 ${lvInfo(S.exp||0).need}</small></label>

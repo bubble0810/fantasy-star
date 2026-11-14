@@ -1,4 +1,4 @@
-/* ===== 幻想智慧星：雲端模組（登入、雲端存檔、信箱） =====
+/* ===== 幻想智多星：雲端模組（登入、雲端存檔、信箱） =====
    接在遊戲主程式後面載入，不改動遊戲本身的玩法。 */
 (function(){
 if(!window.CLOUD_GATE){
@@ -7,7 +7,7 @@ if(!window.CLOUD_GATE){
   if(cfg.apiKey&&!/請貼上/.test(cfg.apiKey)){
     const m=document.createElement('div');
     m.style.cssText='position:fixed;inset:0;z-index:9999;background:#f4ecfb;display:flex;align-items:center;justify-content:center;padding:16px';
-    m.innerHTML='<div style="background:#fff;border-radius:22px;padding:22px 18px;max-width:400px;width:100%;text-align:center;color:#3b2853;display:flex;flex-direction:column;gap:12px"><div style="font-size:28px;color:#c23258">幻想智慧星</div><p style="margin:0">連不上雲端，暫時不能登入。<br>請確認網路後再試一次。</p><button style="min-height:46px;border:0;border-radius:14px;background:#e2508f;color:#fff;font:inherit;font-size:17px" onclick="location.reload()">重新整理</button></div>';
+    m.innerHTML='<div style="background:#fff;border-radius:22px;padding:22px 18px;max-width:400px;width:100%;text-align:center;color:#3b2853;display:flex;flex-direction:column;gap:12px"><div style="font-size:28px;color:#c23258">幻想智多星</div><p style="margin:0">連不上雲端，暫時不能登入。<br>請確認網路後再試一次。</p><button style="min-height:46px;border:0;border-radius:14px;background:#e2508f;color:#fff;font:inherit;font-size:17px" onclick="location.reload()">重新整理</button></div>';
     document.body.appendChild(m);
   }
   return;
@@ -94,9 +94,39 @@ ${[...Array(14)].map((_,i)=>`.cl-spark i:nth-child(${i+1}){--a:${i*360/14}deg;an
 `;document.head.appendChild(css);
 
 /* ---------- 登入畫面 ---------- */
-const mask=document.createElement('div');mask.className='cl-mask';mask.innerHTML=`<div class="cl-shell"><section class="cl-hero" aria-label="幻想智慧星遊戲介紹"><div class="cl-hero-copy"><span class="cl-kicker">FANTASY STAR</span><h1>幻想智慧星</h1><p>闖關集星・換裝佈置・節慶冒險</p></div><div class="cl-showcase"><img class="cl-model cl-model-boy" src="outfits/M21.webp" alt="男生造型展示"><img class="cl-model cl-model-girl" src="outfits/F21.webp" alt="女生造型展示"><span class="cl-showcase-note">造型展示・需於遊戲內取得</span></div><div class="cl-promo" id="clPromo"></div></section><div class="cl-card" id="clCard"><div class="cl-brand">歡迎來到星世界<small>正在連線中…</small></div></div></div>`;
+const mask=document.createElement('div');mask.className='cl-mask';mask.innerHTML=`<div class="cl-shell"><section class="cl-hero" aria-label="幻想智多星遊戲介紹"><div class="cl-hero-copy"><span class="cl-kicker">FANTASY STAR</span><h1>幻想智多星</h1><p>闖關集星・換裝佈置・節慶冒險</p></div><div class="cl-promo" id="clPromo"></div></section><div class="cl-card" id="clCard"><div class="cl-brand">歡迎來到星世界<small>正在連線中…</small></div></div></div>`;
 try{const events=FESTS.filter(f=>festState(f).on);mask.querySelector('#clPromo').textContent=events.map(f=>f.n+'限定活動・至 '+fmtMD(festState(f).end)).join(' ／ ')}catch(_){};
+/* 首頁背景圖：依 login/login-art.js 的設定挑圖（節慶 → 自訂日期 → 白天／夜晚 → 預設），讀不到就換下一張 */
+(function loginArt(){
+  const A=window.FS_LOGIN_ART||{},now=new Date(),md=now.getMonth()*100+100+now.getDate(),list=[];
+  try{for(const f of FESTS)if(festState(f).on&&A.festivals&&A.festivals[f.k])list.push(A.festivals[f.k])}catch(_){}
+  const toMD=s=>{const m=/^(\d{1,2})-(\d{1,2})$/.exec(String(s||''));return m?(+m[1])*100+(+m[2]):null};
+  for(const d of A.dates||[]){const a=toMD(d.from),b=toMD(d.to);if(a==null||b==null||!d.img)continue;if(a<=b?(md>=a&&md<=b):(md>=a||md<=b))list.push(d.img)}
+  if(A.dayNight&&A.dayNight.day&&A.dayNight.night){const h=now.getHours(),ds=A.dayNight.dayStart??6,ns=A.dayNight.nightStart??18;list.push(h>=ds&&h<ns?A.dayNight.day:A.dayNight.night)}
+  // 輪流：daily＝每天換一張、random＝每次打開隨機
+  if(A.rotate&&Array.isArray(A.rotate.images)&&A.rotate.images.length){const R=A.rotate.images,day=Math.floor((now-new Date(now.getFullYear(),0,0))/864e5);
+    const i=A.rotate.mode==='random'?Math.floor(Math.random()*R.length):day%R.length;for(let k=0;k<R.length;k++)list.push(R[(i+k)%R.length])}
+  list.push(A.default||'login/bg.webp');
+  // 每張圖可另設：hero＝圖片上方保留給標題與人物的比例（0～1），bottom＝頁面底色
+  const opt=src=>(A.images&&A.images[src])||{};
+  const tryAt=i=>{if(i>=list.length)return;const img=new Image();img.onload=()=>{const o=opt(list[i]);mask.style.setProperty('--login-art',`url("${list[i]}")`);
+    if(o.hero>0&&o.hero<1)mask.style.setProperty('--login-hero',String(o.hero*1.5));if(o.bottom)mask.style.setProperty('--login-bottom',o.bottom);mask.classList.add('has-art')};img.onerror=()=>tryAt(i+1);img.src=list[i]};
+  tryAt(0);
+})();
 document.body.appendChild(mask);
+/* 首頁音樂與音效：登入畫面顯示時播放「login」主題；進入遊戲時換回遊戲音樂並播放傳送門音效 */
+(function loginSound(){
+  const S=()=>(typeof SND!=='undefined'?SND:null),play=k=>{try{S()&&S().play(k)}catch(_){}};
+  mask.insertAdjacentHTML('beforeend','<button type="button" class="cl-snd" id="clSnd" aria-label="聲音開關" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="snd-wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="snd-mute" d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>');
+  mask.querySelector('#clSnd').onclick=e=>{e.stopPropagation();try{S().toggleAll()}catch(_){}};
+  const sync=()=>{try{if(!S())return;if(mask.hidden){S().setTheme(typeof baseTheme==='function'?baseTheme():'main')}else S().setTheme('login');S().paint()}catch(_){}};
+  let wasHidden=mask.hidden;
+  new MutationObserver(()=>{const h=mask.hidden;if(h===wasHidden)return;wasHidden=h;sync();if(h)play('portal')}).observe(mask,{attributes:true,attributeFilter:['hidden']});
+  sync();
+  let lastSpark=0;
+  mask.addEventListener('focusin',e=>{if(e.target.matches('input')&&Date.now()-lastSpark>500){lastSpark=Date.now();play('sparkle')}});
+  mask.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled||b.id==='clSnd')return;play(b.id==='clSwitch'?'whoosh':'chime')},true);
+})();
 const card=()=>document.getElementById('clCard');
 const $c=id=>document.getElementById(id);
 let lastCode='',justMade=null,newChar=null,pinMem=null,regDraft=null,regCreating=false;
@@ -105,28 +135,35 @@ function loginView(){
   mask.dataset.step=loginMode==='new'?'1':'0';
   const why=outMsg;outMsg='';setTimeout(()=>{if(why)err(why)},0);
   const isNew=loginMode==='new';
-  card().innerHTML=`<div class="cl-brand">${isNew?'建立你的星世界':'歡迎回家'}<small>${isNew?'從一位角色、一間小屋開始':'登入帳號，繼續你的冒險'}</small></div>${isNew?registrationSteps(1):''}
-  <div class="cl-tabs" role="tablist"><button type="button" role="tab" id="clTIn" aria-selected="${!isNew}">登入</button><button type="button" role="tab" id="clTNew" aria-selected="${isNew}">建立新帳號</button></div>
-  <form id="clForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="${isNew?'off':'on'}">
-    <label>帳號<small>${isNew?'自己取一個，英文字母或數字，4～12 個字':'英文字母或數字，4～12 個字'}</small><input id="clCode" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="12" value="${lastCode}"></label>
-    <label>密碼<small>${isNew?'1 個英文字母＋6 個數字，例如 K381427':'1 個英文字母＋6 個數字'}</small><input id="clPin" type="password" inputmode="text" pattern="[A-Za-z][0-9]{6}" autocomplete="${isNew?'new-password':'current-password'}" maxlength="7"></label>
-    ${isNew?'<label>再輸入一次密碼<small>確認沒有打錯</small><input id="clPin2" type="password" inputmode="text" pattern="[A-Za-z][0-9]{6}" autocomplete="new-password" maxlength="7"></label>':''}
+  const ICO_USER='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z" fill="currentColor"/></svg>';
+  const ICO_LOCK='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2.5" fill="currentColor"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>';
+  const ICO_EYE='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>';
+  const field=(id,ico,label,hint,attrs,eye)=>`<label class="cl-field"><span class="cl-sr">${label}</span><span class="cl-ico">${ico}</span><input id="${id}" placeholder="${label}" aria-describedby="${id}H" ${attrs}>${eye?`<button type="button" class="cl-eye" data-eye="${id}" aria-label="顯示密碼" aria-pressed="false">${ICO_EYE}</button>`:''}</label><small class="cl-hint" id="${id}H">${hint}</small>`;
+  const pwAttrs=ac=>`type="password" inputmode="text" pattern="[A-Za-z][0-9]{6}" autocomplete="${ac}" maxlength="7"`;
+  card().innerHTML=`<div class="cl-brand">${isNew?'建立玩家帳號':'歡迎回來'}<small>${isNew?'Create Account':'Welcome Back'}</small></div>${isNew?registrationSteps(1):''}
+  <form id="clForm" class="cl-form" autocomplete="${isNew?'off':'on'}">
+    ${field('clCode',ICO_USER,'玩家帳號',isNew?'自己取一個，英文字母或數字，4～12 個字；不要用真實姓名或學號':'英文字母或數字，4～12 個字',`autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="12" value="${lastCode}"`)}
+    ${field('clPin',ICO_LOCK,'密碼','1 個英文字母＋6 個數字'+(isNew?'，例如 K381427':''),pwAttrs(isNew?'new-password':'current-password'),true)}
+    ${isNew?field('clPin2',ICO_LOCK,'再輸入一次密碼','確認沒有打錯',pwAttrs('new-password'),true):''}
     <p class="cl-err" id="clErr" role="alert"></p>
-    <button class="cl-go" id="clGo">${isNew?'下一步':'進入遊戲'}</button>
+    <button class="cl-go" id="clGo"><span>${isNew?'下一步':'登入遊戲'}</span><small>${isNew?'NEXT':'SIGN IN'}</small></button>
   </form>
-  <p class="cl-note">${isNew?'請記住你的帳號和 7 碼密碼，換電腦或手機時要用。<br>帳號不要用真實姓名或學號喔！':'第一次玩？請按上面的「建立新帳號」。<br>忘記密碼請找老師或管理員。在學校或公用電腦玩完，記得按「登出」。'}</p>`;
+  <button type="button" class="cl-sub cl-alt" id="clSwitch"><span>${isNew?'已有帳號，返回登入':'建立玩家帳號'}</span><small>${isNew?'BACK TO SIGN IN':'CREATE ACCOUNT'}</small></button>
+  <p class="cl-note"><span class="cl-shield" aria-hidden="true">🛡</span>${isNew?'請記住你的帳號和 7 碼密碼，換電腦或手機時要用。':'登入帳號，保存遊玩紀錄。在公用電腦玩完記得登出。'}</p>`;
   const sw=m=>{if(loginMode===m)return;lastCode=$c('clCode').value.trim();loginMode=m;loginView()};
-  $c('clTIn').onclick=()=>sw('in');$c('clTNew').onclick=()=>sw('new');
+  $c('clSwitch').onclick=()=>sw(isNew?'in':'new');
+  card().querySelectorAll('[data-eye]').forEach(b=>b.onclick=()=>{const f=$c(b.dataset.eye),on=f.type==='password';f.type=on?'text':'password';b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',on?'隱藏密碼':'顯示密碼')});
+
   $c('clCode').addEventListener('input',e=>{e.target.value=e.target.value.toLowerCase().replace(/[^a-z0-9]/g,'')});
   ['clPin','clPin2'].forEach(id=>{const f=$c(id);if(f)f.addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,7)})});
   $c('clForm').onsubmit=e=>{e.preventDefault();doLogin()};
   setTimeout(()=>{const f=$c(lastCode?'clPin':'clCode');if(f)f.focus()},50);
 }
-const err=t=>{const e=$c('clErr');if(e)e.textContent=t};
-function busy(b,t){const g=$c('clGo');if(g){g.disabled=b;if(b)g.textContent='請稍候…';else if(t)g.textContent=t}}
+const err=t=>{const e=$c('clErr');if(e)e.textContent=t;if(t){try{SND.play('softerr')}catch(_){}}};
+function busy(b,t){const g=$c('clGo');if(g){g.disabled=b;const s=g.querySelector('span');if(b){if(s)s.textContent='請稍候…';else g.textContent='請稍候…'}else if(t){if(s)s.textContent=t;else g.textContent=t}}}
 const netErr=e=>e.code==='auth/network-request-failed'?'網路好像斷了，請檢查網路':e.code==='auth/too-many-requests'?'錯太多次了，請休息一下再試':null;
 async function doLogin(){
-  const isNew=loginMode==='new',btn=isNew?'下一步':'進入遊戲';
+  const isNew=loginMode==='new',btn=isNew?'下一步':'登入遊戲';
   const code=$c('clCode').value.trim(),pin=$c('clPin').value.trim().toUpperCase();
   if(!/^[a-z0-9]{4,12}$/.test(code))return err('帳號要用 4～12 個英文字母或數字');
   if(!/^[A-Z][0-9]{6}$/.test(pin))return err('密碼要用 1 個英文字母＋6 個數字，例如 K381427');
@@ -136,7 +173,7 @@ async function doLogin(){
     busy(true);
     try{await auth.signInWithEmailAndPassword(emailOf(code),pwStr(pin))}
     catch(e){busy(false,btn);$c('clPin').value='';
-      err(netErr(e)||'帳號或密碼不對，再檢查一次。第一次玩請按上面的「建立新帳號」')}
+      err(netErr(e)||'帳號或密碼不對，再檢查一次。第一次玩請按下方的「建立玩家帳號」')}
     return}
   // 註冊資料先只放在本機記憶體；此時不建立 Firebase 帳號。
   regDraft={code,pin,char:null,name:''};newChar=null;regCharView();
@@ -156,7 +193,7 @@ function regNameView(){
   mask.dataset.step='3';
   card().innerHTML=`${registrationSteps(3)}<div class="cl-brand">取一個暱稱<small>遊戲裡大家看到的名字</small></div>
   <form id="clRNF" style="display:flex;flex-direction:column;gap:12px">
-    <label>暱稱<small>最多 6 個中文字或 12 個英數字，可混合，不可含符號或空格</small><input id="clRName" maxlength="24" value="${esc(regDraft.name||'')}"></label><small class="nickname-count" id="clRNameCount" aria-live="polite"></small>
+    <label>暱稱<small>最多 7 個中文字或 14 個英數字，可混合，不可含符號或空格</small><input id="clRName" maxlength="28" value="${esc(regDraft.name||'')}"></label><small class="nickname-count" id="clRNameCount" aria-live="polite"></small>
     <p class="cl-err" id="clErr" role="alert"></p>
     <button class="cl-go">下一步</button><button type="button" class="cl-sub" id="clRegCharBack">重新選角色</button>
   </form>`;
@@ -220,7 +257,7 @@ function charView(user){
 function nameView(user){
   card().innerHTML=`<div class="cl-brand">取一個暱稱<small>遊戲裡大家看到的名字</small></div>
   <form id="clNF" style="display:flex;flex-direction:column;gap:12px">
-    <label>暱稱<small>最多 6 個中文字或 12 個英數字，可混合，不可含符號或空格</small><input id="clName" maxlength="24"></label><small class="nickname-count" id="clNameCount" aria-live="polite"></small>
+    <label>暱稱<small>最多 7 個中文字或 14 個英數字，可混合，不可含符號或空格</small><input id="clName" maxlength="28"></label><small class="nickname-count" id="clNameCount" aria-live="polite"></small>
     <p class="cl-err" id="clErr" role="alert"></p>
     <button class="cl-go" id="clGo">開始玩！</button>
     <button type="button" class="cl-sub" id="clBackC">重新選角色</button>
@@ -427,13 +464,67 @@ function lbFlush(s=lbSession){
         });
         s.outbox.shift();lbStore(s);
       }
-      if(lbCurrent(s))lbNotify({syncStatus:s.outbox.length?'pending':'synced',pending:s.outbox.length,errorCode:null});
+      if(lbCurrent(s)){lbNotify({syncStatus:s.outbox.length?'pending':'synced',pending:s.outbox.length,errorCode:null});lbRetryPublic(s);}
     }catch(e){if(lbCurrent(s))lbNotify({syncStatus:'pending',pending:s.outbox.length,errorCode:e.code||e.message||'sync-failed'});}
     finally{s.flushing=null;}
   })();return s.flushing;
 }
+/* Realtime single boards: after a new best, a player places only their own row with a transaction.
+   Filters (no network): eligibility/config read once per session, best since reset/start, cached 3rd place. */
+function lbContext(s){
+  if(s.ctx)return Promise.resolve(s.ctx);
+  if(!s.ctxLoading)s.ctxLoading=Promise.all([db.doc('leaderboardEligibility/'+s.uid).get(),db.doc('leaderboardConfig/current').get()])
+    .then(([e,c])=>{if(lbCurrent(s))s.ctx={eligibility:e.exists?e.data():{},config:c.exists?c.data():null};return s.ctx;})
+    .finally(()=>{s.ctxLoading=null;});
+  return s.ctxLoading;
+}
+function lbRankBest(){const v=S.leaderboardV1=S.leaderboardV1||{};return v.rankBest=v.rankBest&&typeof v.rankBest==='object'?v.rankBest:{};}
+async function lbConsiderPublic(s,type,value){
+  try{
+    if(!lbCurrent(s)||!Object.hasOwn(FSLeaderboard.types,type))return;
+    const m=FSLeaderboard.publicValue(type,value);if(!m)return;
+    const ctx=await lbContext(s);if(!lbCurrent(s)||!ctx)return;
+    const config=s.config||ctx.config;
+    if(ctx.eligibility.excluded===true||!config||config.enabled!==true||lbMillis(config.startsAt)>Date.now())return;
+    // Filter 1: only a best since this type's reset and the season start can change the board.
+    const store=lbRankBest(),old=store[type],reset=lbMillis(ctx.eligibility.resetAt?.[type])||0,start=lbMillis(config.startsAt)||0;
+    const baseline=old&&old.at>reset&&old.at>=start?FSLeaderboard.publicValue(type,old.value):null;
+    if(baseline&&!FSLeaderboard.publicBetter(type,m,baseline))return;
+    store[type]={value:JSON.parse(JSON.stringify(value)),at:Date.now()};
+    // Filter 2: a cached board for this config that the score cannot enter.
+    const cached=s.published||s.lastPublic,rows=cached?.boards?.[type];
+    if(cached&&lbSameTimestamp(cached.configUpdatedAt,config.updatedAt)&&Array.isArray(rows)&&!FSLeaderboard.placePublic(type,rows,{u:s.uid,m}))return;
+    s.publicPending[type]=value;
+    await lbSubmitPublic(s,type,value);
+  }catch(e){}
+}
+async function lbSubmitPublic(s,type,value,attempt=0){
+  if(!lbCurrent(s)||s.publicPending[type]!==value)return;
+  const ref=db.doc('leaderboardPublic/current'),m=FSLeaderboard.publicValue(type,value);
+  try{
+    const ctx=await lbContext(s);
+    if(!lbCurrent(s)||s.publicPending[type]!==value)return;
+    if(!ctx||ctx.eligibility.excluded===true){delete s.publicPending[type];return;}
+    await db.runTransaction(async tx=>{
+      const snap=await tx.get(ref);if(!snap.exists||!lbCurrent(s))return false;
+      const d=snap.data(),config=s.config||s.ctx?.config;s.lastPublic=d;
+      if(d.enabled!==true||!config||!lbSameTimestamp(d.configUpdatedAt,config.updatedAt))return false;
+      const rows=FSLeaderboard.placePublic(type,d.boards?.[type],{u:s.uid,n:ME.name,l:Math.max(1,FSGameRecords.levelOf(S.exp|0)|0),m,t:Date.now()});
+      if(!rows)return false; // board unchanged (e.g. the threshold rose while waiting): no write
+      tx.update(ref,{['boards.'+type]:rows,publishedAt:FV.serverTimestamp(),lastWriter:s.uid,lastType:type});
+      return true;
+    },{maxAttempts:3});
+    if(s.publicPending[type]===value)delete s.publicPending[type];
+  }catch(e){
+    if(!lbCurrent(s))return;
+    // permission-denied is usually the 2-second spacing after another player's write; settings may also have changed.
+    if(e.code==='permission-denied'){s.ctx=null;if(attempt<2){setTimeout(()=>void lbSubmitPublic(s,type,value,attempt+1),2500+Math.random()*2000);return;}delete s.publicPending[type];}
+    // Other failures (offline) keep the entry; it is retried after the next successful record sync.
+  }
+}
+function lbRetryPublic(s){for(const [type,value] of Object.entries(s.publicPending||{}))void lbSubmitPublic(s,type,value);}
 function lbPublic(data){
-  const boards={};for(const type of ['total',...Object.keys(FSLeaderboard.types)])boards[type]=(Array.isArray(data.boards?.[type])?data.boards[type]:[]).slice(0,3).map((r,i)=>({uid:String(r.u||''),name:String(r.n||'玩家'),level:r.l,rank:i+1,...(type!=='total'?{value:FSLeaderboard.publicValue(type,r.m)}:{})}));
+  const boards={};for(const type of ['total',...Object.keys(FSLeaderboard.types)])boards[type]=(type==='total'&&data.lastWriter?FSLeaderboard.publicTotal(data.boards):Array.isArray(data.boards?.[type])?data.boards[type]:[]).slice(0,3).map((r,i)=>({uid:String(r.u||''),name:String(r.n||'玩家'),level:r.l,rank:i+1,...(type!=='total'?{value:FSLeaderboard.publicValue(type,r.m)}:{})}));
   return {enabled:data.enabled===true,startsAt:lbMillis(data.startsAt)||0,boards};
 }
 // Spark: subscribe to the shared boards only while their panel is visible.
@@ -458,14 +549,17 @@ if(lbPanel)new MutationObserver(lbWatchPublic).observe(lbPanel,{childList:true})
 document.addEventListener('visibilitychange',lbWatchPublic);
 function lbStart(uid,isNew=false,previous=null){
   lbStop();if(!window.FSLeaderboard||!window.FSGameRecords||typeof db.runTransaction!=='function'){lbNotify({syncStatus:'unavailable',publicStatus:'unavailable'});return;}
-  let outbox=[];try{const stored=JSON.parse(localStorage.getItem(lbKey(uid))||'[]');if(Array.isArray(stored))outbox=stored.filter(r=>/^r_[0-9a-f-]{36}$/i.test(r.id)&&Object.hasOwn(FSLeaderboard.types,r.type)&&r.value&&Number.isSafeInteger(r.clientAchievedAt));}catch(e){}
+  let outbox=[];try{const stored=JSON.parse(localStorage.getItem(lbKey(uid))||'[]');if(Array.isArray(stored))outbox=stored.filter(r=>/^r_[0-9a-f-]{36}$/i.test(r.id)&&Object.hasOwn(FSLeaderboard.types,r.type)&&r.value&&Number.isSafeInteger(r.clientAchievedAt)&&!(r.type==='memory'&&r.value.pairs!==12)&&!(r.type==='stroop'&&!Number.isSafeInteger(r.value.correct))); /* drop old-format memory/stroop records: the rules now reject them and they would block the queue */}catch(e){}
   const collection=FSLeaderboard.collectionValue(S,FSGameRecords.catalog());
-  const s=lbSession={uid,isNew,initial:JSON.parse(JSON.stringify(S)),outbox,legacySkip:new Set(outbox.map(r=>r.type)),imported:false,flushing:null,unsubs:[],collection:lbFingerprint(collection),config:null,published:null};
-  const modern=s.initial.leaderboardV1?.modernTypes||{};let frozen=null;try{const stored=JSON.parse(localStorage.getItem(lbLegacyKey(uid))||'null');if(stored&&stored.uid===uid&&Array.isArray(stored.records))frozen=stored.records;}catch(e){}
+  const s=lbSession={uid,isNew,initial:JSON.parse(JSON.stringify(S)),outbox,legacySkip:new Set(outbox.map(r=>r.type)),imported:false,flushing:null,unsubs:[],collection:lbFingerprint(collection),config:null,published:null,ctx:null,ctxLoading:null,lastPublic:null,publicPending:{}};
+  const modern=s.initial.leaderboardV1?.modernTypes||{};let frozen=null;try{const stored=JSON.parse(localStorage.getItem(lbLegacyKey(uid))||'null');if(stored&&stored.uid===uid&&Array.isArray(stored.records))frozen=stored.records.filter(r=>r.type==='quest'||r.type==='looks'); /* legacy import now covers quest/looks only */}catch(e){}
   s.legacyRecords=frozen||(isNew?[]:FSLeaderboard.legacyRecords(uid,s.initial,Date.now(),FSGameRecords.catalog()).filter(r=>!modern[r.type]&&!s.legacySkip.has(r.type)));
   try{localStorage.setItem(lbLegacyKey(uid),JSON.stringify({uid,records:s.legacyRecords}));}catch(e){}
   lbNotify({syncStatus:'pending',publicStatus:'loading',pending:outbox.length});
   lbWatchPublic();
+  // Baseline for realtime public updates: existing bests are assumed to be on the admin-published board.
+  if(isNew)S.leaderboardV1.rankBest={};
+  else if(!S.leaderboardV1.rankBest||typeof S.leaderboardV1.rankBest!=='object'){const pb=FSGameRecords.personalBest();S.leaderboardV1.rankBest=Object.fromEntries(Object.entries(pb).filter(([,b])=>b&&b.value).map(([type,b])=>[type,{value:b.value,at:Number.isSafeInteger(b.achievedAt)&&b.achievedAt>0?b.achievedAt:1}]));}
   if(isNew){S.leaderboardV1.personalBest={};FSGameRecords.record('looks',collection);}
   else if((previous&&previous.collection!==s.collection)||(typeof s.initial.leaderboardV1?.lastCollection==='string'&&s.initial.leaderboardV1.lastCollection!==s.collection))FSGameRecords.record('looks',collection);
   if((previous&&previous.quest!==JSON.stringify(FSGameRecords.questValue()))||(typeof s.initial.leaderboardV1?.lastQuest==='string'&&s.initial.leaderboardV1.lastQuest!==JSON.stringify(FSGameRecords.questValue())))FSGameRecords.record('quest',FSGameRecords.questValue());
@@ -477,7 +571,7 @@ function lbCollectionCheck(){
   const value=FSLeaderboard.collectionValue(S,FSGameRecords.catalog()),fingerprint=lbFingerprint(value);
   if(fingerprint!==s.collection){s.collection=fingerprint;FSGameRecords.record('looks',value);}
 }
-addEventListener('fs-leaderboard-record',e=>{const s=lbSession,d=e.detail;if(s&&d)lbEnqueue(s,d.type,d.value,d.clientAchievedAt);});
+addEventListener('fs-leaderboard-record',e=>{const s=lbSession,d=e.detail;if(s&&d){lbEnqueue(s,d.type,d.value,d.clientAchievedAt);void lbConsiderPublic(s,d.type,d.value);}});
 window.FSLeaderboardSync=Object.freeze({
   get state(){return {...lbView};},flush:()=>lbFlush(),
   async readOwnRecords(){const s=lbSession;if(!s||!lbCurrent(s))return [];const snapshot=await db.collection('players/'+s.uid+'/leaderboardRecords').get();if(!lbCurrent(s))return [];return snapshot.docs.map(d=>({...d.data(),id:d.id,achievedAt:lbMillis(d.data().achievedAt),recordedAt:lbMillis(d.data().recordedAt)}));}
@@ -492,7 +586,7 @@ window.FSTAT=function(key,n=1){if(!ME||!ready||!S)return;try{stAdd(key,n);_save(
 function markDay(){if(!ME||!ready)return;const s=stS(),d=s.d[dk()];if(!d||!d.login){stAdd('login');try{_save()}catch(e){}queue()}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')markDay()});
 /* 包住遊戲的開始函式：每開一局記一次 */
-[['startQuiz',a=>'q:'+a[0]],['mazePlay',()=>'g:maze'],['memStart',()=>'g:memory'],['stroopStart',()=>'g:stroop'],['rollDice',()=>'g:dice']].forEach(([fn,key])=>{
+[['startQuiz',a=>'q:'+a[0]],['startMainQuiz',a=>'q:'+(a[0]&&a[0].dom)],['startPractice',a=>'q:'+a[0]],['mazePlay',()=>'g:maze'],['memStart',()=>'g:memory'],['stroopStart',()=>'g:stroop'],['rollDice',()=>'g:dice']].forEach(([fn,key])=>{
   const f=window[fn];if(typeof f!=='function')return;
   window[fn]=function(){try{if(ME&&ready)stAdd(key(arguments))}catch(e){}return f.apply(this,arguments)};
 });
@@ -511,7 +605,7 @@ auth.onAuthStateChanged(async user=>{
   // 只接受玩家帳號（帳號@fantasystar.game）。舊的匿名登入、管理員信箱等 → 不能直接進遊戲
   if(user.isAnonymous||!/@fantasystar\.game$/i.test(user.email||'')){
     mask.hidden=false;fab(false);
-    card().innerHTML=`<div class="cl-brand">幻想智慧星</div><p style="text-align:center;margin:0">這台裝置記住的是舊的測試登入或管理員帳號，不能直接進遊戲。<br>請換成玩家帳號登入。</p><button class="cl-go" id="clOut">換成玩家帳號</button>`;
+    card().innerHTML=`<div class="cl-brand">幻想智多星</div><p style="text-align:center;margin:0">這台裝置記住的是舊的測試登入或管理員帳號，不能直接進遊戲。<br>請換成玩家帳號登入。</p><button class="cl-go" id="clOut">換成玩家帳號</button>`;
     $c('clOut').onclick=async()=>{try{if(user.isAnonymous)await user.delete()}catch(e){}try{await auth.signOut()}catch(e){}};
     return}
   // 打開網頁時自動帶入的舊登入：遊戲大更新過、或離開超過 30 分鐘 → 請他重新登入
@@ -521,25 +615,25 @@ auth.onAuthStateChanged(async user=>{
       ME=null; // Keep any per-account local or pending progress through forced reauthentication.
       try{await auth.signOut()}catch(e){}return}}
   mask.hidden=false;
-  card().innerHTML=`<div class="cl-brand">幻想智慧星<small>正在讀取你的進度…</small></div>`;
+  card().innerHTML=`<div class="cl-brand">幻想智多星<small>正在讀取你的進度…</small></div>`;
   try{
     const snap=await db.doc('players/'+user.uid).get({source:'server'});
     if(ME?.uid!==user.uid)return;
     if(!snap.exists){charView(user);return}   // 新玩家（或上次沒建完）
     enter(user,snap.data()||{},false);
-  }catch(e){card().innerHTML=`<div class="cl-brand">幻想智慧星</div><p class="cl-err">讀取進度失敗：${e.code||e.message}</p><button class="cl-go" onclick="location.reload()">重新整理</button>`;mask.hidden=false}
+  }catch(e){card().innerHTML=`<div class="cl-brand">幻想智多星</div><p class="cl-err">讀取進度失敗：${e.code||e.message}</p><button class="cl-go" onclick="location.reload()">重新整理</button>`;mask.hidden=false}
 });
 function enter(user,d,isNew){
   const ref=db.doc('players/'+user.uid);
-  if(d.disabled){card().innerHTML=`<div class="cl-brand">幻想智慧星</div><p class="cl-err">這個帳號暫停使用中，請找老師或管理員。</p><button class="cl-sub" id="clOut">換一個帳號</button>`;
+  if(d.disabled){card().innerHTML=`<div class="cl-brand">幻想智多星</div><p class="cl-err">這個帳號暫停使用中，請找老師或管理員。</p><button class="cl-sub" id="clOut">換一個帳號</button>`;
     $c('clOut').onclick=()=>auth.signOut();mask.hidden=false;return}
-  adminRev=d.adminRev||0;ME.name=d.name||'玩家';ME.code=d.code||'';
+  adminRev=d.adminRev||0;ME.name=d.name||'玩家';ME.code=d.code||'';ME.nameAt=d.nameAt&&typeof d.nameAt.toMillis==='function'?d.nameAt.toMillis():0;ME.pw='';ME.pwAt=0;ME.pwLoaded=false;
   const recovery=beginSaveSession(user,d);if(!recovery)return;
   applyState(recovery.sj,ME.name);
   if(isNew&&d.char){S.char=d.char;try{_save()}catch(e){}stage(true);render()}
   ready=true;window.FS_CLOUD_READY=true;lbStart(user.uid,isNew);lsSet(K_VER,LOGIN_VER);seen(true);ownBase=ownSet();markDay();mask.hidden=true;fab(true);
   if(!isNew)ref.update({lastLogin:FV.serverTimestamp()}).catch(()=>{});
-  if(!S.char)pickChar(true);else toast(isNew?`歡迎來到幻想智慧星，${ME.name}！`:`歡迎回來，${ME.name}！`);
+  if(!S.char)pickChar(true);else toast(isNew?`歡迎來到幻想智多星，${ME.name}！`:`歡迎回來，${ME.name}！`);
   if(!d.sj)push();
   dispatchEvent(new Event('fs-player-ready'));
   // A change from another device pauses this copy instead of silently overwriting it.
@@ -549,6 +643,8 @@ function enter(user,d,isNew){
     const x=snap.data();if(!x){ready=false;outMsg='這個帳號已經被刪除，請找老師或管理員';auth.signOut();return;}
     if(x.disabled){auth.signOut();return;}
     if(snap.metadata?.hasPendingWrites)return;
+    if(x.nameAt&&typeof x.nameAt.toMillis==='function')ME.nameAt=x.nameAt.toMillis();
+    if(x.name&&x.name!==ME.name){ME.name=x.name;const p=PL.list.find(y=>y.id===PL.cur);if(p){p.name=x.name;savePL()}fab(true)}
     const version=saveVersion(x),revision=x.adminRev||0,op=activeSave.op;
     if(op&&x.saveCommitId===op.id&&version===op.baseVersion+1&&revision===op.baseAdminRev)return;
     if(version!==activeSave.baseVersion||revision!==activeSave.baseAdminRev||(x.sj||'')!==activeSave.baseSj){
@@ -713,11 +809,102 @@ async function syncBroadcasts(){
 }
 function meSheet(){
   const L=levelOf(S.exp),a=need(L),b=need(L+1);
-  openSheet(head('玩家資料')+`<dl class="dialog-facts"><div class="fact-wide"><dt>暱稱</dt><dd class="account-full-name">${esc(ME.name)}</dd></div><div class="fact-wide"><dt>帳號</dt><dd>${esc(ME.code)}</dd></div><div><dt>等級</dt><dd class="account-level">${L}</dd></div><div><dt>星星糖</dt><dd class="account-candy">${S.candy||0}</dd></div><div class="fact-wide"><dt>升級經驗</dt><dd class="account-experience">${S.exp-a} / ${b-a}</dd></div></dl>`);
+  openSheet(head('玩家資料')+`<dl class="dialog-facts"><div class="fact-wide"><dt>暱稱</dt><dd class="account-full-name">${esc(ME.name)}</dd></div><div class="fact-wide"><dt>帳號</dt><dd>${esc(ME.code)}</dd></div><div><dt>等級</dt><dd class="account-level">${L>=LV_MAX?L+'（已滿級）':L}</dd></div><div><dt>星星糖</dt><dd class="account-candy">${S.candy||0}</dd></div><div class="fact-wide"><dt>升級經驗</dt><dd class="account-experience">${L>=LV_MAX?'已滿級（累計 '+S.exp+'）':(S.exp-a)+' / '+(b-a)}</dd></div></dl>`);
+}
+/* 更改暱稱：每 7 天一次（firestore.rules 也會檢查 nameAt） */
+const NAME_GAP=7*24*60*60*1000;
+const fmtNameDate=ms=>{const d=new Date(ms);return `${d.getMonth()+1} 月 ${d.getDate()} 日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
+function renameSheet(){
+  openSheet(head('更改暱稱')+`<form id="clRenameForm" style="display:flex;flex-direction:column;gap:10px">
+    <label style="display:flex;flex-direction:column;gap:6px">新的暱稱<small class="hint">最多 7 個中文字或 14 個英數字，可混合，不可含符號或空格</small><input id="clNewName" maxlength="28" value="${esc(ME.name)}" style="font:inherit;font-size:1.05rem;padding:10px;border-radius:12px;border:2px solid #e6dcef"></label>
+    <small class="nickname-count" id="clNewNameCount"></small>
+    <p class="hint">改完之後要等 7 天才能再改一次。排行榜上的名字會在下次更新成績時換成新暱稱。</p>
+    <p class="cl-err" id="clRenameErr" role="alert" style="color:#c23258;margin:0"></p>
+    <div class="petacts"><button type="button" class="act ghost2" id="clRenameCancel">取消</button><button type="submit" class="act buy" id="clRenameGo">確定更改</button></div></form>`);
+  const input=document.getElementById('clNewName'),msg=t=>{document.getElementById('clRenameErr').textContent=t};
+  FSNickname.bind(input,document.getElementById('clNewNameCount'));
+  document.getElementById('clRenameCancel').onclick=window.FSAccountSettings;
+  document.getElementById('clRenameForm').onsubmit=async e=>{
+    e.preventDefault();
+    const name=input.value.trim(),issue=FSNickname.error(name);
+    if(issue)return msg(issue);
+    if(BAD.some(w=>name.includes(w)))return msg('這個暱稱不太適合，換一個吧');
+    if(name===ME.name)return msg('新暱稱和現在的一樣喔');
+    if(Date.now()<(ME.nameAt||0)+NAME_GAP)return msg('這週已經改過暱稱了');
+    const go=document.getElementById('clRenameGo');go.disabled=true;go.textContent='正在儲存…';
+    try{
+      await db.doc('players/'+ME.uid).update({name,nameAt:FV.serverTimestamp()});
+      ME.name=name;ME.nameAt=Date.now();
+      const p=PL.list.find(x=>x.id===PL.cur);if(p){p.name=name;savePL()}
+      fab(true);window.FSAccountSettings();toast('暱稱已改成「'+name+'」');
+    }catch(err){
+      go.disabled=false;go.textContent='確定更改';
+      msg(err&&err.code==='permission-denied'?'這週已經改過暱稱，或暫時不能修改，請稍後再試。':'沒有改成功，請確認網路後再試一次。');
+    }
+  };
+}
+/* 密碼：玩家可以看自己的密碼紀錄（private/{uid}），每 7 天可改一次（firestore.rules 檢查 pwAt） */
+async function loadPrivate(){
+  try{const s=await db.doc('private/'+ME.uid).get();const d=s.exists?s.data():{};ME.pw=d.pw||'';ME.pwAt=d.pwAt&&typeof d.pwAt.toMillis==='function'?d.pwAt.toMillis():0;ME.pwExists=s.exists}
+  catch(e){ME.pw='';ME.pwAt=0;ME.pwExists=false}
+  ME.pwLoaded=true;
+}
+function passwordSheet(){
+  const f=(id,label,hint,ac)=>`<label style="display:flex;flex-direction:column;gap:6px">${label}<small class="hint">${hint}</small><input id="${id}" type="password" inputmode="text" maxlength="7" autocomplete="${ac}" style="font:inherit;font-size:1.05rem;padding:10px;border-radius:12px;border:2px solid #e6dcef"></label>`;
+  openSheet(head('更改密碼')+`<form id="clPwForm" style="display:flex;flex-direction:column;gap:10px">
+    ${f('clPwOld','現在的密碼','先輸入目前使用的密碼','current-password')}
+    ${f('clPwNew','新的密碼','1 個英文字母＋6 個數字，例如 K381427','new-password')}
+    ${f('clPwNew2','再輸入一次新密碼','確認沒有打錯','new-password')}
+    <p class="hint">改完之後要等 7 天才能再改一次。換電腦或手機時要用新密碼登入。</p>
+    <p class="cl-err" id="clPwErr" role="alert" style="color:#c23258;margin:0"></p>
+    <div class="petacts"><button type="button" class="act ghost2" id="clPwCancel">取消</button><button type="submit" class="act buy" id="clPwGo">確定更改</button></div></form>`);
+  const msg=t=>{document.getElementById('clPwErr').textContent=t},val=id=>document.getElementById(id).value.trim().toUpperCase();
+  ['clPwOld','clPwNew','clPwNew2'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,7)}));
+  document.getElementById('clPwCancel').onclick=window.FSAccountSettings;
+  document.getElementById('clPwForm').onsubmit=async e=>{
+    e.preventDefault();
+    const old=val('clPwOld'),pin=val('clPwNew'),pin2=val('clPwNew2'),ok=/^[A-Z][0-9]{6}$/;
+    if(!ok.test(old))return msg('請輸入現在的密碼（1 個英文字母＋6 個數字）');
+    if(!ok.test(pin))return msg('新密碼要用 1 個英文字母＋6 個數字，例如 K381427');
+    if(pin!==pin2)return msg('兩次輸入的新密碼不一樣，請再輸入一次');
+    if(pin===old)return msg('新密碼和現在的一樣喔');
+    if(Date.now()<(ME.pwAt||0)+NAME_GAP)return msg('這週已經改過密碼了');
+    const go=document.getElementById('clPwGo');go.disabled=true;go.textContent='正在更改…';
+    const user=auth.currentUser;
+    try{await user.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(user.email,pwStr(old)))}
+    catch(err){go.disabled=false;go.textContent='確定更改';return msg(/wrong-password|invalid-credential|invalid-login/.test(err&&err.code||'')?'現在的密碼不對，再檢查一次。':(netErr(err)||'沒有改成功，請確認網路後再試一次。'))}
+    // 先寫老師看得到的紀錄（規則會擋一週內第二次），成功後才改登入密碼
+    const ref=db.doc('private/'+ME.uid);
+    try{await ref.set({pw:pin,pwAt:FV.serverTimestamp()},{merge:true})}
+    catch(err){go.disabled=false;go.textContent='確定更改';return msg(err&&err.code==='permission-denied'?'這週已經改過密碼，或暫時不能修改，請稍後再試。':'沒有改成功，請確認網路後再試一次。')}
+    try{await user.updatePassword(pwStr(pin))}
+    catch(err){
+      go.disabled=false;go.textContent='確定更改';
+      return msg('登入密碼沒有改成功，請先用舊密碼登入，並請老師或管理員協助確認密碼。');
+    }
+    ME.pw=pin;ME.pwAt=Date.now();ME.pwExists=true;
+    window.FSAccountSettings();toast('密碼已更改，下次登入請用新密碼');
+  };
 }
 window.FSAccountSettings=function(){
   if(!ME||!ready)return;
-  openSheet(head('設定')+'<p class="hint">進度會自動存到雲端。使用公用裝置時，玩完請登出。</p><button class="big" id="clLogout">登出帳號</button>');
+  const nextAt=(ME.nameAt||0)+NAME_GAP,canRename=Date.now()>=nextAt;
+  const pwNext=(ME.pwAt||0)+NAME_GAP,canPw=ME.pwLoaded&&Date.now()>=pwNext;
+  // 每列：左邊「標籤＋內容」、右邊小按鈕、下方一行說明；字級統一為 標籤 13／內容 16／按鈕 14／說明 12
+  const row=(label,value,btn,hint)=>`<div class="acct-row"><div class="acct-main"><span class="acct-label">${label}</span><span class="acct-val">${value}</span></div>${btn||''}<p class="acct-hint">${hint}</p></div>`;
+  const abtn=(id,text,on)=>`<button type="button" class="acct-btn" id="${id}" ${on?'':'disabled'}>${text}</button>`;
+  const pwText=ME.pwLoaded?(ME.pw?`<span id="clPwVal" data-show="0">•••••••</span> <button type="button" class="acct-show" id="clPwShow">顯示</button>`:'（沒有紀錄）'):'讀取中…';
+  openSheet(head('設定')+`<section class="acct" aria-label="帳號資料">
+    ${row('帳號',esc(ME.code),'','帳號不能修改。')}
+    ${row('暱稱',esc(ME.name),abtn('clRename','更改',canRename),canRename?'每 7 天可以改一次。':'這週已改過，'+fmtNameDate(nextAt)+' 後可再改。')}
+    ${row('密碼',pwText,abtn('clPwChange','更改',canPw),!ME.pwLoaded?'正在讀取密碼資料…':canPw?'每 7 天可以改一次，改完請記住新密碼。':'這週已改過，'+fmtNameDate(pwNext)+' 後可再改。')}
+    </section>
+    <p class="acct-note">進度會自動存到雲端。使用公用裝置時，玩完請登出。</p><button class="big" id="clLogout">登出帳號</button>`);
+  if(canRename)document.getElementById('clRename').onclick=renameSheet;
+  if(canPw)document.getElementById('clPwChange').onclick=passwordSheet;
+  const show=document.getElementById('clPwShow');
+  if(show)show.onclick=()=>{const v=document.getElementById('clPwVal'),on=v.dataset.show!=='1';v.dataset.show=on?'1':'0';v.textContent=on?ME.pw:'•••••••';show.textContent=on?'隱藏':'顯示'};
+  if(!ME.pwLoaded)loadPrivate().then(()=>{if(document.getElementById('clPwChange'))window.FSAccountSettings()});
   document.getElementById('clLogout').onclick=()=>{
     openSheet(head('確認登出')+'<p>要登出目前的帳號嗎？</p><div class="petacts"><button class="act ghost2" id="logoutCancel">取消</button><button class="act buy" id="logoutConfirm">確定登出</button></div>');
     document.getElementById('logoutCancel').onclick=window.FSAccountSettings;
