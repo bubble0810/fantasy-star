@@ -517,6 +517,16 @@ html{background:radial-gradient(ellipse at 16% 10%,#393365 0,transparent 52%) fi
 #panel .prcell small{font-size:12px;line-height:1.35;color:#6b5b7d}
 #panel .prcell.hot{border-color:#e0a63a;background:linear-gradient(160deg,#fff8e6,#ffefc9)}
 #panel .prcell:active{transform:scale(.97)}
+/* 九大領域：底色統一用原本的白到淡紫漸層，只用 1.5px 外框顏色區分；冷知識（D09）保留金色亮點 */
+#panel .prcell[data-prd]{border-width:1.5px}
+#panel .prcell[data-prd=D01]{border-color:#e48fb3}
+#panel .prcell[data-prd=D02]{border-color:#86a6e3}
+#panel .prcell[data-prd=D03]{border-color:#6fbfa3}
+#panel .prcell[data-prd=D04]{border-color:#93c46e}
+#panel .prcell[data-prd=D05]{border-color:#a98ae3}
+#panel .prcell[data-prd=D06]{border-color:#e2a56c}
+#panel .prcell[data-prd=D07]{border-color:#e48e80}
+#panel .prcell[data-prd=D08]{border-color:#6eb3d8}
 @media (max-width:380px){#panel .prcell small{display:none}#panel .prcell{min-height:84px}}
 /* 2026-11 版面：拿掉最上方標題列，房間置頂；右上角 HUD 依序為 信件・聲音・設定，星空榜在下方 */
 .app>.top{display:none!important}
@@ -813,7 +823,20 @@ html{scrollbar-gutter:stable}
 @media(max-width:374px){#panel .sprow .petacts .act{font-size:12px!important;padding:5px 1px!important}#panel .sprow .act.is-locked::before{content:none!important;display:none!important}}
 
 /* 排列：衣櫥／商城造型 三個一列；裝潢商人、我的小屋、我的家園（花園格、種子、領養） 兩個一列 */
-#panel .plots{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+/* 花園：最多 9 塊地，排成 3×3 九宮格；格子變窄，按鈕字縮小並允許換行 */
+#panel .plots{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+#panel .plots .plot{padding:6px!important;gap:4px!important;min-width:0}
+#panel .plots .plot small{font-size:11px;line-height:1.3;min-height:2.6em}
+#panel .plots .plot .act{font-size:12px;line-height:1.25;padding:5px 3px!important;white-space:normal!important;margin-top:auto}
+/* 種子：4 個一排；第一列 花名｜種子星星糖，第二列 時間｜賣價，數字靠右對齊（太窄時數字換到下一行仍靠右） */
+#panel .seeds{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+#panel .seeds .seed{padding:6px 4px;gap:3px;min-width:0;justify-content:center}
+#panel .seeds .seed .sr{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;column-gap:3px;row-gap:0;width:100%}
+#panel .seeds .seed b{font-size:12.5px;line-height:1.3;white-space:nowrap}
+#panel .seeds .seed small{font-size:11px;line-height:1.3;white-space:nowrap}
+#panel .seeds .seed .sv{margin-left:auto;text-align:right;font-size:11px;line-height:1.3;white-space:nowrap;font-variant-numeric:tabular-nums}
+#panel .seeds .seed .sv svg{width:11px;height:11px;vertical-align:-1px;margin-right:1px}
+#panel .seeds .seed.is-locked::after{content:none}
 #panel .hgrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
 #panel .hgrid .hc{display:flex;flex-direction:column;min-width:0;padding:6px!important;gap:2px}
 #panel .hgrid .hc>b{margin-top:4px;font-size:14px!important;line-height:1.4!important}
@@ -955,3 +978,29 @@ html{scrollbar-gutter:stable}
 .cl-mask.has-art:not([data-step="2"]):not([data-step="3"]):not([data-step="4"]) .cl-hero{aspect-ratio:1/.93!important}
 /* 登入遊戲／建立玩家帳號：不撐滿整張卡片，兩顆同寬、置中 */
 .cl-mask .cl-card :is(.cl-go,.cl-alt){width:min(78%,300px)!important;align-self:center!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box}
+
+/* ===== 花園按鈕：依用途分色（仍在紫色系內）；收成類＝金色、澆水＝淡藍框、擴建＝紫色虛線框、種花維持紫色 ===== */
+#panel .plots .act[data-harv],#panel .harvbar .act.harvall,#panel:is(:has(.plots),:has(.pet-dashboard)) .sale-section .act[data-sellall],#panel:is(:has(.plots),:has(.pet-dashboard)) .sale-section .sale-total{background:linear-gradient(135deg,#ffe08a,#f3b63f)!important;color:#5a3800!important;border:1px solid #e0a12c!important;box-shadow:inset 0 1px 0 #fff6d6,0 2px 6px -3px #b7781266!important;text-shadow:none!important}
+#panel .plots .act[data-water]{background:#fff!important;color:#2f6fa8!important;border:1.5px solid #8cc4ee!important;box-shadow:none!important;text-shadow:none!important}
+#panel .plots .plot.add .act[data-addplot]:not(:disabled){background:transparent!important;color:#5b4a9c!important;border:1.5px dashed #9b8bd8!important;box-shadow:none!important;text-shadow:none!important}
+/* 可收成提示列：放在花圃上方，有花可收時才出現 */
+#panel .harvbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 8px;padding:6px 6px 6px 12px;border:1px solid #efd38f;border-radius:12px;background:linear-gradient(135deg,#fffaf0,#fff1d2);color:#6b4a00;font-size:14px}
+#panel .harvbar b{font-size:16px}
+#panel .harvbar .act.harvall{min-height:38px;padding:6px 14px!important;font-size:14px;white-space:nowrap}
+/* 花園的花朵收購與寵物的幸運物收購：每種花一行（左：圖示名字數量／單價，右：兩顆小按鈕） */
+#panel:is(:has(.plots),:has(.pet-dashboard)) .sale-section .bag{display:flex;flex-direction:column;gap:6px}
+#panel:is(:has(.plots),:has(.pet-dashboard)) .sale-section .bi{display:grid!important;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:8px;row-gap:0;align-items:center;padding:6px 8px!important}
+#panel:is(:has(.plots),:has(.pet-dashboard)) .sale-section .bin{grid-column:1;grid-row:1;gap:6px;font-size:14px}
+#panel:is(:has(.plots),:has(.pet-dashboard)) .sale-section .bin .bagico{width:30px;height:30px;flex:0 0 30px}
+#panel:is(:has(.plots),:has(.pet-dashboard)) .sale-section .bi>small{grid-column:1;grid-row:2;padding-left:36px;font-size:11px;line-height:1.3}
+#panel:is(:has(.plots),:has(.pet-dashboard)) .sale-section .bi .petacts{grid-column:2;grid-row:1/3;display:flex!important;gap:5px}
+#panel:is(:has(.plots),:has(.pet-dashboard)) .sale-section .bi .act{min-height:34px!important;padding:4px 8px!important;font-size:12px!important;white-space:nowrap}
+#panel:is(:has(.plots),:has(.pet-dashboard)) .sale-section .act[data-sell]{background:#fff!important;color:#5b4a9c!important;border:1px solid #c9c0ea!important;box-shadow:none!important;text-shadow:none!important}
+/* ===== 寵物頁：套用與花園相同的按鈕用途配色（寵物頁按鈕的底色畫在 ::before，所以改用變數） ===== */
+#panel:has(.pet-dashboard) .pet-actions>.act[data-gift]:not(:disabled),#panel:has(.pet-dashboard) .sale-section .act[data-sellall],#panel:has(.pet-dashboard) .sale-section .sale-total{--pet-button-bg:linear-gradient(135deg,#ffe08a,#f3b63f);--pet-button-edge:#e0a12c;color:#5a3800!important;font-weight:500;text-shadow:none!important}
+#panel:has(.pet-dashboard) .pet-actions>.act:is([data-play],[data-follow]):not(:disabled):not([aria-pressed="true"]),#panel:has(.pet-dashboard) .sale-section .act[data-sell]{--pet-button-bg:#fff;--pet-button-edge:#c9c0ea;color:#5b4a9c!important;text-shadow:none!important}
+#panel:has(.pet-dashboard) .pet-actions>.act[data-feed]:not(:disabled){color:#fff!important}
+/* 寵物頁重新配色的按鈕：不用 ::before 內層，直接畫在按鈕本身，跟花園按鈕同形狀 */
+#panel:has(.pet-dashboard) :is(.pet-actions>.act[data-gift]:not(:disabled),.pet-actions>.act:is([data-play],[data-follow]):not(:disabled):not([aria-pressed="true"]),.sale-section .act[data-sell],.sale-section .act[data-sellall],.sale-section .sale-total)::before{display:none}
+#panel:has(.pet-dashboard) :is(.pet-actions>.act[data-gift]:not(:disabled),.sale-section .act[data-sellall],.sale-section .sale-total){background:linear-gradient(135deg,#ffe08a,#f3b63f)!important;border:1px solid #e0a12c!important;box-shadow:inset 0 1px 0 #fff6d6,0 2px 6px -3px #b7781266!important;border-radius:10px!important}
+#panel:has(.pet-dashboard) :is(.pet-actions>.act:is([data-play],[data-follow]):not(:disabled):not([aria-pressed="true"]),.sale-section .act[data-sell]){background:#fff!important;border:1px solid #c9c0ea!important;box-shadow:none!important;border-radius:10px!important}

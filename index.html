@@ -310,18 +310,21 @@ button:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
 .soonlist span{display:flex;flex-direction:column;font-size:.86rem;border:1px solid var(--line);border-radius:10px;padding:5px 8px;background:#faf7fd}
 .soonlist i{font-style:normal;font-family:ui-monospace,Menlo,monospace;font-size:.7rem;color:var(--muted)}
 .soonlist small{color:var(--muted);font-size:.7rem}
-.helps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.cheerbtn{border:2px solid #f3a6c6;background:linear-gradient(120deg,#ffe1ee,#fff3d1);color:var(--berry);border-radius:14px;padding:9px 12px;font-weight:700;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
-.cheerbtn small,.helps .passbtn small{font-weight:400;font-size:.74rem}
-.helps .passbtn{flex-direction:column;align-items:flex-start;justify-content:center}
+/* PASS / cheer: small pills above the question, far from the answer options and the next button */
+.helps{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:6px;margin:2px 0 -2px}
+.cheerbtn{border:2px solid #f3a6c6;background:linear-gradient(120deg,#ffe1ee,#fff3d1);color:var(--berry);font-weight:700}
+.helps .passbtn,.helps .cheerbtn{display:inline-flex;flex-direction:row;align-items:center;gap:6px;min-height:36px;padding:3px 5px 3px 12px;border-radius:999px;font-size:.86rem;line-height:1.1}
+.helps .passbtn{border-width:1.5px}
+.helps .cheerbtn{border-width:1.5px}
+.helps .n{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#fff;font-size:.78rem}
 .cheerbtn[disabled]{opacity:.45;cursor:not-allowed}
+.helps.used button{opacity:.4;cursor:default}
 .dtag{font-weight:700}.dtag.d1{color:#1f9d55}.dtag.d2{color:#b07a10}.dtag.d3{color:#c2185b}.dtag.d4{color:#6a3fc8}
 .diffpick{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .diffpick>span{font-family:var(--display);color:var(--muted)}
 .diffpick button{border:2px solid var(--line);background:#fff;border-radius:999px;padding:4px 14px;font-size:.88rem}
 .diffpick button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 .diffpick small{width:100%;color:var(--muted);font-size:.78rem}
-@media (max-width:420px){.helps{grid-template-columns:1fr}}
 .fbadge{color:#c2185b;font-weight:700}
 .spc small b.fbadge{font-size:inherit;font-family:inherit}
 .festcal{display:flex;flex-wrap:wrap;gap:6px}
@@ -1965,12 +1968,12 @@ const QADD=[
 const MIN=6e4;
 const SEEDS=[
  {k:'daisy',n:'小雛菊',lv:1,cost:5,min:2,sell:12,c:'#ffffff',m:'#ffd84d'},
- {k:'tulip',n:'鬱金香',lv:1,cost:12,min:5,sell:30,c:'#ff5c8a',m:'#ff5c8a',tulip:true},
- {k:'sun',n:'向日葵',lv:3,cost:20,min:10,sell:52,c:'#ffc300',m:'#7a4b2a'},
- {k:'rose',n:'玫瑰',lv:4,cost:35,min:20,sell:95,c:'#e2335b',m:'#b3122e'},
- {k:'hydra',n:'繡球花',lv:7,cost:60,min:40,sell:170,c:'#8fa8ff',m:'#c9a0ff'},
- {k:'lotus',n:'粉蓮花',lv:10,cost:100,min:90,sell:300,c:'#ff9fc6',m:'#ffe08a'},
- {k:'lily',n:'星光百合',lv:14,cost:160,min:180,sell:520,c:'#fff6c8',m:'#ffd166'}
+ {k:'tulip',n:'鬱金香',lv:5,cost:12,min:5,sell:30,c:'#ff5c8a',m:'#ff5c8a',tulip:true},
+ {k:'sun',n:'向日葵',lv:9,cost:20,min:10,sell:52,c:'#ffc300',m:'#7a4b2a'},
+ {k:'rose',n:'玫瑰',lv:14,cost:35,min:20,sell:95,c:'#e2335b',m:'#b3122e'},
+ {k:'hydra',n:'繡球花',lv:19,cost:60,min:40,sell:170,c:'#8fa8ff',m:'#c9a0ff'},
+ {k:'lotus',n:'粉蓮花',lv:25,cost:100,min:90,sell:300,c:'#ff9fc6',m:'#ffe08a'},
+ {k:'lily',n:'星光百合',lv:35,cost:160,min:180,sell:520,c:'#fff6c8',m:'#ffd166'}
 ];
 const PETS=[
  {k:'bunny',n:'小兔',lv:1,cost:0,feed:10,gift:'幸運草',gv:47,c:'#ffffff',e:'#ffc6da',img:'pets/bunny.webp'},
@@ -2034,11 +2037,11 @@ function plotSVG(p){
   const st=plantState(p);let s=`<ellipse cx="50" cy="78" rx="42" ry="14" fill="#8b5a3a"/><ellipse cx="50" cy="74" rx="38" ry="11" fill="#a8744f"/>`;
   if(!st)return `<svg viewBox="0 0 100 92">${s}<path d="M44,70L56,70M50,64L50,76" stroke="#d9b48f" stroke-width="3" stroke-linecap="round"/></svg>`;
   const {S0,pct}=st;
-  if(pct<.34)s+=`<ellipse cx="50" cy="72" rx="5" ry="3" fill="#6b4630"/><path d="M50,72Q48,64 44,62M50,72Q52,64 57,61" stroke="#5aa86a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-  else if(pct<1){const h=30+pct*16;s+=`<path d="M50,74L50,${74-h}" stroke="#4f9a5e" stroke-width="3.5"/><ellipse cx="42" cy="${78-h*.5}" rx="8" ry="4" fill="#6abb7a" transform="rotate(-30 42 ${78-h*.5})"/><ellipse cx="58" cy="${80-h*.6}" rx="8" ry="4" fill="#6abb7a" transform="rotate(30 58 ${80-h*.6})"/><ellipse cx="50" cy="${70-h}" rx="6" ry="9" fill="${S0.c}" stroke="#4f9a5e" stroke-width="2"/>`}
-  else{s+=`<path d="M50,74L50,30" stroke="#4f9a5e" stroke-width="3.5"/><ellipse cx="40" cy="56" rx="10" ry="4.5" fill="#6abb7a" transform="rotate(-30 40 56)"/><ellipse cx="60" cy="50" rx="10" ry="4.5" fill="#6abb7a" transform="rotate(30 60 50)"/>`;
-    s+=S0.tulip?`<path d="M38,30Q38,10 44,14L50,20L56,14Q62,10 62,30Q50,40 38,30Z" fill="${S0.c}"/>`:S0.k==='lotus'?`<path d="M50,8Q60,20 50,34Q40,20 50,8ZM50,34Q30,30 30,18Q42,18 50,34ZM50,34Q70,30 70,18Q58,18 50,34Z" fill="${S0.c}" stroke="#fff"/>`:S0.k==='lily'?`<path d="${star(50,24,20)}" fill="${S0.c}" stroke="#ffd166" stroke-width="2"/><circle cx="50" cy="24" r="4" fill="${S0.m}"/>`:flower(50,24,S0.k==='sun'||S0.k==='hydra'?22:18,S0.c,S0.m);
-    s+=`<path d="${star(80,16,5)}" fill="#ffd166"><animate attributeName="opacity" values="1;.2;1" dur="1.4s" repeatCount="indefinite"/></path>`}
+  // Illustrated stages (flowers/*.webp, 288x256, stem base at bottom centre): sprout -> bud -> bloom.
+  const art=pct<.34?'sprout':pct<1?S0.k+'_bud':S0.k;
+  s+=`<image href="flowers/${art}.webp" x="4" y="-4" width="92" height="82" preserveAspectRatio="xMidYMax meet"/>`;
+  if(st.ready){const tw=(x,y,r,d)=>`<path d="${star(x,y,r)}" fill="#ffd166"><animate attributeName="opacity" values="1;.2;1" dur="${d}s" repeatCount="indefinite"/></path>`;
+    s+=tw(88,10,4,1.4);if(S0.k==='lotus'||S0.k==='lily')s+=tw(12,22,3,1.9)+tw(84,46,2.5,1.1)}
   if(p.w&&!st.ready)s+=`<path d="M78,52Q82,44 86,52Q86,58 82,58Q78,58 78,52Z" fill="#7fc6ff"/>`;
   return `<svg viewBox="0 0 100 92">${s}</svg>`;
 }
@@ -2379,6 +2382,7 @@ const GIFT_SVG={
  '星晶碎片':`<path d="M50,6L64,40L50,94L36,40Z" fill="#b48cff" stroke="#6a4ab8" stroke-width="3"/><path d="M50,6L50,94M36,40L64,40" stroke="#e5d6ff" stroke-width="2"/><path d="M22,40L30,58L22,84L14,58Z" fill="#8f6ae8" stroke="#6a4ab8" stroke-width="2.5"/><path d="M78,30L88,52L78,76L68,52Z" fill="#d1b8ff" stroke="#6a4ab8" stroke-width="2.5"/><path d="${star(76,14,6)}" fill="#ffd166"/>`};
 function bagIco(name){
   const sd=SEEDS.find(x=>x.n===name);let g;
+  if(sd)return `<svg class="bagico" viewBox="0 0 100 100" aria-hidden="true"><image href="flowers/${sd.k}.webp" x="-6" y="0" width="112" height="100" preserveAspectRatio="xMidYMax meet"/></svg>`;
   if(sd){g=`<path d="M50,96L50,58" stroke="#4f9a5e" stroke-width="5"/><ellipse cx="38" cy="78" rx="12" ry="5" fill="#6abb7a" transform="rotate(-30 38 78)"/><ellipse cx="62" cy="72" rx="12" ry="5" fill="#6abb7a" transform="rotate(30 62 72)"/>`;
     const hd=sd.tulip?`<path d="M30,52Q30,14 40,22L50,32L60,22Q70,14 70,52Q50,68 30,52Z" fill="${sd.c}" stroke="#00000022" stroke-width="2"/>`:sd.k==='lotus'?`<path d="M50,8Q64,26 50,52Q36,26 50,8ZM50,52Q20,46 20,28Q38,28 50,52ZM50,52Q80,46 80,28Q62,28 50,52Z" fill="${sd.c}" stroke="#fff" stroke-width="2"/>`:sd.k==='lily'?`<path d="${star(50,36,30)}" fill="${sd.c}" stroke="#ffd166" stroke-width="3"/><circle cx="50" cy="36" r="6" fill="${sd.m}"/>`:flower(50,36,sd.k==='sun'||sd.k==='hydra'?32:28,sd.c,sd.m);
     g+=hd;if(sd.c==='#ffffff')g=`<circle cx="50" cy="40" r="34" fill="#fff6c8" opacity=".6"/>`+g}
@@ -2404,16 +2408,17 @@ function renderHome(p,L){
   while(S.plots.length<S.plotN)S.plots.push(null);
   let body='';
   if(homeSub==='garden'){
-    if(!S.seedSel)S.seedSel='daisy';
+    // A previously chosen seed may be locked again after the unlock levels changed: fall back to daisy.
+    {const cur=SEEDS.find(s=>s.k===S.seedSel);if(!cur||levelOf(S.exp)<cur.lv)S.seedSel='daisy';}
     body=`<div class="merchant">${merchantSVG('#8bc34a')}<p><b>花園小園丁・花花</b>「種花、澆水等開花，收成後換星星糖！」</p></div>
-    <div class="seeds">${SEEDS.map(s=>`<button class="seed" aria-pressed="${S.seedSel===s.k}" data-seed="${s.k}" ${L<s.lv?'disabled':''}><b>${s.n}</b><small>${L<s.lv?'Lv.'+s.lv+' 解鎖':`種子 ${s.cost} 糖 · ${s.min>=60?s.min/60+' 小時':s.min+' 分'}`}</small><small>賣 ${s.sell} 糖</small></button>`).join('')}</div>
+    <div class="seeds">${SEEDS.map(s=>`<button class="seed" aria-pressed="${S.seedSel===s.k}" data-seed="${s.k}" ${L<s.lv?'disabled':''} aria-label="${s.n}，種子 ${s.cost} 星星糖，${s.min>=60?s.min/60+' 小時':s.min+' 分鐘'}，賣 ${s.sell} 星星糖${L<s.lv?'，Lv.'+s.lv+' 解鎖':''}"><span class="sr"><b>${s.n}</b><span class="sv">${s.cost}</span></span><span class="sr">${L<s.lv?`<small>🔒 Lv.${s.lv} 解鎖</small>`:`<small>${s.min>=60?s.min/60+' 小時':s.min+' 分'}</small><small class="sv">賣 ${s.sell}</small>`}</span></button>`).join('')}</div>
+    ${(()=>{const n=S.plots.filter(pl=>pl&&plantState(pl).ready).length;return n?`<div class="harvbar"><span>🌸 可收成 <b>${n}</b> 株</span><button class="act harvall" data-harvall>全部收成</button></div>`:''})()}
     <div class="plots">${S.plots.map((pl,i)=>{const st=plantState(pl);let act,info;
       if(!pl){const sd=SEEDS.find(s=>s.k===S.seedSel);info='空地';act=`<button class="act buy" data-plant="${i}" ${S.candy<sd.cost?'disabled':''}>種${sd.n} ${sd.cost}</button>`}
       else if(st.ready){info=`${st.S0.n} 開花了！`;act=`<button class="act wear" data-harv="${i}">收成</button>`}
       else{info=`${st.S0.n} · 還要 ${fmtLeft(st.left)}`;act=pl.w?`<button class="act" disabled>已澆水</button>`:`<button class="act water" data-water="${i}">澆水</button>`}
       return `<div class="plot">${plotSVG(pl)}${st&&!st.ready?`<div class="pbar"><i style="width:${(st.pct*100).toFixed(0)}%"></i></div>`:''}<small>${info}</small>${act}</div>`}).join('')}
-    ${S.plotN<9?`<div class="plot add"><b>擴建花圃</b><small>第 ${S.plotN+1} 塊地</small><button class="act buy" data-addplot ${S.candy<PLOT_COST[S.plotN]?'disabled':''}>${mini}${PLOT_COST[S.plotN]}</button></div>`:''}</div>
-    ${S.plots.some(pl=>pl&&plantState(pl).ready)?'<button class="big" data-harvall>全部收成</button>':''}`;
+    ${S.plotN<9?`<div class="plot add"><b>擴建花圃</b><small>第 ${S.plotN+1} 塊地</small><button class="act buy" data-addplot ${S.candy<PLOT_COST[S.plotN]?'disabled':''}>${mini}${PLOT_COST[S.plotN]}</button></div>`:''}</div>`;
   }
   if(homeSub==='pets'){
     const P=S.pets[S.pet]||S.pets[0],def=PETS.find(x=>x.k===P.k),h=petHunger(P),lvp=petLevel(P),canPlay=Date.now()-(P.pT||0)>=10*MIN;
@@ -2463,8 +2468,8 @@ function renderHome(p,L){
     const iv=setInterval(()=>{box.innerHTML=dieSVG(1+Math.floor(Math.random()*6))+dieSVG(1+Math.floor(Math.random()*6));box.classList.toggle('shake');if(++t>9){clearInterval(iv);
       box.innerHTML=dieSVG(a)+dieSVG(b);const sum=a+b,dbl=a===b;let g=a===6&&b===6?2000:dbl?400:sum>=10?200:sum>=7?120:80;
       S.lastDice=[a,b];S.candy+=g;save();hud();SND.play(g>=1000?'jackpot':g>=200?'win':'coin');$('#dres').innerHTML=`<div class="fb ok"><b>${a===6&&b===6?'✨ 雙 6 超級大獎！':dbl?'一樣點數，大獎！':'擲出 '+sum+' 點'}</b>獲得 ${g} 星星糖</div>`;setTimeout(render,1600)}},70)};
-  p.querySelectorAll('[data-seed]').forEach(b=>b.onclick=()=>{S.seedSel=b.dataset.seed;save();render()});
-  p.querySelectorAll('[data-plant]').forEach(b=>b.onclick=()=>{const sd=SEEDS.find(s=>s.k===S.seedSel);if(S.candy<sd.cost)return;S.candy-=sd.cost;S.plots[+b.dataset.plant]={k:sd.k,t0:Date.now(),w:false};save();render()});
+  p.querySelectorAll('[data-seed]').forEach(b=>b.onclick=()=>{const s=SEEDS.find(x=>x.k===b.dataset.seed);if(!s||levelOf(S.exp)<s.lv)return;S.seedSel=s.k;save();render()});
+  p.querySelectorAll('[data-plant]').forEach(b=>b.onclick=()=>{const sd=SEEDS.find(s=>s.k===S.seedSel);if(!sd||levelOf(S.exp)<sd.lv||S.candy<sd.cost)return;S.candy-=sd.cost;S.plots[+b.dataset.plant]={k:sd.k,t0:Date.now(),w:false};save();render()});
   p.querySelectorAll('[data-water]').forEach(b=>b.onclick=()=>{const pl=S.plots[+b.dataset.water],st=plantState(pl);const remain=st.dur-st.el;pl.t0=Date.now()-(st.dur*.75-remain*.75);pl.w=true;save();toast('澆水完成，花長得更快了！');render()});
   const harvest=i=>{const pl=S.plots[i],st=plantState(pl);if(!st||!st.ready)return 0;const n=pl.w?2:1;bagAdd(st.S0.n,n);S.plots[i]=null;S.exp+=st.S0.min>=60?20:5;return n};
   p.querySelectorAll('[data-harv]').forEach(b=>b.onclick=()=>{const n=harvest(+b.dataset.harv);save();toast(`收成 ${n} 朵花，放進背包了`);render()});
@@ -2523,15 +2528,17 @@ function showQ(){
   const bb=QZ.L&&QZ.L.boss?chImg(QZ.L.ch,'B'):'';
   $('#sheet').innerHTML=(bb?`<div class="lvbanner boss mini" style="background-image:url(${bb})"><b>👑 魔王關</b></div>`:'')+`<div class="qhead"><span class="qtag">${cat.n}・<b class="dtag d${Math.min(4,qd(q))}">${PR_TIERS[qd(q)-1]?.n||DN[qd(q)]||''}</b></span><div class="dots">${QZ.list.map((_,i)=>`<i class="${i<QZ.i?(QZ.res[i]?'ok':'no'):i===QZ.i?'cur':''}"></i>`).join('')}</div><span class="qscore">${qScore()} 分</span><button class="ghost" id="quit" style="padding:4px 10px">← 返回</button></div>
   <div class="timer"><i id="tbar"></i></div>
+  ${QZ.practice?'':`<div class="helps" role="group" aria-label="答題道具"><button class="passbtn" id="pass" title="換一題，不扣分" aria-label="PASS 換一題，不扣分，今天還有 ${P.left} 次" ${P.left<=0||!QZ.pool.length?'disabled':''}>PASS 換題 <span class="n">${P.left}</span></button><button class="cheerbtn" id="cheer" title="這題直接答對" aria-label="應援過關，這題直接答對，今天還有 ${C.left} 次" ${C.left?'':'disabled'}>✦ 應援 <span class="n">${C.left}</span></button></div>`}
   <p class="qtext">${q[1]}</p>
   <div class="opts">${order.map((o,k)=>`<button class="opt" data-o="${o}"><span class="k">${'ABCD'[k]}</span><span>${q[2][o]}</span></button>`).join('')}</div>
-  ${QZ.practice?'':`<div class="helps"><button class="passbtn" id="pass" ${P.left<=0||!QZ.pool.length?'disabled':''}>PASS 換一題 <small>不扣分 · 今天還有 ${P.left} 次</small></button>
-  <button class="cheerbtn" id="cheer" ${C.left?'':'disabled'}>✦ 應援過關 <small>直接答對 · 今天還有 ${C.left} 次</small></button></div>`}<div id="fb"></div>`;
+  <div id="fb"></div>`;
   refreshSheetLayout();
   $('#quit').onclick=closeQuiz;
+  // Ignore taps for a moment after a new question appears, so a fast double tap on PASS / next can't land on the new screen.
+  QZ.lockUntil=Date.now()+450;const guard=f=>()=>{if(Date.now()<QZ.lockUntil||QZ.answered)return;f()};QZ.answered=false;
   // PASS and cheer exist only in the main line (practice has neither).
-  if(!QZ.practice){$('#pass').onclick=doPass;$('#cheer').onclick=useCheer}
-  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.o));
+  if(!QZ.practice){$('#pass').onclick=guard(doPass);$('#cheer').onclick=guard(useCheer)}
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=guard(()=>answer(+b.dataset.o)));
   clearInterval(timer);
   timer=setInterval(()=>{const left=QZ.qt-(Date.now()-QZ.t0)/1000;const bar=$('#tbar');if(bar)bar.style.width=Math.max(0,left/QZ.qt*100)+'%';if(left<=0)answer(-1)},100);
 }
@@ -2545,7 +2552,9 @@ function doPass(){
   P.left--;QZ.pass++;QZ.list[QZ.i]=QZ.pool.splice(j,1)[0];save();toast(`已換一題（不扣分），今天還有 ${P.left} 次`);showQ();
 }
 function answer(o,cheered){
-  const hp=document.querySelector('.helps');if(hp)hp.remove();
+  if(QZ.answered)return;QZ.answered=true;
+  // Keep the pills in place (greyed out) so nothing shifts under the finger.
+  const hp=document.querySelector('.helps');if(hp){hp.classList.add('used');hp.querySelectorAll('button').forEach(b=>b.disabled=true);const cn=hp.querySelector('#cheer .n');if(cn&&!QZ.practice)cn.textContent=cheerState().left}
   clearInterval(timer);
   const idx=QZ.list[QZ.i],q=Q[idx],ok=o===q[3],sec=(Date.now()-QZ.t0)/1000;SND.play(ok?'correct':'wrong');
   QZ.res.push(ok);S.recent=[idx,...S.recent.filter(x=>x!==idx)].slice(0,40);markSeen(idx);
@@ -2555,8 +2564,9 @@ function answer(o,cheered){
   document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;const v=+b.dataset.o;if(v===q[3])b.classList.add('right');else if(v===o)b.classList.add('wrong')});
   const last=QZ.i===QZ.list.length-1;
   $('#fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><b>${ok?'答對了！'+bonus:o===-1?'時間到了':'差一點點'}</b>${q[4]}</div><button class="big" id="next" style="width:100%;margin-top:10px">${last?'看結果':'下一題'}</button>`;
-  $('#next').onclick=()=>{if(last)finish();else{QZ.i++;showQ()}};
-  $('#next').focus();
+  const nb=$('#next');nb.onclick=()=>{if(last)finish();else{QZ.i++;showQ()}};
+  // Next becomes tappable after a short pause, so a second fast tap doesn't skip the explanation.
+  nb.disabled=true;setTimeout(()=>{nb.disabled=false;nb.focus()},500);
 }
 function finish(){
   const n=QZ.res.filter(Boolean).length,score=qScore(),perfect=score===100;
