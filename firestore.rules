@@ -195,31 +195,35 @@ service cloud.firestore {
     }
     // Realtime update by a player: only their own row on one single board (never total),
     // other rows kept in order, eligible account, current published config, 2 s apart.
+    // Split in two: Firestore allows at most 10 variables per function.
     function lbPlayerWrite() {
       let uid = request.auth.uid;
       let before = resource.data;
       let after = request.resource.data;
       let type = after.lastType;
-      let old = before.boards.get(type, []);
       let rows = after.boards[type];
-      let others = lbWithout(rows, uid);
-      let oldOthers = lbWithout(old, uid);
-      let mine = lbMine(rows, uid);
       let me = get(/databases/$(db)/documents/players/$(uid)).data;
       let cfg = get(/databases/$(db)/documents/leaderboardConfig/current).data;
       let elig = /databases/$(db)/documents/leaderboardEligibility/$(uid);
-      let now = request.time.toMillis();
       return type in ['stroop','memory','maze','quest','looks']
         && after.diff(before).affectedKeys().hasOnly(['boards','publishedAt','lastWriter','lastType'])
         && after.boards.diff(before.boards).affectedKeys().hasOnly([type])
         && after.lastWriter == uid && after.publishedAt == request.time
         && request.time > before.publishedAt + duration.value(2, 's')
         && before.enabled == true && cfg.enabled == true
-        && before.configUpdatedAt == cfg.updatedAt && now >= before.startsAt
+        && before.configUpdatedAt == cfg.updatedAt && request.time.toMillis() >= before.startsAt
         && me.get('disabled', false) != true
         && (!exists(elig) || get(elig).data.get('excluded', false) != true)
         && rows is list && rows.size() <= 3
-        && others.size() == rows.size() - 1
+        && lbPlayerRows(type, rows, before.boards.get(type, []), uid, me);
+    }
+    // Row checks for lbPlayerWrite: 5 parameters + 4 variables.
+    function lbPlayerRows(type, rows, old, uid, me) {
+      let others = lbWithout(rows, uid);
+      let oldOthers = lbWithout(old, uid);
+      let mine = lbMine(rows, uid);
+      let now = request.time.toMillis();
+      return others.size() == rows.size() - 1
         && lbWithout(others, uid) == others
         && others.size() <= oldOthers.size()
         && others == oldOthers[0:others.size()]
